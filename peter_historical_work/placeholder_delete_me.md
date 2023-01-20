@@ -1,1 +1,0 @@
-# oregon_wildlife_identification
