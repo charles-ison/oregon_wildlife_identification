@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[29]:
+# In[1]:
 
 
 import os
@@ -225,21 +225,22 @@ def train_and_test(model, training_loader, testing_loader, device):
 # In[35]:
 
 
+#Using pretrained flag instead of weights due to newer version of torchvision not being compatible with HPC
 def train_and_test_ResNet50(training_loader, testing_loader, device, num_classes):
     print("\nTraining and Testing ResNet50")
-    resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
+    resnet50 = models.resnet50(pretrained=True)
     resnet50.fc.out_features = num_classes
     train_and_test(resnet50, training_loader, testing_loader, device)
 
 def train_and_test_ResNet152(training_loader, testing_loader, device, num_classes):
     print("\nTraining and Testing ResNet152")
-    resnet152 = models.resnet152(weights = models.ResNet152_Weights.DEFAULT)
+    resnet152 = models.resnet152(pretrained=True)
     resnet152.fc.out_features = num_classes
     train_and_test(resnet152, training_loader, testing_loader, device)
 
 def train_and_test_ViT_L_16(training_loader, testing_loader, device, num_classes):
     print("\nTraining and Testing Vision Transformer Large 16")
-    vit_l_16 = models.vit_l_16(weights = models.ViT_L_16_Weights.DEFAULT)
+    vit_l_16 = models.vit_l_16(pretrained=True)
     vit_l_16.heads.out_features = num_classes
     train_and_test(vit_l_16, training_loader, testing_loader, device)
 
