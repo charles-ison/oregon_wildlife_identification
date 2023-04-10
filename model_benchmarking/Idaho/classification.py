@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[29]:
 
 
 import os
@@ -23,7 +23,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 
 
-# In[2]:
+# In[30]:
 
 
 class image_data_set(torch.utils.data.Dataset):
@@ -38,31 +38,31 @@ class image_data_set(torch.utils.data.Dataset):
         return {'data': self.data[index], 'label': self.labels[index]}
 
 
-# In[3]:
+# In[31]:
 
 
-def download_data(folder_name, idaho_folder_path, json_file_name):
+def download_data(folder_name, downloaded_data_dir, json_file_name):
     blob_name = "https://lilablobssc.blob.core.windows.net/idaho-camera-traps/"
     
-    if not os.path.isdir(idaho_folder_path + "/" + json_file_name):
+    if not os.path.isdir(downloaded_data_dir + json_file_name):
         json_file_zip_name = json_file_name + ".zip"
         json_zip_to_download = blob_name + json_file_zip_name
-        download_json_zip_command = "azcopy cp '%s' '%s'" % (json_zip_to_download, idaho_folder_path)
+        download_json_zip_command = "azcopy cp '%s' '%s'" % (json_zip_to_download, downloaded_data_dir)
         os.system(download_json_zip_command)
-        shutil.unpack_archive(json_file_zip_name)
-        os.remove(idaho_folder_path + "/" + json_file_zip_name)
+        shutil.unpack_archive(downloaded_data_dir + json_file_zip_name, downloaded_data_dir)
+        os.remove(downloaded_data_dir + json_file_zip_name)
     else:
         print("Required json zip already downloaded")
     
-    if not os.path.isdir(idaho_folder_path + "/" + folder_name):
+    if not os.path.isdir(downloaded_data_dir + folder_name):
         folder_to_download = blob_name + "public/" + folder_name
-        download_folder_command = "azcopy cp '%s' '%s' --recursive" % (folder_to_download, idaho_folder_path)
+        download_folder_command = "azcopy cp '%s' '%s' --recursive" % (folder_to_download, downloaded_data_dir)
         os.system(download_folder_command)
     else:
         print("Required folder already downloaded")
 
 
-# In[4]:
+# In[32]:
 
 
 def get_image_tensor(file_path):
@@ -75,15 +75,15 @@ def get_image_tensor(file_path):
     image = Image.open(file_path)
     return transform(image)
     
-def get_data_sets(folder_name, idaho_folder_path, json_file_name, categories_to_label_dict): 
-    json_file = open(idaho_folder_path + "/" + json_file_name)
+def get_data_sets(folder_name, downloaded_data_dir, json_file_name, categories_to_label_dict): 
+    json_file = open(downloaded_data_dir + json_file_name)
     coco_key = json.load(json_file)
     images = coco_key["images"]
 
     data, labels = [], []
     for index, image in enumerate(images):
         file_name = image["file_name"]
-        file_path = idaho_folder_path + "/" + file_name
+        file_path = downloaded_data_dir + file_name
         
         if file_name.startswith(folder_name) and os.path.isfile(file_path):
             category_id = coco_key["annotations"][index]["category_id"]
@@ -103,8 +103,8 @@ def get_data_sets(folder_name, idaho_folder_path, json_file_name, categories_to_
     
     json_file.close()
     
-    shutil.rmtree(idaho_folder_path + "/" + folder_name)
-    os.remove(idaho_folder_path + "/" + json_file_name)
+    shutil.rmtree(downloaded_data_dir + folder_name)
+    os.remove(downloaded_data_dir + json_file_name)
     
     return training_data_set, testing_data_set
 
@@ -120,7 +120,7 @@ def get_loaders(training_data_set, testing_data_set, batch_size):
     return training_loader, testing_loader
 
 
-# In[5]:
+# In[33]:
 
 
 def print_image(image_tensor, prediction):
@@ -201,7 +201,7 @@ def test(model, testing_loader, criterion, print_incorrect_images):
     return loss, accuracy, all_labels, all_predictions
 
 
-# In[6]:
+# In[34]:
 
 
 def train_and_test(model, training_loader, testing_loader, device):
@@ -222,7 +222,7 @@ def train_and_test(model, training_loader, testing_loader, device):
     print_testing_analysis(labels, predictions, "Overall")
 
 
-# In[7]:
+# In[35]:
 
 
 def train_and_test_ResNet50(training_loader, testing_loader, device, num_classes):
@@ -246,7 +246,7 @@ def train_and_test_ViT_L_16(training_loader, testing_loader, device, num_classes
 
 # # Orchestration
 
-# In[8]:
+# In[36]:
 
 
 num_classes = 2
@@ -255,8 +255,7 @@ json_file_name = "idaho-camera-traps.json"
 
 #TODO: add loop here
 folder_name = "loc_0000"
-
-idaho_folder_path = "/Users/ChaseIson 1/Documents/Research/Code/oregon_wildlife_identification/model_benchmarking/Idaho"
+downloaded_data_folder = "downloaded_data/"
 
 # Mapping canines, big cats, bears, and ungulates to wildlife present and all other categories to no wildlife present
 # This is mostly arbitrary and could be reworked, we just need to draw the line somewhere
@@ -274,20 +273,20 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 
 
-# In[9]:
+# In[37]:
 
 
-download_data(folder_name, idaho_folder_path, json_file_name)
+download_data(folder_name, downloaded_data_folder, json_file_name)
 
 
 # In[ ]:
 
 
-training_data_set, testing_data_set = get_data_sets(folder_name, idaho_folder_path, json_file_name, categories_to_label_dict)
+training_data_set, testing_data_set = get_data_sets(folder_name, downloaded_data_folder, json_file_name, categories_to_label_dict)
 training_loader, testing_loader = get_loaders(training_data_set, testing_data_set, batch_size)
 
 
-# In[36]:
+# In[ ]:
 
 
 train_and_test_ResNet50(training_loader, testing_loader, device, num_classes)
