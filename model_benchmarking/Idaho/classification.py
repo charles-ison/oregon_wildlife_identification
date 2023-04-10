@@ -270,6 +270,9 @@ categories_to_label_dict = {
     60:0, 61:0,
 }
 
+print(torch.__version__)
+print(torchvision.__version__)
+print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 
