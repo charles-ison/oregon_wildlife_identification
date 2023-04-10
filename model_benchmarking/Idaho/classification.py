@@ -6,6 +6,7 @@
 
 import os
 import torch
+import torchvision
 import torchvision.models as models
 import torch.nn as nn
 import torch.optim as optim
@@ -247,7 +248,7 @@ def train_and_test_ViT_L_16(training_loader, testing_loader, device, num_classes
 
 # # Orchestration
 
-# In[36]:
+# In[2]:
 
 
 num_classes = 2
