@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[18]:
+# In[1]:
 
 
 import os
@@ -24,7 +24,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 
 
-# In[19]:
+# In[2]:
 
 
 class image_data_set(torch.utils.data.Dataset):
@@ -39,12 +39,10 @@ class image_data_set(torch.utils.data.Dataset):
         return {'data': self.data[index], 'label': self.labels[index]}
 
 
-# In[20]:
+# In[3]:
 
 
-def download_data(dir_name, downloaded_data_dir, json_file_name):
-    blob_name = "https://lilablobssc.blob.core.windows.net/idaho-camera-traps/"
-    
+def download_json_file(downloaded_data_dir, json_file_name, blob_name):    
     if not os.path.isdir(downloaded_data_dir + json_file_name):
         json_file_zip_name = json_file_name + ".zip"
         json_zip_to_download = blob_name + json_file_zip_name
@@ -54,9 +52,10 @@ def download_data(dir_name, downloaded_data_dir, json_file_name):
         os.remove(downloaded_data_dir + json_file_zip_name)
     else:
         print("Required json zip already downloaded")
-    
-    #TODO: This could be more efficient if refactored to download the zip files and unpacked to 
-    # the HPC global scratch directory
+        
+#TODO: This could be more efficient if refactored to download the zip files and unpacked to 
+# the HPC global scratch directory
+def download_images(dir_name, downloaded_data_dir, blob_name):    
     if not os.path.isdir(downloaded_data_dir + dir_name):
         dir_to_download = blob_name + "public/" + dir_name
         download_dir_command = "azcopy cp '%s' '%s' --recursive" % (dir_to_download, downloaded_data_dir)
@@ -65,7 +64,7 @@ def download_data(dir_name, downloaded_data_dir, json_file_name):
         print("Required directory already downloaded")
 
 
-# In[21]:
+# In[4]:
 
 
 def get_image_tensor(file_path):
@@ -100,15 +99,10 @@ def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_l
     print("\nNumber of training photos: " + str(len(training_data)))
     print("Number of testing photos: " + str(len(testing_data)))
     
-    training_data_set = image_data_set(training_data, training_labels)
-    testing_data_set = image_data_set(testing_data, testing_labels)
-    
     json_file.close()
-    
     shutil.rmtree(downloaded_data_dir + dir_name)
-    os.remove(downloaded_data_dir + json_file_name)
     
-    return training_data_set, testing_data_set
+    return training_data, testing_data, training_labels, testing_labels
 
 def get_loaders(training_data_set, testing_data_set, batch_size):
     training_loader = torch.utils.data.DataLoader(dataset = training_data_set,
@@ -122,7 +116,7 @@ def get_loaders(training_data_set, testing_data_set, batch_size):
     return training_loader, testing_loader
 
 
-# In[22]:
+# In[5]:
 
 
 def print_image(image_tensor, prediction):
@@ -202,7 +196,7 @@ def test(model, testing_loader, criterion, print_incorrect_images):
     return loss, accuracy, all_labels, all_predictions
 
 
-# In[23]:
+# In[6]:
 
 
 def train_and_test(model, training_loader, testing_loader, device):
@@ -223,17 +217,39 @@ def train_and_test(model, training_loader, testing_loader, device):
     print_testing_analysis(labels, predictions, "Overall")
 
 
+# In[7]:
+
+
+def train_and_test_ResNet50(training_loader, testing_loader, device, num_classes):
+    print("\nTraining and Testing ResNet50")
+    resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
+    resnet50.fc.out_features = num_classes
+    train_and_test(resnet50, training_loader, testing_loader, device)
+
+def train_and_test_ResNet152(training_loader, testing_loader, device, num_classes):
+    print("\nTraining and Testing ResNet152")
+    resnet152 = models.resnet152(weights = models.ResNet152_Weights.DEFAULT)
+    resnet152.fc.out_features = num_classes
+    train_and_test(resnet152, training_loader, testing_loader, device)
+
+def train_and_test_ViT_L_16(training_loader, testing_loader, device, num_classes):
+    print("\nTraining and Testing Vision Transformer Large 16")
+    vit_l_16 = models.vit_l_16(weights = models.ViT_L_16_Weights.DEFAULT)
+    vit_l_16.heads.out_features = num_classes
+    train_and_test(vit_l_16, training_loader, testing_loader, device)
+
+
 # # Declaring Constants
 
-# In[24]:
+# In[8]:
 
 
+num_classes = 2
 batch_size = 10
 json_file_name = "idaho-camera-traps.json"
-
-#TODO: add loop here
 dir_prefix = "loc_"
 downloaded_data_dir = "downloaded_data/"
+blob_name = "https://lilablobssc.blob.core.windows.net/idaho-camera-traps/"
 
 # Mapping canines, big cats, bears, and ungulates to wildlife present and all other categories to no wildlife present
 # This is mostly arbitrary and could be reworked, we just need to draw the line somewhere
@@ -253,39 +269,45 @@ print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 
-num_classes = 2
-#Using pretrained flag instead of weights due to newer version of torchvision not being compatible with HPC
-resnet50 = models.resnet50(pretrained=True)
-resnet50.fc.out_features = num_classes
-
-resnet152 = models.resnet152(pretrained=True)
-resnet152.fc.out_features = num_classes
-
-#vit_l_16 = models.vit_l_16(pretrained=True)
-#vit_l_16.heads.out_features = num_classes
-
 
 # # Orchestration
 
-# In[25]:
+# In[ ]:
 
+
+download_json_file(downloaded_data_dir, json_file_name, blob_name)
+
+all_training_data, all_testing_data, all_training_labels, all_testing_labels = [], [], [], []
 
 for i in range(276):
     dir_name = dir_prefix + '{0:04}'.format(i)
-    print("Downloading and training for directory: " + dir_name)
+    print("Downloading data from directory: " + dir_name)
     
-    download_data(dir_name, downloaded_data_dir, json_file_name)
-    training_data_set, testing_data_set = get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_label_dict)
-    training_loader, testing_loader = get_loaders(training_data_set, testing_data_set, batch_size)
+    download_images(dir_name, downloaded_data_dir, blob_name)
+    training_data, testing_data, training_labels, testing_labels = get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_label_dict)
     
-    print("\nTraining and Testing ResNet50")
-    train_and_test(resnet50, training_loader, testing_loader, device)
+    all_training_data.append(training_data)
+    all_training_labels.append(training_labels)
     
-    print("\nTraining and Testing ResNet152")
-    train_and_test(resnet152, training_loader, testing_loader, device)
-    
-    #print("\nTraining and Testing Vision Transformer Large 16")
-    #train_and_test(vit_l_16, training_loader, testing_loader, device)
+    all_testing_data.append(testing_data)
+    all_testing_labels.append(testing_labels)
+
+
+# In[ ]:
+
+
+os.remove(downloaded_data_dir + json_file_name)
+training_data_set = image_data_set(all_training_data, all_training_labels)
+testing_data_set = image_data_set(all_testing_data, all_testing_labels)
+training_loader, testing_loader = get_loaders(training_data_set, testing_data_set, batch_size)
+
+
+# In[ ]:
+
+
+train_and_test_ResNet50(training_loader, testing_loader, device, num_classes)
+train_and_test_ResNet152(training_loader, testing_loader, device, num_classes)
+train_and_test_ViT_L_16(training_loader, testing_loader, device, num_classes)
 
 
 # In[ ]:
