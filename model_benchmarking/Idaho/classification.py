@@ -53,6 +53,8 @@ def download_json_file(downloaded_data_dir, json_file_name, blob_name):
     else:
         print("Required json zip already downloaded")
         
+#TODO: This could be more efficient if refactored to download the zip files and unpacked to 
+# the HPC global scratch directory
 def download_images(dir_name, downloaded_data_dir, blob_name):    
     if not os.path.isdir(downloaded_data_dir + dir_name):
         dir_to_download = blob_name + "public/" + dir_name
@@ -246,7 +248,7 @@ num_classes = 2
 batch_size = 10
 json_file_name = "idaho-camera-traps.json"
 dir_prefix = "loc_"
-downloaded_data_dir = "/nfs/hpc/share/isonc/downloaded_data/"
+downloaded_data_dir = "downloaded_data/"
 blob_name = "https://lilablobssc.blob.core.windows.net/idaho-camera-traps/"
 
 # Mapping canines, big cats, bears, and ungulates to wildlife present and all other categories to no wildlife present
