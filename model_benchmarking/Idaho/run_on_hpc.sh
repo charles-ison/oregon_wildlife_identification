@@ -6,4 +6,4 @@
 #SBATCH -o runIdahoDataOnHPC.out 
 #SBATCH -e runIdahoDataOnHPC.err
 module load cuda/11.8
-python classification.py
+python -u classification.py
