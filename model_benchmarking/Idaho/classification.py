@@ -190,7 +190,7 @@ def train_and_test(model, training_loader, testing_loader, device, criterion):
     model.to(device)
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     
-    for epoch in range(10):
+    for epoch in range(5):
         print("epoch: " + str(epoch))
         
         training_loss, training_accuracy = train(model, training_loader, criterion, optimizer)
