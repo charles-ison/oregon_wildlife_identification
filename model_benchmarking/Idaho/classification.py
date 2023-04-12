@@ -92,7 +92,7 @@ def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_l
             data.append(image_tensor)
             labels.append(label)
     
-    training_data, testing_data, training_labels, testing_labels = train_test_split(data, labels)
+    training_data, testing_data, training_labels, testing_labels = train_test_split(data, labels, test_size = 0.01)
     
     print("\nNumber of training photos: " + str(len(training_data)))
     print("Number of testing photos: " + str(len(testing_data)))
@@ -101,17 +101,6 @@ def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_l
     shutil.rmtree(downloaded_data_dir + dir_name)
     
     return training_data, testing_data, training_labels, testing_labels
-
-def get_loaders(training_data_set, testing_data_set, batch_size):
-    training_loader = torch.utils.data.DataLoader(dataset = training_data_set,
-                                                  batch_size = batch_size,
-                                                  shuffle = True)
-
-    testing_loader = torch.utils.data.DataLoader(dataset = testing_data_set,
-                                                 batch_size = batch_size,
-                                                 shuffle = True)
-    
-    return training_loader, testing_loader
 
 
 # In[5]:
@@ -197,9 +186,8 @@ def test(model, testing_loader, criterion, print_incorrect_images):
 # In[6]:
 
 
-def train_and_test(model, training_loader, testing_loader, device):
+def train_and_test(model, training_loader, testing_loader, device, criterion):
     model.to(device)
-    criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     
     for epoch in range(10):
@@ -210,31 +198,6 @@ def train_and_test(model, training_loader, testing_loader, device):
         
         testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False)
         print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
-
-    testing_loss, testing_accuracy, labels, predictions = test(model, testing_loader, criterion, True)
-    print_testing_analysis(labels, predictions, "Overall")
-
-
-# In[7]:
-
-
-def train_and_test_ResNet50(training_loader, testing_loader, device, num_classes):
-    print("\nTraining and Testing ResNet50")
-    resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
-    resnet50.fc.out_features = num_classes
-    train_and_test(resnet50, training_loader, testing_loader, device)
-
-def train_and_test_ResNet152(training_loader, testing_loader, device, num_classes):
-    print("\nTraining and Testing ResNet152")
-    resnet152 = models.resnet152(weights = models.ResNet152_Weights.DEFAULT)
-    resnet152.fc.out_features = num_classes
-    train_and_test(resnet152, training_loader, testing_loader, device)
-
-def train_and_test_ViT_L_16(training_loader, testing_loader, device, num_classes):
-    print("\nTraining and Testing Vision Transformer Large 16")
-    vit_l_16 = models.vit_l_16(weights = models.ViT_L_16_Weights.DEFAULT)
-    vit_l_16.heads.out_features = num_classes
-    train_and_test(vit_l_16, training_loader, testing_loader, device)
 
 
 # # Declaring Constants
@@ -266,6 +229,22 @@ print(torchvision.__version__)
 print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
+criterion = nn.CrossEntropyLoss()
+
+
+# # Declaring Models
+
+# In[ ]:
+
+
+resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
+resnet50.fc.out_features = num_classes
+
+resnet152 = models.resnet152(weights = models.ResNet152_Weights.DEFAULT)
+resnet152.fc.out_features = num_classes
+
+vit_l_16 = models.vit_l_16(weights = models.ViT_L_16_Weights.DEFAULT)
+vit_l_16.heads.out_features = num_classes
 
 
 # # Orchestration
@@ -275,7 +254,7 @@ torch.cuda.empty_cache()
 
 download_json_file(downloaded_data_dir, json_file_name, blob_name)
 
-all_training_data, all_testing_data, all_training_labels, all_testing_labels = [], [], [], []
+all_testing_data, all_testing_labels = [], []
 
 for i in range(276):
     dir_name = dir_prefix + '{0:04}'.format(i)
@@ -284,32 +263,47 @@ for i in range(276):
     download_images(dir_name, downloaded_data_dir, blob_name)
     training_data, testing_data, training_labels, testing_labels = get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_label_dict)
     
-    all_training_data.append(training_data)
-    all_training_labels.append(training_labels)
-    
     all_testing_data.append(testing_data)
     all_testing_labels.append(testing_labels)
+    
+    training_data_set = image_data_set(training_data, training_labels)
+    testing_data_set = image_data_set(testing_data, testing_labels)
+    
+    training_loader = torch.utils.data.DataLoader(dataset = training_data_set,
+                                                  batch_size = batch_size,
+                                                  shuffle = True)
 
+    testing_loader = torch.utils.data.DataLoader(dataset = testing_data_set,
+                                                 batch_size = batch_size,
+                                                 shuffle = True)
+    
+    print("\nTraining and Testing ResNet50")
+    train_and_test(resnet50, training_loader, testing_loader, device, criterion)
+
+    print("\nTraining and Testing ResNet152")
+    train_and_test(resnet152, training_loader, testing_loader, device, criterion)
+
+    print("\nTraining and Testing ViT Large 16")
+    train_and_test(vit_l_16, training_loader, testing_loader, device, criterion)
+
+
+# # Final Testing
 
 # In[ ]:
 
 
 os.remove(downloaded_data_dir + json_file_name)
-training_data_set = image_data_set(all_training_data, all_training_labels)
-testing_data_set = image_data_set(all_testing_data, all_testing_labels)
-training_loader, testing_loader = get_loaders(training_data_set, testing_data_set, batch_size)
+final_testing_data_set = image_data_set(all_testing_data, all_testing_labels)
+final_testing_loader = torch.utils.data.DataLoader(dataset = final_testing_data_set,
+                                                   batch_size = batch_size,
+                                                   shuffle = True)
 
+testing_loss, testing_accuracy, labels, predictions = test(resnet50, final_testing_loader, criterion, True)
+print_testing_analysis(labels, predictions, "ResNet50 Overall")
 
-# In[ ]:
+testing_loss, testing_accuracy, labels, predictions = test(resnet152, final_testing_loader, criterion, True)
+print_testing_analysis(labels, predictions, "ResNet152 Overall")
 
-
-train_and_test_ResNet50(training_loader, testing_loader, device, num_classes)
-train_and_test_ResNet152(training_loader, testing_loader, device, num_classes)
-train_and_test_ViT_L_16(training_loader, testing_loader, device, num_classes)
-
-
-# In[ ]:
-
-
-
+testing_loss, testing_accuracy, labels, predictions = test(vit_l_16, final_testing_loader, criterion, True)
+print_testing_analysis(labels, predictions, "ViT Large 16 Overall")
 
