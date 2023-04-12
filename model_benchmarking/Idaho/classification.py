@@ -92,7 +92,7 @@ def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_l
             data.append(image_tensor)
             labels.append(label)
     
-    training_data, testing_data, training_labels, testing_labels = train_test_split(data, labels, test_size = 0.01)
+    training_data, testing_data, training_labels, testing_labels = train_test_split(data, labels, test_size = 0.005)
     
     print("\nNumber of training photos: " + str(len(training_data)))
     print("Number of testing photos: " + str(len(testing_data)))
