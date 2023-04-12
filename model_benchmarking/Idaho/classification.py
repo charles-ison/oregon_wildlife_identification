@@ -189,15 +189,12 @@ def test(model, testing_loader, criterion, print_incorrect_images):
 def train_and_test(model, training_loader, testing_loader, device, criterion):
     model.to(device)
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-    
-    for epoch in range(5):
-        print("epoch: " + str(epoch))
         
-        training_loss, training_accuracy = train(model, training_loader, criterion, optimizer)
-        print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
+    training_loss, training_accuracy = train(model, training_loader, criterion, optimizer)
+    print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
         
-        testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False)
-        print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
+    testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False)
+    print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
 
 
 # # Declaring Constants
@@ -291,6 +288,8 @@ for i in range(276):
 
 # In[ ]:
 
+
+#TODO: consider more than 1 training epoch here
 
 os.remove(downloaded_data_dir + json_file_name)
 final_testing_data_set = image_data_set(all_testing_data, all_testing_labels)
