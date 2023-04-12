@@ -2,6 +2,7 @@
 #SBATCH -J runIdahoDataOnHPC
 #SBATCH -A eecs 
 #SBATCH -p share
+#SBATCH -t 4-00:00:00   
 #SBATCH --gres=gpu:1         
 #SBATCH --mem=64G   
 #SBATCH -c 16
