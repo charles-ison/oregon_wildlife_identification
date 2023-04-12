@@ -1,1 +1,0 @@
-Just a placeholder file because git does not allow empty directories.
