@@ -93,7 +93,7 @@ def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_l
                 data.append(image_tensor)
                 labels.append(label)
             except:
-                print("Truncated image encountered, leaving out of data_set")
+                print("Truncated image encountered, leaving out of training and testing")
     
     training_data, testing_data, training_labels, testing_labels = train_test_split(data, labels, test_size = 0.005)
     
@@ -297,7 +297,7 @@ for i in range(276):
 #TODO: consider more than 1 training epoch here
 
 os.remove(downloaded_data_dir + json_file_name)
-final_testing_data_set = image_data_set(all_testing_data, all_testing_labels)
+final_testing_data_set = image_data_set(sum(all_testing_data, []), sum(all_testing_labels, []))
 final_testing_loader = torch.utils.data.DataLoader(dataset = final_testing_data_set,
                                                    batch_size = batch_size,
                                                    shuffle = True)
