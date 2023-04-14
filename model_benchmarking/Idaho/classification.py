@@ -88,9 +88,14 @@ def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_l
         if file_name.startswith(dir_name) and os.path.isfile(file_path):
             category_id = coco_key["annotations"][index]["category_id"]
             label = categories_to_label_dict[category_id]
-            image_tensor = get_image_tensor(file_path)
-            data.append(image_tensor)
-            labels.append(label)
+            try:
+                image_tensor = get_image_tensor(file_path)
+                data.append(image_tensor)
+                labels.append(label)
+            except:
+                print("Truncated image encountered, leaving out of data_set")
+    
+    training_data, testing_data, training_labels, testing_labels = train_test_split(data, labels, test_size = 0.005)
     
     training_data, testing_data, training_labels, testing_labels = train_test_split(data, labels, test_size = 0.005)
     
