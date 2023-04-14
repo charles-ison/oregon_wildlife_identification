@@ -6,6 +6,6 @@
 #SBATCH --gres=gpu:1         
 #SBATCH --mem=128G  
 #SBATCH -c 16
-#SBATCH --constraint=rtx8000
+#SBATCH --constraint=a40
 module load cuda/11.8
 python -u classification.py
