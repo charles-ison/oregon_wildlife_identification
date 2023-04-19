@@ -3,7 +3,7 @@
 #SBATCH -A eecs 
 #SBATCH -p gpu
 #SBATCH -t 7-00:00:00   
-#SBATCH --gres=gpu:2         
+#SBATCH --gres=gpu:3         
 #SBATCH --mem=128G  
 #SBATCH -c 4
 #SBATCH --constraint=rtx8000
