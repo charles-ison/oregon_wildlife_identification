@@ -7,5 +7,6 @@
 #SBATCH --mem=128G  
 #SBATCH -c 16
 #SBATCH --constraint=rtx8000
+#SBATCH -o runIdahoDataOnHPC.txt
 module load cuda/11.8
 python -u classification.py
