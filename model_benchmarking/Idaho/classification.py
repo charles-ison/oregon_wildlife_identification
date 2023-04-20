@@ -7,6 +7,7 @@
 import os
 import torch
 import torchvision
+import torch.utils.data.DataLoader as DataLoader
 import torchvision.models as models
 import torch.nn as nn
 import torch.optim as optim
@@ -54,6 +55,9 @@ def download_json_file(downloaded_data_dir, json_file_name, blob_name):
         print("Required json zip already downloaded")
         
 def download_images(dir_name, downloaded_data_dir, blob_name):    
+    
+    print("Downloading data from directory: " + dir_name)
+    
     if not os.path.isdir(downloaded_data_dir + dir_name):
         dir_to_download = blob_name + "public/" + dir_name
         download_dir_command = "azcopy cp '%s' '%s' --recursive" % (dir_to_download, downloaded_data_dir)
@@ -191,9 +195,23 @@ def test(model, testing_loader, criterion, print_incorrect_images):
 # In[6]:
 
 
+def train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testing_loader, device, criterion):
+    print("\nTraining and Testing ResNet50")
+    train_and_test(resnet50, training_loader, testing_loader, device, criterion)
+
+    print("\nTraining and Testing ResNet152")
+    train_and_test(resnet152, training_loader, testing_loader, device, criterion)
+
+    print("\nTraining and Testing ViT Large 16")
+    train_and_test(vit_l_16, training_loader, testing_loader, device, criterion)
+
 def train_and_test(model, training_loader, testing_loader, device, criterion):
+    if torch.cuda.device_count() > 1:
+        print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
+        model = nn.DataParallel(model)
+        
     model.to(device)
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
         
     training_loss, training_accuracy = train(model, training_loader, criterion, optimizer)
     print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
@@ -207,8 +225,9 @@ def train_and_test(model, training_loader, testing_loader, device, criterion):
 # In[8]:
 
 
+num_epochs = 2
 num_classes = 2
-batch_size = 10
+batch_size = 20
 json_file_name = "idaho-camera-traps.json"
 dir_prefix = "loc_"
 downloaded_data_dir = "/nfs/hpc/share/isonc/downloaded_data/"
@@ -258,35 +277,26 @@ download_json_file(downloaded_data_dir, json_file_name, blob_name)
 
 all_testing_data, all_testing_labels = [], []
 
-for i in range(276):
-    dir_name = dir_prefix + '{0:04}'.format(i)
-    print("Downloading data from directory: " + dir_name)
+for epoch in num_epochs:
     
-    download_images(dir_name, downloaded_data_dir, blob_name)
-    training_data, testing_data, training_labels, testing_labels = get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_label_dict)
+    print("Training epoch: " + epoch)
     
-    all_testing_data.append(testing_data)
-    all_testing_labels.append(testing_labels)
+    for i in range(276):
+        
+        dir_name = dir_prefix + '{0:04}'.format(i)
+        download_images(dir_name, downloaded_data_dir, blob_name)
+        training_data, testing_data, training_labels, testing_labels = get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_label_dict)
     
-    training_data_set = image_data_set(training_data, training_labels)
-    testing_data_set = image_data_set(testing_data, testing_labels)
+        if (epoch == 0):
+            all_testing_data.append(testing_data)
+            all_testing_labels.append(testing_labels)
     
-    training_loader = torch.utils.data.DataLoader(dataset = training_data_set,
-                                                  batch_size = batch_size,
-                                                  shuffle = True)
-
-    testing_loader = torch.utils.data.DataLoader(dataset = testing_data_set,
-                                                 batch_size = batch_size,
-                                                 shuffle = True)
+        training_data_set = image_data_set(training_data, training_labels)
+        testing_data_set = image_data_set(testing_data, testing_labels)
+        training_loader = DataLoader(dataset = training_data_set, batch_size = batch_size, shuffle = True)
+        testing_loader = DataLoader(dataset = testing_data_set, batch_size = batch_size, shuffle = True)
     
-    print("\nTraining and Testing ResNet50")
-    train_and_test(resnet50, training_loader, testing_loader, device, criterion)
-
-    print("\nTraining and Testing ResNet152")
-    train_and_test(resnet152, training_loader, testing_loader, device, criterion)
-
-    print("\nTraining and Testing ViT Large 16")
-    train_and_test(vit_l_16, training_loader, testing_loader, device, criterion)
+        train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testing_loader, device, criterion)
 
 
 # # Final Testing
@@ -294,13 +304,9 @@ for i in range(276):
 # In[ ]:
 
 
-#TODO: consider more than 1 training epoch here
-
 os.remove(downloaded_data_dir + json_file_name)
 final_testing_data_set = image_data_set(sum(all_testing_data, []), sum(all_testing_labels, []))
-final_testing_loader = torch.utils.data.DataLoader(dataset = final_testing_data_set,
-                                                   batch_size = batch_size,
-                                                   shuffle = True)
+final_testing_loader = DataLoader(dataset = final_testing_data_set, batch_size = batch_size, shuffle = True)
 
 testing_loss, testing_accuracy, labels, predictions = test(resnet50, final_testing_loader, criterion, True)
 print_testing_analysis(labels, predictions, "ResNet50 Overall")
