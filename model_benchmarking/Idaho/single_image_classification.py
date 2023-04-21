@@ -154,9 +154,6 @@ def train(model, training_loader, criterion, optimizer):
         optimizer.zero_grad()
         output = model(data)
         
-        output = torch.sum(output, 0)
-        print(output.size())
-        
         loss = criterion(output, labels)
         running_loss += loss.item()
         _, predictions = torch.max(output.data, 1)
@@ -176,8 +173,6 @@ def test(model, testing_loader, criterion, print_incorrect_images):
 
     for i, data in enumerate(testing_loader):
         data, labels = data['data'].to(device), data['label'].to(device)
-        
-        output = torch.sum(output, 0)
         output = model(data)
         
         loss = criterion(output, labels)
