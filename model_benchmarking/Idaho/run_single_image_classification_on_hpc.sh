@@ -7,6 +7,5 @@
 #SBATCH --mem=128G  
 #SBATCH -c 4
 #SBATCH --constraint=rtx8000
-#SBATCH -o run_idaho_data_on_HPC.txt
 module load cuda/11.8
-python -u classification.py
+python -u single_image_classification.py

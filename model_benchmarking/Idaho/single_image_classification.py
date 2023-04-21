@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[21]:
 
 
 import os
 import torch
 import torchvision
-import torch.utils.data.DataLoader as DataLoader
 import torchvision.models as models
 import torch.nn as nn
 import torch.optim as optim
@@ -19,13 +18,14 @@ import urllib.request
 import shutil
 import json
 from PIL import Image
+from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 
 
-# In[2]:
+# In[22]:
 
 
 class image_data_set(torch.utils.data.Dataset):
@@ -40,7 +40,7 @@ class image_data_set(torch.utils.data.Dataset):
         return {'data': self.data[index], 'label': self.labels[index]}
 
 
-# In[3]:
+# In[23]:
 
 
 def download_json_file(downloaded_data_dir, json_file_name, blob_name):    
@@ -66,7 +66,7 @@ def download_images(dir_name, downloaded_data_dir, blob_name):
         print("Required directory already downloaded")
 
 
-# In[4]:
+# In[38]:
 
 
 def get_image_tensor(file_path):
@@ -89,7 +89,7 @@ def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_l
         file_name = image["file_name"]
         file_path = downloaded_data_dir + file_name
         
-        if file_name.startswith(dir_name) and os.path.isfile(file_path):
+        if file_name.startswith(dir_name) and os.path.isfile(file_path) and image["frame_num"] == 0:
             category_id = coco_key["annotations"][index]["category_id"]
             label = categories_to_label_dict[category_id]
             try:
@@ -98,8 +98,6 @@ def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_l
                 labels.append(label)
             except:
                 print("Truncated image encountered, leaving out of training and testing")
-    
-    training_data, testing_data, training_labels, testing_labels = train_test_split(data, labels, test_size = 0.005)
     
     training_data, testing_data, training_labels, testing_labels = train_test_split(data, labels, test_size = 0.005)
     
@@ -112,7 +110,7 @@ def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_l
     return training_data, testing_data, training_labels, testing_labels
 
 
-# In[5]:
+# In[33]:
 
 
 def print_image(image_tensor, prediction):
@@ -155,6 +153,10 @@ def train(model, training_loader, criterion, optimizer):
         data, labels = data['data'].to(device), data['label'].to(device)
         optimizer.zero_grad()
         output = model(data)
+        
+        output = torch.sum(output, 0)
+        print(output.size())
+        
         loss = criterion(output, labels)
         running_loss += loss.item()
         _, predictions = torch.max(output.data, 1)
@@ -174,7 +176,10 @@ def test(model, testing_loader, criterion, print_incorrect_images):
 
     for i, data in enumerate(testing_loader):
         data, labels = data['data'].to(device), data['label'].to(device)
+        
+        output = torch.sum(output, 0)
         output = model(data)
+        
         loss = criterion(output, labels)
         running_loss += loss.item()
         _, predictions = torch.max(output.data, 1)
@@ -192,7 +197,7 @@ def test(model, testing_loader, criterion, print_incorrect_images):
     return loss, accuracy, all_labels, all_predictions
 
 
-# In[6]:
+# In[34]:
 
 
 def train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testing_loader, device, criterion):
@@ -222,7 +227,7 @@ def train_and_test(model, training_loader, testing_loader, device, criterion):
 
 # # Declaring Constants
 
-# In[8]:
+# In[35]:
 
 
 num_epochs = 2
@@ -255,7 +260,7 @@ criterion = nn.CrossEntropyLoss()
 
 # # Declaring Models
 
-# In[ ]:
+# In[36]:
 
 
 resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
@@ -277,9 +282,9 @@ download_json_file(downloaded_data_dir, json_file_name, blob_name)
 
 all_testing_data, all_testing_labels = [], []
 
-for epoch in num_epochs:
+for epoch in range(num_epochs):
     
-    print("Training epoch: " + epoch)
+    print("Training epoch: " + str(epoch))
     
     for i in range(276):
         
@@ -316,4 +321,10 @@ print_testing_analysis(labels, predictions, "ResNet152 Overall")
 
 testing_loss, testing_accuracy, labels, predictions = test(vit_l_16, final_testing_loader, criterion, True)
 print_testing_analysis(labels, predictions, "ViT Large 16 Overall")
+
+
+# In[ ]:
+
+
+
 
