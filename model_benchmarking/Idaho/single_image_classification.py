@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[21]:
+# In[2]:
 
 
 import os
@@ -25,7 +25,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 
 
-# In[22]:
+# In[ ]:
 
 
 class image_data_set(torch.utils.data.Dataset):
@@ -40,7 +40,7 @@ class image_data_set(torch.utils.data.Dataset):
         return {'data': self.data[index], 'label': self.labels[index]}
 
 
-# In[23]:
+# In[ ]:
 
 
 def download_json_file(downloaded_data_dir, json_file_name, blob_name):    
@@ -66,7 +66,7 @@ def download_images(dir_name, downloaded_data_dir, blob_name):
         print("Required directory already downloaded")
 
 
-# In[38]:
+# In[ ]:
 
 
 def get_image_tensor(file_path):
@@ -110,21 +110,24 @@ def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_l
     return training_data, testing_data, training_labels, testing_labels
 
 
-# In[33]:
+# In[ ]:
 
 
-def print_image(image_tensor, prediction):
+def print_image(image_tensor, prediction, downloaded_data_dir, index):
     if(prediction == 1):
-        prediction_string = "Wildlife Present"
+        prediction_string = "Wildlife_Present"
     else:
-        prediction_string = "No Wildlife Present"
+        prediction_string = "No_Wildlife_Present"
 
+    image_file_name = downloaded_data_dir + prediction_string + "_" + str(index) + ".png"
+    
     #Alternative normalized RGB visualization: plt.imshow(image_tensor.cpu().permute(1, 2, 0).numpy())
     plt.imshow(image_tensor[0].cpu(), cmap="gray")
     plt.title("Incorrectly Predicted " + prediction_string) 
     plt.show()
+    plt.imsave(image_file_name, image_tensor[0].cpu(), cmap="gray")
 
-def print_testing_analysis(all_labels, all_predictions, title):
+def print_testing_analysis(all_labels, all_predictions, title, downloaded_data_dir):
     subplot = plt.subplot()
 
     cf_matrix = confusion_matrix(all_labels, all_predictions, labels=[1, 0])
@@ -136,6 +139,9 @@ def print_testing_analysis(all_labels, all_predictions, title):
     subplot.xaxis.set_ticklabels(['Wildlife Present', 'No Wildlife Present'])
     subplot.yaxis.set_ticklabels(['Wildlife Present', 'No Wildlife Present'])
     plt.show()
+    
+    plot_file_name = downloaded_data_dir + title + "_Confusion_Matrix.png"
+    plt.savefig(plot_file_name, bbox_inches='tight')
 
     accuracy = accuracy_score(all_labels, all_predictions)
     print(title + " Accuracy: " + str(accuracy))
@@ -165,7 +171,7 @@ def train(model, training_loader, criterion, optimizer):
     accuracy = num_correct/len(training_loader.dataset)
     return loss, accuracy
 
-def test(model, testing_loader, criterion, print_incorrect_images):
+def test(model, testing_loader, criterion, print_incorrect_images, downloaded_data_dir):
     model.eval()
     running_loss = 0.0
     num_correct = 0
@@ -182,7 +188,7 @@ def test(model, testing_loader, criterion, print_incorrect_images):
             if(prediction == labels[index]):
                 num_correct += 1
             elif(print_incorrect_images):
-                print_image(data[index], prediction)
+                print_image(data[index], prediction, downloaded_data_dir, i)
 
         all_labels.extend(labels.cpu())
         all_predictions.extend(predictions.cpu())
@@ -192,20 +198,20 @@ def test(model, testing_loader, criterion, print_incorrect_images):
     return loss, accuracy, all_labels, all_predictions
 
 
-# In[34]:
+# In[ ]:
 
 
-def train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testing_loader, device, criterion):
+def train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testing_loader, device, criterion, downloaded_data_dir):
     print("\nTraining and Testing ResNet50")
-    train_and_test(resnet50, training_loader, testing_loader, device, criterion)
+    train_and_test(resnet50, training_loader, testing_loader, device, criterion, downloaded_data_dir)
 
     print("\nTraining and Testing ResNet152")
-    train_and_test(resnet152, training_loader, testing_loader, device, criterion)
+    train_and_test(resnet152, training_loader, testing_loader, device, criterion, downloaded_data_dir)
 
     print("\nTraining and Testing ViT Large 16")
-    train_and_test(vit_l_16, training_loader, testing_loader, device, criterion)
+    train_and_test(vit_l_16, training_loader, testing_loader, device, criterion, downloaded_data_dir)
 
-def train_and_test(model, training_loader, testing_loader, device, criterion):
+def train_and_test(model, training_loader, testing_loader, device, criterion, downloaded_data_dir):
     if torch.cuda.device_count() > 1:
         print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
         model = nn.DataParallel(model)
@@ -216,13 +222,13 @@ def train_and_test(model, training_loader, testing_loader, device, criterion):
     training_loss, training_accuracy = train(model, training_loader, criterion, optimizer)
     print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
         
-    testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False)
+    testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False, downloaded_data_dir)
     print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
 
 
 # # Declaring Constants
 
-# In[35]:
+# In[ ]:
 
 
 num_epochs = 2
@@ -255,7 +261,7 @@ criterion = nn.CrossEntropyLoss()
 
 # # Declaring Models
 
-# In[36]:
+# In[ ]:
 
 
 resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
@@ -296,7 +302,7 @@ for epoch in range(num_epochs):
         training_loader = DataLoader(dataset = training_data_set, batch_size = batch_size, shuffle = True)
         testing_loader = DataLoader(dataset = testing_data_set, batch_size = batch_size, shuffle = True)
     
-        train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testing_loader, device, criterion)
+        train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testing_loader, device, criterion, downloaded_data_dir)
 
 
 # # Final Testing
@@ -309,13 +315,13 @@ final_testing_data_set = image_data_set(sum(all_testing_data, []), sum(all_testi
 final_testing_loader = DataLoader(dataset = final_testing_data_set, batch_size = batch_size, shuffle = True)
 
 testing_loss, testing_accuracy, labels, predictions = test(resnet50, final_testing_loader, criterion, True)
-print_testing_analysis(labels, predictions, "ResNet50 Overall")
+print_testing_analysis(labels, predictions, "ResNet50_Overall", downloaded_data_dir)
 
 testing_loss, testing_accuracy, labels, predictions = test(resnet152, final_testing_loader, criterion, True)
-print_testing_analysis(labels, predictions, "ResNet152 Overall")
+print_testing_analysis(labels, predictions, "ResNet152_Overall", downloaded_data_dir)
 
 testing_loss, testing_accuracy, labels, predictions = test(vit_l_16, final_testing_loader, criterion, True)
-print_testing_analysis(labels, predictions, "ViT Large 16 Overall")
+print_testing_analysis(labels, predictions, "ViT_Large_16_Overall", downloaded_data_dir)
 
 
 # In[ ]:
