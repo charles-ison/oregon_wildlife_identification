@@ -138,10 +138,10 @@ def print_testing_analysis(all_labels, all_predictions, title, downloaded_data_d
     subplot.set_title(title + ' Testing Confusion Matrix')
     subplot.xaxis.set_ticklabels(['Wildlife Present', 'No Wildlife Present'])
     subplot.yaxis.set_ticklabels(['Wildlife Present', 'No Wildlife Present'])
-    plt.show()
     
     plot_file_name = downloaded_data_dir + title + "_Confusion_Matrix.png"
-    plt.savefig(plot_file_name, bbox_inches='tight')
+    plt.savefig(plot_file_name)
+    plt.show()
 
     accuracy = accuracy_score(all_labels, all_predictions)
     print(title + " Accuracy: " + str(accuracy))
@@ -317,13 +317,13 @@ final_testing_data_set = image_data_set(sum(all_testing_data, []), sum(all_testi
 print("Number of final testing photos: " + str(len(final_testing_data_set)))
 final_testing_loader = DataLoader(dataset = final_testing_data_set, batch_size = batch_size, shuffle = True)
 
-testing_loss, testing_accuracy, labels, predictions = test(resnet50, final_testing_loader, criterion, True)
+testing_loss, testing_accuracy, labels, predictions = test(resnet50, final_testing_loader, criterion, True, downloaded_data_dir)
 print_testing_analysis(labels, predictions, "ResNet50_Overall", downloaded_data_dir)
 
-testing_loss, testing_accuracy, labels, predictions = test(resnet152, final_testing_loader, criterion, True)
+testing_loss, testing_accuracy, labels, predictions = test(resnet152, final_testing_loader, criterion, True, downloaded_data_dir)
 print_testing_analysis(labels, predictions, "ResNet152_Overall", downloaded_data_dir)
 
-testing_loss, testing_accuracy, labels, predictions = test(vit_l_16, final_testing_loader, criterion, True)
+testing_loss, testing_accuracy, labels, predictions = test(vit_l_16, final_testing_loader, criterion, True, downloaded_data_dir)
 print_testing_analysis(labels, predictions, "ViT_Large_16_Overall", downloaded_data_dir)
 
 
