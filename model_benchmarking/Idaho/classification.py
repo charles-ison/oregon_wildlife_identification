@@ -211,11 +211,7 @@ def train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testin
     print("\nTraining and Testing ViT Large 16")
     train_and_test(vit_l_16, training_loader, testing_loader, device, criterion, downloaded_data_dir)
 
-def train_and_test(model, training_loader, testing_loader, device, criterion, downloaded_data_dir):
-    if torch.cuda.device_count() > 1:
-        print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
-        model = nn.DataParallel(model)
-        
+def train_and_test(model, training_loader, testing_loader, device, criterion, downloaded_data_dir):    
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
         
@@ -231,7 +227,7 @@ def train_and_test(model, training_loader, testing_loader, device, criterion, do
 # In[ ]:
 
 
-num_epochs = 2
+num_epochs = 1
 num_classes = 2
 batch_size = 20
 json_file_name = "idaho-camera-traps.json"
@@ -273,6 +269,12 @@ resnet152.fc.out_features = num_classes
 vit_l_16 = models.vit_l_16(weights = models.ViT_L_16_Weights.DEFAULT)
 vit_l_16.heads.out_features = num_classes
 
+if torch.cuda.device_count() > 1:
+    print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
+    resnet50 = nn.DataParallel(resnet50)
+    resnet152 = nn.DataParallel(resnet152)
+    vit_l_16 = nn.DataParallel(vit_l_16)
+
 
 # # Orchestration
 
@@ -312,6 +314,7 @@ for epoch in range(num_epochs):
 
 os.remove(downloaded_data_dir + json_file_name)
 final_testing_data_set = image_data_set(sum(all_testing_data, []), sum(all_testing_labels, []))
+print("Number of final testing photos: " + str(len(final_testing_data_set)))
 final_testing_loader = DataLoader(dataset = final_testing_data_set, batch_size = batch_size, shuffle = True)
 
 testing_loss, testing_accuracy, labels, predictions = test(resnet50, final_testing_loader, criterion, True)
