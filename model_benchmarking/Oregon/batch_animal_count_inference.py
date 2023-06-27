@@ -1,25 +1,10 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[17]:
-
-
 import os
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 from PIL import Image
-from torch.utils.data import DataLoader
-from google.colab import drive
 from datetime import datetime
 from collections import OrderedDict
-
-
-# # Defining Functions
-
-# In[31]:
-
-
 def get_image_tensor(image):
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -90,13 +75,7 @@ def analyze(directory, model, device):
     predicted_total_num_animals = sum(max_predictions)
     print("predicted_total_num_animals:", predicted_total_num_animals)
 
-
-# 
-# # Declaring Constants
-
-# In[19]:
-
-
+# Declaring Constants
 cottonwood_directory = "Cottonwood_Eastface_6.06_6.13/"
 ngilchrist_directory = "NGilchrist_Eastface_6.06_6.13/"
 sgilchrist_directory = "SGilchrist_Eastface_6.06_6.13/"
@@ -108,37 +87,20 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 
 
-# # Loading Data
-
-# In[22]:
-
-
-# Use this to connect to Google Drive in Google Colab
-drive.mount('/content/drive')
-
 # Use this to unzip file in Google Colab
 get_ipython().system('unzip -qq drive/MyDrive/SGilchrist_Eastface_6.06_6.13')
 get_ipython().system('unzip -qq drive/MyDrive/Cottonwood_Eastface_6.06_6.13')
 get_ipython().system('unzip -qq drive/MyDrive/NGilchrist_Eastface_6.06_6.13')
 
 
-# # Declaring Models
-
-# In[23]:
-
-
+# Declaring Models
 resnet152 = torch.load("batch_count_ResNet152.pt", map_location=device)
 
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
     resnet152 = nn.DataParallel(resnet152)
 
-
-# # Orchestrating
-
-# In[32]:
-
-
+# Orchestrating
 print("Analyzing Cottonwood")
 analyze(cottonwood_directory, resnet152, device)
 
@@ -147,9 +109,6 @@ analyze(ngilchrist_directory, resnet152, device)
 
 print("\nAnalyzing SGilchrist")
 analyze(sgilchrist_directory, resnet152, device)
-
-
-# In[ ]:
 
 
 

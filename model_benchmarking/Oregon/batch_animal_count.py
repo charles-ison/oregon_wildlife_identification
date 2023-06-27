@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import os
 import torch
 import torchvision
@@ -21,16 +15,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
-from google.colab import drive
 from operator import itemgetter
 from datetime import datetime
-
-#TODO: Remove this and just have separate batch_animal_count_inference.py
-from collections import OrderedDict
-
-
-# In[2]:
-
 
 class image_data_set(torch.utils.data.Dataset):
     def __init__(self, data, labels):
@@ -42,10 +28,6 @@ class image_data_set(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         return {'data': self.data[index], 'label': self.labels[index]}
-
-
-# In[3]:
-
 
 def get_image_tensor(file_path):
     transform = transforms.Compose([
@@ -120,10 +102,6 @@ def get_data_sets(downloaded_data_dir, json_file_name):
     json_file.close()
 
     return training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels
-
-
-# In[4]:
-
 
 def print_image(image_tensor, prediction, downloaded_data_dir, index):
     image_file_name = downloaded_data_dir + str(prediction.item()) + "_" + str(index) + ".png"
@@ -235,10 +213,6 @@ def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, d
     accuracy = num_correct/len(batch_testing_data_set)
     return loss, accuracy, all_labels, all_predictions
 
-
-# In[5]:
-
-
 def train_and_test(num_epochs, model, model_name, training_loader, testing_loader, batch_testing_loader, device, criterion, downloaded_data_dir):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -263,11 +237,7 @@ def train_and_test(num_epochs, model, model_name, training_loader, testing_loade
             print_testing_analysis(batch_labels, batch_predictions, model_name, downloaded_data_dir)
 
 
-# # Declaring Constants
-
-# In[19]:
-
-
+# Declaring Constants
 num_epochs = 5
 num_classes = 10
 batch_size = 10
@@ -281,21 +251,8 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 criterion = nn.MSELoss()
 
-
-# # Loading Data
-
-# In[7]:
-
-
-# Use this to connect to Google Drive in Google Colab
-drive.mount('/content/drive')
-
 # Use this to unzip file in Google Colab
 get_ipython().system('unzip -qq drive/MyDrive/animal_count_manually_labeled_wildlife_data')
-
-
-# In[8]:
-
 
 training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = get_data_sets(downloaded_data_dir, json_file_name)
 training_data_set = image_data_set(training_data, training_labels)
@@ -306,11 +263,7 @@ testing_loader = DataLoader(dataset = testing_data_set, batch_size = batch_size,
 batch_testing_loader = DataLoader(dataset = batch_testing_data_set, batch_size = 1, shuffle = True)
 
 
-# # Declaring Models
-
-# In[20]:
-
-
+# Declaring Models
 resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
 in_features = resnet50.fc.in_features
 resnet50.fc = nn.Linear(in_features, 1)
@@ -330,141 +283,12 @@ if torch.cuda.device_count() > 1:
     vit_l_16 = nn.DataParallel(vit_l_16)
 
 
-# # Training
-
-# In[21]:
-
-
+# Training
 print("\nTraining and Testing ResNet50")
 train_and_test(num_epochs, resnet50, "ResNet50", training_loader, testing_loader, batch_testing_loader, device, criterion, downloaded_data_dir)
 
-
-# In[22]:
-
-
 print("\nTraining and Testing ResNet152")
 train_and_test(num_epochs, resnet152, "ResNet152", training_loader, testing_loader, batch_testing_loader, device, criterion, downloaded_data_dir)
-
-
-# #TODO: Remove and just have batch_animal_count_inference.py
-# 
-# 
-
-# In[27]:
-
-
-def get_image_tensor(image):
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
-
-    return transform(image)
-
-def get_image_dictionary(directory):
-    image_dictionary = {}
-    for file_name in os.listdir(directory):
-        file_path = os.path.join(directory, file_name)
-        if os.path.isdir(file_path):
-            leaf_image_dictionary = get_image_dictionary(file_path)
-            image_dictionary.update(leaf_image_dictionary)
-        elif os.path.isfile(file_path):
-            try:
-                image = Image.open(file_path)
-                datetime = image._getexif()[36867]
-                image_tensor = get_image_tensor(image)
-                image_dictionary[datetime] = image_tensor
-            except:
-                print("Truncated image encountered, leaving out of training and testing")
-                continue
-
-    image_dictionary = OrderedDict(sorted(image_dictionary.items()))
-    return image_dictionary
-
-def get_batched_images(dictionary):
-    images, batch_images = [], []
-    previous_time_stamp = None
-    for key, value in dictionary.items():
-        time_stamp = datetime.strptime(key, '%Y:%m:%d %H:%M:%S')
-        if previous_time_stamp == None or (time_stamp - previous_time_stamp).total_seconds() < 60:
-            batch_images.append(value)
-        else:
-            images.append(torch.stack(batch_images))
-            batch_images = []
-            batch_images.append(value)
-
-        previous_time_stamp = time_stamp
-
-    return images
-
-def get_max_predictions(batched_images, model, device):
-    max_predictions = []
-    for image_batch in batched_images:
-        # This is to prevent cuda memory issues for large batches
-        max_prediction = 0
-        for image in image_batch:
-            image = torch.unsqueeze(image, dim=0).to(device)
-            output = model(image).flatten()
-            max_prediction = max(max_prediction, output.round().item())
-        max_predictions.append(max_prediction)
-    return max_predictions
-
-def analyze(directory, model, device):
-    image_dictionary = get_image_dictionary(directory)
-    print("len(image_dictionary):", len(image_dictionary))
-
-    batched_images = get_batched_images(image_dictionary)
-    print("len(batched_images):", len(batched_images))
-
-    max_predictions = get_max_predictions(batched_images, model, device)
-    print("len(max_predictions):", len(max_predictions))
-
-    predicted_total_num_animals = sum(max_predictions)
-    print("predicted_total_num_animals:", predicted_total_num_animals)
-    print("max_predictions:", max_predictions)
-
-
-# In[24]:
-
-
-cottonwood_directory = "Cottonwood_Eastface_6.06_6.13/"
-ngilchrist_directory = "NGilchrist_Eastface_6.06_6.13/"
-sgilchrist_directory = "SGilchrist_Eastface_6.06_6.13/"
-
-print(torch.__version__)
-print(torchvision.__version__)
-print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-torch.cuda.empty_cache()
-
-
-# In[25]:
-
-
-# Use this to connect to Google Drive in Google Colab
-drive.mount('/content/drive')
-
-# Use this to unzip file in Google Colab
-get_ipython().system('unzip -qq drive/MyDrive/SGilchrist_Eastface_6.06_6.13')
-get_ipython().system('unzip -qq drive/MyDrive/Cottonwood_Eastface_6.06_6.13')
-get_ipython().system('unzip -qq drive/MyDrive/NGilchrist_Eastface_6.06_6.13')
-
-
-# In[28]:
-
-
-print("Analyzing Cottonwood")
-analyze(cottonwood_directory, resnet152, device)
-
-print("\nAnalyzing NGilchrist")
-analyze(ngilchrist_directory, resnet152, device)
-
-print("\nAnalyzing SGilchrist")
-analyze(sgilchrist_directory, resnet152, device)
-
-
-# In[ ]:
 
 
 
