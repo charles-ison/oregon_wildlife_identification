@@ -251,9 +251,6 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 criterion = nn.MSELoss()
 
-# Use this to unzip file in Google Colab
-get_ipython().system('unzip -qq drive/MyDrive/animal_count_manually_labeled_wildlife_data')
-
 training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = get_data_sets(downloaded_data_dir, json_file_name)
 training_data_set = image_data_set(training_data, training_labels)
 testing_data_set = image_data_set(testing_data, testing_labels)
@@ -261,7 +258,6 @@ batch_testing_data_set = image_data_set(batch_testing_data, batch_testing_labels
 training_loader = DataLoader(dataset = training_data_set, batch_size = batch_size, shuffle = True)
 testing_loader = DataLoader(dataset = testing_data_set, batch_size = batch_size, shuffle = True)
 batch_testing_loader = DataLoader(dataset = batch_testing_data_set, batch_size = 1, shuffle = True)
-
 
 # Declaring Models
 resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
@@ -281,7 +277,6 @@ if torch.cuda.device_count() > 1:
     resnet50 = nn.DataParallel(resnet50)
     resnet152 = nn.DataParallel(resnet152)
     vit_l_16 = nn.DataParallel(vit_l_16)
-
 
 # Training
 print("\nTraining and Testing ResNet50")

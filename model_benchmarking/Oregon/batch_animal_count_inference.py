@@ -5,6 +5,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 from datetime import datetime
 from collections import OrderedDict
+
 def get_image_tensor(image):
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -85,13 +86,6 @@ print(torchvision.__version__)
 print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
-
-
-# Use this to unzip file in Google Colab
-get_ipython().system('unzip -qq drive/MyDrive/SGilchrist_Eastface_6.06_6.13')
-get_ipython().system('unzip -qq drive/MyDrive/Cottonwood_Eastface_6.06_6.13')
-get_ipython().system('unzip -qq drive/MyDrive/NGilchrist_Eastface_6.06_6.13')
-
 
 # Declaring Models
 resnet152 = torch.load("batch_count_ResNet152.pt", map_location=device)
