@@ -54,8 +54,8 @@ def get_sorted_images(coco_key):
 def flatten_list(data):
     return [image for batch in data for image in batch]
 
-def get_data_sets(downloaded_data_dir, json_file_name):
-    json_file = open(downloaded_data_dir + json_file_name)
+def get_data_sets(data_dir, json_file_name):
+    json_file = open(data_dir + json_file_name)
     coco_key = json.load(json_file)
     images = get_sorted_images(coco_key)
 
@@ -64,7 +64,7 @@ def get_data_sets(downloaded_data_dir, json_file_name):
     for index, image in enumerate(images):
         time_stamp = datetime.strptime(image["datetime"], '%Y:%m:%d %H:%M:%S')
         file_name = image["file_name"]
-        file_path = downloaded_data_dir + file_name
+        file_path = data_dir + file_name
 
         if os.path.isfile(file_path):
             label = coco_key["annotations"][index]["category_id"]
@@ -103,8 +103,8 @@ def get_data_sets(downloaded_data_dir, json_file_name):
 
     return training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels
 
-def print_image(image_tensor, prediction, downloaded_data_dir, index):
-    image_file_name = downloaded_data_dir + str(prediction.item()) + "_" + str(index) + ".png"
+def print_image(image_tensor, prediction, data_dir, index):
+    image_file_name = data_dir + str(prediction.item()) + "_" + str(index) + ".png"
 
     #Alternative normalized RGB visualization: plt.imshow(image_tensor.cpu().permute(1, 2, 0).numpy())
     plt.imshow(image_tensor[0].cpu(), cmap="gray")
@@ -112,7 +112,7 @@ def print_image(image_tensor, prediction, downloaded_data_dir, index):
     plt.show()
     #plt.imsave(image_file_name, image_tensor[0].cpu(), cmap="gray")
 
-def print_testing_analysis(all_labels, all_predictions, title, downloaded_data_dir):
+def print_testing_analysis(all_labels, all_predictions, title, data_dir):
     subplot = plt.subplot()
 
     cf_matrix = confusion_matrix(all_labels, all_predictions, labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
@@ -125,7 +125,7 @@ def print_testing_analysis(all_labels, all_predictions, title, downloaded_data_d
     subplot.xaxis.set_ticklabels([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     subplot.yaxis.set_ticklabels([9, 8, 7, 6, 5, 4, 3, 2, 1, 0])
 
-    plot_file_name = downloaded_data_dir + title + "_Confusion_Matrix.png"
+    plot_file_name = data_dir + title + "_Confusion_Matrix.png"
     #plt.savefig(plot_file_name)
     plt.show()
 
@@ -156,7 +156,7 @@ def train(model, training_loader, criterion, optimizer):
     accuracy = num_correct/len(training_loader.dataset)
     return loss, accuracy
 
-def test(model, testing_loader, criterion, print_incorrect_images, downloaded_data_dir):
+def test(model, testing_loader, criterion, print_incorrect_images, data_dir):
     model.eval()
     running_loss = 0.0
     num_correct = 0
@@ -173,7 +173,7 @@ def test(model, testing_loader, criterion, print_incorrect_images, downloaded_da
             if(prediction == labels[index]):
                 num_correct += 1
             elif(print_incorrect_images):
-                print_image(data[index], prediction, downloaded_data_dir, i)
+                print_image(data[index], prediction, data_dir, i)
 
         all_labels.extend(labels.cpu())
 
@@ -181,7 +181,7 @@ def test(model, testing_loader, criterion, print_incorrect_images, downloaded_da
     accuracy = num_correct/len(testing_loader.dataset)
     return loss, accuracy, all_labels, all_predictions
 
-def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, downloaded_data_dir):
+def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, data_dir):
     model.eval()
     running_loss = 0.0
     num_correct = 0
@@ -213,7 +213,7 @@ def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, d
     accuracy = num_correct/len(batch_testing_data_set)
     return loss, accuracy, all_labels, all_predictions
 
-def train_and_test(num_epochs, model, model_name, training_loader, testing_loader, batch_testing_loader, device, criterion, downloaded_data_dir):
+def train_and_test(num_epochs, model, model_name, training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     highest_batch_testing_accuracy = 0.0
@@ -224,17 +224,17 @@ def train_and_test(num_epochs, model, model_name, training_loader, testing_loade
         training_loss, training_accuracy = train(model, training_loader, criterion, optimizer)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
 
-        testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False, downloaded_data_dir)
+        testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False, data_dir)
         print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
 
-        batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_loader, criterion, False, downloaded_data_dir)
+        batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_loader, criterion, False, data_dir)
         print("batch testing loss: " + str(batch_testing_loss) + " and batch testing accuracy: " + str(batch_testing_accuracy))
 
         if highest_batch_testing_accuracy < batch_testing_accuracy:
             print("Highest batch testing accuracy achieved, saving weights")
             highest_batch_testing_accuracy = batch_testing_accuracy
-            torch.save(model, "saved_models/batch_count_" + model_name + ".pt")
-            print_testing_analysis(batch_labels, batch_predictions, model_name, downloaded_data_dir)
+            torch.save(model, "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_" + model_name + ".pt")
+            print_testing_analysis(batch_labels, batch_predictions, model_name, data_dir)
 
 
 # Declaring Constants
@@ -242,7 +242,7 @@ num_epochs = 5
 num_classes = 10
 batch_size = 10
 json_file_name = "animal_count_key.json"
-downloaded_data_dir = "animal_count_manually_labeled_wildlife_data/"
+data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/animal_count_manually_labeled_wildlife_data/"
 
 print(torch.__version__)
 print(torchvision.__version__)
@@ -251,7 +251,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 criterion = nn.MSELoss()
 
-training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = get_data_sets(downloaded_data_dir, json_file_name)
+training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = get_data_sets(data_dir, json_file_name)
 training_data_set = image_data_set(training_data, training_labels)
 testing_data_set = image_data_set(testing_data, testing_labels)
 batch_testing_data_set = image_data_set(batch_testing_data, batch_testing_labels)
@@ -280,10 +280,10 @@ if torch.cuda.device_count() > 1:
 
 # Training
 print("\nTraining and Testing ResNet50")
-train_and_test(num_epochs, resnet50, "ResNet50", training_loader, testing_loader, batch_testing_loader, device, criterion, downloaded_data_dir)
+train_and_test(num_epochs, resnet50, "ResNet50", training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir)
 
 print("\nTraining and Testing ResNet152")
-train_and_test(num_epochs, resnet152, "ResNet152", training_loader, testing_loader, batch_testing_loader, device, criterion, downloaded_data_dir)
+train_and_test(num_epochs, resnet152, "ResNet152", training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir)
 
 
 

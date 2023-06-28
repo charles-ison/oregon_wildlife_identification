@@ -1,6 +1,7 @@
 import os
 import torch
 import torch.nn as nn
+import torchvision
 import torchvision.transforms as transforms
 from PIL import Image
 from datetime import datetime
@@ -77,9 +78,9 @@ def analyze(directory, model, device):
     print("predicted_total_num_animals:", predicted_total_num_animals)
 
 # Declaring Constants
-cottonwood_directory = "Cottonwood_Eastface_6.06_6.13/"
-ngilchrist_directory = "NGilchrist_Eastface_6.06_6.13/"
-sgilchrist_directory = "SGilchrist_Eastface_6.06_6.13/"
+cottonwood_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/Cottonwood_Eastface_6.06_6.13/"
+ngilchrist_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/NGilchrist_Eastface_6.06_6.13/"
+sgilchrist_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/SGilchrist_Eastface_6.06_6.13/"
 
 print(torch.__version__)
 print(torchvision.__version__)
@@ -88,7 +89,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 
 # Declaring Models
-resnet152 = torch.load("batch_count_ResNet152.pt", map_location=device)
+resnet152 = torch.load("/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet152.pt", map_location=device)
 
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))

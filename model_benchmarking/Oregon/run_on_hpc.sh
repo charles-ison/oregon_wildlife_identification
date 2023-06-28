@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J run_idaho_data_on_HPC
+#SBATCH -J run_on_HPC
 #SBATCH -A eecs 
 #SBATCH -p gpu
 #SBATCH -t 7-00:00:00   
