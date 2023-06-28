@@ -15,6 +15,18 @@ def get_image_tensor(image):
     ])
 
     return transform(image)
+    
+def handle_duplicate_timestamps(timestamp, image_dictionary):
+    if timestamp in image_dictionary.keys():
+        timestamp += timedelta(milliseconds=1)
+        return handle_duplicate_timestamps(timestamp, image_dictionary)
+    else:
+        return timestamp
+        
+def get_timestamp(image, image_dictionary):
+    timestamp = image._getexif()[36867]
+    timestamp = datetime.strptime(timestamp, '%Y:%m:%d %H:%M:%S')
+    return handle_duplicate_timestamps(timestamp, image_dictionary)
 
 def get_image_dictionary(directory):
     image_dictionary = {}
@@ -25,14 +37,9 @@ def get_image_dictionary(directory):
             image_dictionary.update(leaf_image_dictionary)
         elif os.path.isfile(file_path):
             image = Image.open(file_path)
-            time_stamp = image._getexif()[36867]
-            time_stamp = datetime.strptime(time_stamp, '%Y:%m:%d %H:%M:%S')
-            
-            #TODO: This only handles two images in the same second, make sure problem is not more complex
-            if time_stamp in image_dictionary.keys():
-                time_stamp += timedelta(milliseconds=1)
+            timestamp = get_timestamp(image, image_dictionary)
             try:
-                image_dictionary[time_stamp] = get_image_tensor(image)
+                image_dictionary[timestamp] = get_image_tensor(image)
             except:
                 print("Truncated image encountered, leaving out of training and testing")
                 continue
@@ -97,7 +104,7 @@ if torch.cuda.device_count() > 1:
     resnet152 = nn.DataParallel(resnet152)
 
 # Orchestrating
-print("Analyzing Cottonwood")
+print("\nAnalyzing Cottonwood")
 analyze(cottonwood_directory, resnet152, device)
 
 print("\nAnalyzing NGilchrist")
