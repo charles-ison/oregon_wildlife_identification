@@ -4,7 +4,7 @@ import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 from PIL import Image
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import OrderedDict
 
 def get_image_tensor(image):
@@ -24,11 +24,15 @@ def get_image_dictionary(directory):
             leaf_image_dictionary = get_image_dictionary(file_path)
             image_dictionary.update(leaf_image_dictionary)
         elif os.path.isfile(file_path):
+            image = Image.open(file_path)
+            time_stamp = image._getexif()[36867]
+            time_stamp = datetime.strptime(time_stamp, '%Y:%m:%d %H:%M:%S')
+            
+            #TODO: This only handles two images in the same second, make sure problem is not more complex
+            if time_stamp in image_dictionary.keys():
+                time_stamp += timedelta(milliseconds=1)
             try:
-                image = Image.open(file_path)
-                datetime = image._getexif()[36867]
-                image_tensor = get_image_tensor(image)
-                image_dictionary[datetime] = image_tensor
+                image_dictionary[time_stamp] = get_image_tensor(image)
             except:
                 print("Truncated image encountered, leaving out of training and testing")
                 continue
@@ -40,15 +44,14 @@ def get_batched_images(dictionary):
     images, batch_images = [], []
     previous_time_stamp = None
     for key, value in dictionary.items():
-        time_stamp = datetime.strptime(key, '%Y:%m:%d %H:%M:%S')
-        if previous_time_stamp == None or (time_stamp - previous_time_stamp).total_seconds() < 60:
+        if previous_time_stamp == None or (key - previous_time_stamp).total_seconds() < 60:
             batch_images.append(value)
         else:
             images.append(torch.stack(batch_images))
             batch_images = []
             batch_images.append(value)
 
-        previous_time_stamp = time_stamp
+        previous_time_stamp = key
 
     return images
 
@@ -72,8 +75,6 @@ def analyze(directory, model, device):
     print("len(batched_images):", len(batched_images))
 
     max_predictions = get_max_predictions(batched_images, model, device)
-    print("len(max_predictions):", len(max_predictions))
-
     predicted_total_num_animals = sum(max_predictions)
     print("predicted_total_num_animals:", predicted_total_num_animals)
 
