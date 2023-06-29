@@ -238,7 +238,7 @@ def train_and_test(num_epochs, model, model_name, training_loader, testing_loade
 
 
 # Declaring Constants
-num_epochs = 3
+num_epochs = 5
 num_classes = 10
 batch_size = 10
 json_file_name = "animal_count_key.json"

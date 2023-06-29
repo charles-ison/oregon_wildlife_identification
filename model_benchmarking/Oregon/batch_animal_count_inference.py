@@ -8,6 +8,13 @@ from PIL import Image
 from datetime import datetime, timedelta
 from collections import OrderedDict
 
+import matplotlib.pyplot as plt
+def print_image(image_tensor, prediction, index):
+    image_file_name = str(prediction) + "_" + str(index) + ".png"
+    plt.title("Predicted " + str(prediction) + " Animals Present")
+    plt.imshow(image_tensor[0][0].cpu(), cmap="gray")
+    plt.imsave(image_file_name, image_tensor[0][0].cpu(), cmap="gray")
+
 def get_image_tensor(image):
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -65,12 +72,17 @@ def get_batched_images(dictionary):
 
 def get_max_predictions(batched_images, model, device):
     max_predictions = []
+    count = 0
     for image_batch in batched_images:
         # This is to prevent cuda memory issues for large batches
         max_prediction = 0
         for image in image_batch:
             image = torch.unsqueeze(image, dim=0)
             output = model(image).flatten()
+            
+            print_image(image, output.round().item(), count)
+            count += 1
+            
             max_prediction = max(max_prediction, output.round().item())
         max_predictions.append(max_prediction)
     return max_predictions
@@ -91,7 +103,7 @@ cottonwood_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/Cottonwood_Ea
 ngilchrist_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/NGilchrist_Eastface_6.06_6.13/"
 sgilchrist_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/SGilchrist_Eastface_6.06_6.13/"
 
-model_weights_path = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet152.pt"
+model_weights_path = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet50.pt"
 
 print(torch.__version__)
 print(torchvision.__version__)
@@ -101,7 +113,7 @@ torch.cuda.empty_cache()
 
 # Declaring Models
 # Have follow same steps used to create model during training
-model = models.resnet152()
+model = models.resnet50()
 in_features = model.fc.in_features
 model.fc = nn.Linear(in_features, 1)
 
@@ -116,15 +128,12 @@ model.eval()
 model.to(device)
 
 # Orchestrating
-print("\nAnalyzing Cottonwood")
-analyze(cottonwood_directory, model, device)
+#print("\nAnalyzing Cottonwood")
+#analyze(cottonwood_directory, model, device)
 
 print("\nAnalyzing NGilchrist")
 analyze(ngilchrist_directory, model, device)
 
-print("\nAnalyzing SGilchrist")
-analyze(sgilchrist_directory, model, device)
-
-
-
+#print("\nAnalyzing SGilchrist")
+#analyze(sgilchrist_directory, model, device)
 
