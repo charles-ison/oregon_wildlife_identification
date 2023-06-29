@@ -233,12 +233,12 @@ def train_and_test(num_epochs, model, model_name, training_loader, testing_loade
         if highest_batch_testing_accuracy < batch_testing_accuracy:
             print("Highest batch testing accuracy achieved, saving weights")
             highest_batch_testing_accuracy = batch_testing_accuracy
-            torch.save(model, "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_" + model_name + ".pt")
+            torch.save(model.module.state_dict(), "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_" + model_name + ".pt")
             print_testing_analysis(batch_labels, batch_predictions, model_name, data_dir)
 
 
 # Declaring Constants
-num_epochs = 5
+num_epochs = 3
 num_classes = 10
 batch_size = 10
 json_file_name = "animal_count_key.json"

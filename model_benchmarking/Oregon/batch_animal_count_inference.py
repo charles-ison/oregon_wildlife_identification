@@ -2,6 +2,7 @@ import os
 import torch
 import torch.nn as nn
 import torchvision
+import torchvision.models as models
 import torchvision.transforms as transforms
 from PIL import Image
 from datetime import datetime, timedelta
@@ -68,7 +69,7 @@ def get_max_predictions(batched_images, model, device):
         # This is to prevent cuda memory issues for large batches
         max_prediction = 0
         for image in image_batch:
-            image = torch.unsqueeze(image, dim=0).to(device)
+            image = torch.unsqueeze(image, dim=0)
             output = model(image).flatten()
             max_prediction = max(max_prediction, output.round().item())
         max_predictions.append(max_prediction)
@@ -90,6 +91,8 @@ cottonwood_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/Cottonwood_Ea
 ngilchrist_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/NGilchrist_Eastface_6.06_6.13/"
 sgilchrist_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/SGilchrist_Eastface_6.06_6.13/"
 
+model_weights_path = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet152.pt"
+
 print(torch.__version__)
 print(torchvision.__version__)
 print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
@@ -97,21 +100,30 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 
 # Declaring Models
-resnet152 = torch.load("/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet152.pt", map_location=device)
+# Have follow same steps used to create model during training
+model = models.resnet152()
+in_features = model.fc.in_features
+model.fc = nn.Linear(in_features, 1)
+
+#Loading trained model weights
+model.load_state_dict(torch.load(model_weights_path))
 
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
-    resnet152 = nn.DataParallel(resnet152)
+    model = nn.DataParallel(model)
+    
+model.eval()
+model.to(device)
 
 # Orchestrating
 print("\nAnalyzing Cottonwood")
-analyze(cottonwood_directory, resnet152, device)
+analyze(cottonwood_directory, model, device)
 
 print("\nAnalyzing NGilchrist")
-analyze(ngilchrist_directory, resnet152, device)
+analyze(ngilchrist_directory, model, device)
 
 print("\nAnalyzing SGilchrist")
-analyze(sgilchrist_directory, resnet152, device)
+analyze(sgilchrist_directory, model, device)
 
 
 
