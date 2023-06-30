@@ -112,7 +112,7 @@ def print_image(image_tensor, prediction, data_dir, index):
     plt.show()
     #plt.imsave(image_file_name, image_tensor[0].cpu(), cmap="gray")
 
-def print_testing_analysis(all_labels, all_predictions, title, data_dir):
+def print_testing_analysis(all_labels, all_predictions, title, data_dir, saving_dir):
     subplot = plt.subplot()
 
     cf_matrix = confusion_matrix(all_labels, all_predictions, labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
@@ -125,8 +125,8 @@ def print_testing_analysis(all_labels, all_predictions, title, data_dir):
     subplot.xaxis.set_ticklabels([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     subplot.yaxis.set_ticklabels([9, 8, 7, 6, 5, 4, 3, 2, 1, 0])
 
-    plot_file_name = data_dir + title + "_Confusion_Matrix.png"
-    #plt.savefig(plot_file_name)
+    plot_file_name = saving_dir + title + "_Confusion_Matrix.png"
+    plt.savefig(plot_file_name)
     plt.show()
 
     accuracy = accuracy_score(all_labels, all_predictions)
@@ -213,10 +213,11 @@ def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, d
     accuracy = num_correct/len(batch_testing_data_set)
     return loss, accuracy, all_labels, all_predictions
 
-def train_and_test(num_epochs, model, model_name, training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir):
+def train_and_test(num_epochs, model, model_name, training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir, saving_dir):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     highest_batch_testing_accuracy = 0.0
+    saving_dir = saving_dir + "batch_count_" + model_name + "/"
 
     for epoch in range(num_epochs):
         print("Epoch: " + str(epoch))
@@ -233,8 +234,8 @@ def train_and_test(num_epochs, model, model_name, training_loader, testing_loade
         if highest_batch_testing_accuracy < batch_testing_accuracy:
             print("Highest batch testing accuracy achieved, saving weights")
             highest_batch_testing_accuracy = batch_testing_accuracy
-            torch.save(model.module.state_dict(), "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_" + model_name + ".pt")
-            print_testing_analysis(batch_labels, batch_predictions, model_name, data_dir)
+            torch.save(model.module.state_dict(), saving_dir + model_name + ".pt")
+            print_testing_analysis(batch_labels, batch_predictions, model_name, data_dir, saving_dir)
 
 
 # Declaring Constants
@@ -243,6 +244,7 @@ num_classes = 10
 batch_size = 10
 json_file_name = "animal_count_key.json"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/animal_count_manually_labeled_wildlife_data/"
+saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/"
 
 print(torch.__version__)
 print(torchvision.__version__)
@@ -280,10 +282,10 @@ if torch.cuda.device_count() > 1:
 
 # Training
 print("\nTraining and Testing ResNet50")
-train_and_test(num_epochs, resnet50, "ResNet50", training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir)
+train_and_test(num_epochs, resnet50, "ResNet50", training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir, saving_dir)
 
 print("\nTraining and Testing ResNet152")
-train_and_test(num_epochs, resnet152, "ResNet152", training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir)
+train_and_test(num_epochs, resnet152, "ResNet152", training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir, saving_dir)
 
 
 

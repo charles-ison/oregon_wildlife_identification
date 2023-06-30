@@ -77,10 +77,10 @@ def get_max_predictions(batched_images, model, device):
         # This is to prevent cuda memory issues for large batches
         max_prediction = 0
         for image in image_batch:
-            image = torch.unsqueeze(image, dim=0)
+            image = torch.unsqueeze(image, dim=0).to(device)
             output = model(image).flatten()
             
-            print_image(image, output.round().item(), count)
+            #print_image(image, output.round().item(), count)
             count += 1
             
             max_prediction = max(max_prediction, output.round().item())
@@ -103,7 +103,7 @@ cottonwood_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/Cottonwood_Ea
 ngilchrist_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/NGilchrist_Eastface_6.06_6.13/"
 sgilchrist_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/SGilchrist_Eastface_6.06_6.13/"
 
-model_weights_path = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet50.pt"
+model_weights_path = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet50/ResNet50.pt"
 
 print(torch.__version__)
 print(torchvision.__version__)
@@ -128,12 +128,11 @@ model.eval()
 model.to(device)
 
 # Orchestrating
-#print("\nAnalyzing Cottonwood")
-#analyze(cottonwood_directory, model, device)
+print("\nAnalyzing Cottonwood")
+analyze(cottonwood_directory, model, device)
 
 print("\nAnalyzing NGilchrist")
 analyze(ngilchrist_directory, model, device)
 
-#print("\nAnalyzing SGilchrist")
-#analyze(sgilchrist_directory, model, device)
-
+print("\nAnalyzing SGilchrist")
+analyze(sgilchrist_directory, model, device)
