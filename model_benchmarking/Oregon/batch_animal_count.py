@@ -88,7 +88,9 @@ def get_data_sets(data_dir, json_file_name):
 
             previous_time_stamp = time_stamp
 
-
+    data.append(torch.stack(batch_data))
+    labels.append(torch.FloatTensor(batch_labels))
+                
     batch_training_data, batch_testing_data, batch_training_labels, batch_testing_labels = train_test_split(data, labels, test_size = 0.20)
     training_data = flatten_list(batch_training_data)
     testing_data = flatten_list(batch_testing_data)
