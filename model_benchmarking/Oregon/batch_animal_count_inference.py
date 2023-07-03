@@ -68,6 +68,7 @@ def get_batched_images(dictionary):
 
         previous_time_stamp = key
 
+    images.append(torch.stack(batch_images))
     return images
 
 def get_max_predictions(batched_images, model, device):
