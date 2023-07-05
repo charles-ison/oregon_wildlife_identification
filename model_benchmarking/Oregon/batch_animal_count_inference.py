@@ -44,12 +44,12 @@ def get_image_dictionary(directory):
             leaf_image_dictionary = get_image_dictionary(file_path)
             image_dictionary.update(leaf_image_dictionary)
         elif os.path.isfile(file_path):
-            image = Image.open(file_path)
-            timestamp = get_timestamp(image, image_dictionary)
             try:
+                image = Image.open(file_path)
+                timestamp = get_timestamp(image, image_dictionary)
                 image_dictionary[timestamp] = get_image_tensor(image)
             except:
-                print("Truncated image encountered, leaving out of training and testing")
+                print("Problematic image encountered, leaving out of training and testing")
                 continue
 
     image_dictionary = OrderedDict(sorted(image_dictionary.items()))
@@ -103,6 +103,7 @@ def analyze(directory, model, device):
 cottonwood_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/Cottonwood_Eastface_6.06_6.13/"
 ngilchrist_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/NGilchrist_Eastface_6.06_6.13/"
 sgilchrist_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/SGilchrist_Eastface_6.06_6.13/"
+MP152_ODOT003_eastface_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/MP152_ODOT003_EASTFACE/"
 
 model_weights_path = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet50/ResNet50.pt"
 
@@ -130,10 +131,13 @@ model.to(device)
 
 # Orchestrating
 print("\nAnalyzing Cottonwood")
-analyze(cottonwood_directory, model, device)
+#analyze(cottonwood_directory, model, device)
 
 print("\nAnalyzing NGilchrist")
 analyze(ngilchrist_directory, model, device)
 
 print("\nAnalyzing SGilchrist")
 analyze(sgilchrist_directory, model, device)
+
+print("\nAnalyzing MP152_ODOT003_EASTFACE")
+analyze(MP152_ODOT003_eastface_directory, model, device)

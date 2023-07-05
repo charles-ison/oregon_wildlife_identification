@@ -72,7 +72,7 @@ def get_data_sets(data_dir, json_file_name):
             try:
                 image_tensor = get_image_tensor(file_path)
             except:
-                print("Truncated image encountered, leaving out of training and testing")
+                print("Problematic image encountered, leaving out of training and testing")
                 continue
 
             if index == 0 or (time_stamp - previous_time_stamp).total_seconds() < 60:
