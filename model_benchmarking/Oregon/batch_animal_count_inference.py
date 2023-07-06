@@ -130,13 +130,13 @@ model.eval()
 model.to(device)
 
 # Orchestrating
-print("\nAnalyzing Cottonwood")
-#analyze(cottonwood_directory, model, device)
+print("\nAnalyzing Cottonwood_Eastface_6.06_6.13")
+analyze(cottonwood_directory, model, device)
 
-print("\nAnalyzing NGilchrist")
+print("\nAnalyzing NGilchrist_Eastface_6.06_6.13")
 analyze(ngilchrist_directory, model, device)
 
-print("\nAnalyzing SGilchrist")
+print("\nAnalyzing SGilchrist_Eastface_6.06_6.13")
 analyze(sgilchrist_directory, model, device)
 
 print("\nAnalyzing MP152_ODOT003_EASTFACE")
