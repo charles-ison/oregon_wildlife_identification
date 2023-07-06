@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[2]:
-
-
 import os
 import torch
 import torchvision
@@ -25,9 +19,6 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 
 
-# In[ ]:
-
-
 class image_data_set(torch.utils.data.Dataset):
     def __init__(self, data, labels):
         self.data = data
@@ -38,10 +29,6 @@ class image_data_set(torch.utils.data.Dataset):
   
     def __getitem__(self, index):
         return {'data': self.data[index], 'label': self.labels[index]}
-
-
-# In[ ]:
-
 
 def download_json_file(downloaded_data_dir, json_file_name, blob_name):    
     if not os.path.isdir(downloaded_data_dir + json_file_name):
@@ -64,9 +51,6 @@ def download_images(dir_name, downloaded_data_dir, blob_name):
         os.system(download_dir_command)
     else:
         print("Required directory already downloaded")
-
-
-# In[ ]:
 
 
 def get_image_tensor(file_path):
@@ -108,10 +92,6 @@ def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_l
     shutil.rmtree(downloaded_data_dir + dir_name)
     
     return training_data, testing_data, training_labels, testing_labels
-
-
-# In[ ]:
-
 
 def print_image(image_tensor, prediction, downloaded_data_dir, index):
     if(prediction == 1):
@@ -197,10 +177,6 @@ def test(model, testing_loader, criterion, print_incorrect_images, downloaded_da
     accuracy = num_correct/len(testing_loader.dataset)
     return loss, accuracy, all_labels, all_predictions
 
-
-# In[ ]:
-
-
 def train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testing_loader, device, criterion, downloaded_data_dir):
     print("\nTraining and Testing ResNet50")
     train_and_test(resnet50, training_loader, testing_loader, device, criterion, downloaded_data_dir)
@@ -222,10 +198,7 @@ def train_and_test(model, training_loader, testing_loader, device, criterion, do
     print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
 
 
-# # Declaring Constants
-
-# In[ ]:
-
+# Declaring Constants
 
 num_epochs = 1
 num_classes = 2
@@ -255,11 +228,7 @@ torch.cuda.empty_cache()
 criterion = nn.CrossEntropyLoss()
 
 
-# # Declaring Models
-
-# In[ ]:
-
-
+# Declaring Models
 resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
 resnet50.fc.out_features = num_classes
 
@@ -276,11 +245,7 @@ if torch.cuda.device_count() > 1:
     vit_l_16 = nn.DataParallel(vit_l_16)
 
 
-# # Orchestration
-
-# In[ ]:
-
-
+# Orchestration
 download_json_file(downloaded_data_dir, json_file_name, blob_name)
 
 all_testing_data, all_testing_labels = [], []
@@ -307,10 +272,7 @@ for epoch in range(num_epochs):
         train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testing_loader, device, criterion, downloaded_data_dir)
 
 
-# # Final Testing
-
-# In[ ]:
-
+# Final Testing
 
 os.remove(downloaded_data_dir + json_file_name)
 final_testing_data_set = image_data_set(sum(all_testing_data, []), sum(all_testing_labels, []))
@@ -325,9 +287,6 @@ print_testing_analysis(labels, predictions, "ResNet152_Overall", downloaded_data
 
 testing_loss, testing_accuracy, labels, predictions = test(vit_l_16, final_testing_loader, criterion, True, downloaded_data_dir)
 print_testing_analysis(labels, predictions, "ViT_Large_16_Overall", downloaded_data_dir)
-
-
-# In[ ]:
 
 
 
