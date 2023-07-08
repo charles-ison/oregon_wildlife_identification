@@ -18,7 +18,6 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 
-
 class image_data_set(torch.utils.data.Dataset):
     def __init__(self, data, labels):
         self.data = data
@@ -30,29 +29,18 @@ class image_data_set(torch.utils.data.Dataset):
     def __getitem__(self, index):
         return {'data': self.data[index], 'label': self.labels[index]}
 
-def download_json_file(downloaded_data_dir, json_file_name, blob_name):    
-    if not os.path.isdir(downloaded_data_dir + json_file_name):
-        json_file_zip_name = json_file_name + ".zip"
-        json_zip_to_download = blob_name + json_file_zip_name
-        download_json_zip_command = "azcopy cp '%s' '%s'" % (json_zip_to_download, downloaded_data_dir)
-        os.system(download_json_zip_command)
-        shutil.unpack_archive(downloaded_data_dir + json_file_zip_name, downloaded_data_dir)
-        os.remove(downloaded_data_dir + json_file_zip_name)
+def download_zip(downloaded_data_dir, zip_name, blob_name):    
+    if not os.path.isfile(downloaded_data_dir + zip_name):
+        print("Downloading zip: " + zip_name)
+        zip_file_name = zip_name + ".zip"
+        zip_to_download = blob_name + zip_file_name
+        download_zip_command = "azcopy cp '%s' '%s'" % (zip_to_download, downloaded_data_dir)
+        os.system(download_zip_command)
+        shutil.unpack_archive(downloaded_data_dir + zip_file_name, downloaded_data_dir)
+        os.remove(downloaded_data_dir + zip_file_name)
     else:
-        print("Required json zip already downloaded")
+        print("Required zip already downloaded")
         
-def download_images(dir_name, downloaded_data_dir, blob_name):    
-    
-    print("Downloading data from directory: " + dir_name)
-    
-    if not os.path.isdir(downloaded_data_dir + dir_name):
-        dir_to_download = blob_name + "public/" + dir_name
-        download_dir_command = "azcopy cp '%s' '%s' --recursive" % (dir_to_download, downloaded_data_dir)
-        os.system(download_dir_command)
-    else:
-        print("Required directory already downloaded")
-
-
 def get_image_tensor(file_path):
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -63,19 +51,28 @@ def get_image_tensor(file_path):
     image = Image.open(file_path)
     return transform(image)
     
-def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_label_dict): 
+def get_data_sets(downloaded_data_dir, json_file_name, categories_to_label_dict): 
     json_file = open(downloaded_data_dir + json_file_name)
     coco_key = json.load(json_file)
     images = coco_key["images"]
+    downloaded_data_dir = downloaded_data_dir + "public/"
+    num_wildlife_images = 0
 
     data, labels = [], []
     for index, image in enumerate(images):
+        
+        #TODO: remove
+        if index > 10000:
+            break
+        
         file_name = image["file_name"]
         file_path = downloaded_data_dir + file_name
         
-        if file_name.startswith(dir_name) and os.path.isfile(file_path) and image["frame_num"] == 0:
+        if os.path.isfile(file_path):
             category_id = coco_key["annotations"][index]["category_id"]
             label = categories_to_label_dict[category_id]
+            if label == 1:
+                num_wildlife_images += 1
             try:
                 image_tensor = get_image_tensor(file_path)
                 data.append(image_tensor)
@@ -89,9 +86,9 @@ def get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_l
     print("Number of testing photos: " + str(len(testing_data)))
     
     json_file.close()
-    shutil.rmtree(downloaded_data_dir + dir_name)
+    shutil.rmtree(downloaded_data_dir)
     
-    return training_data, testing_data, training_labels, testing_labels
+    return training_data, testing_data, training_labels, testing_labels, num_wildlife_images
 
 def print_image(image_tensor, prediction, downloaded_data_dir, index):
     if(prediction == 1):
@@ -150,7 +147,7 @@ def train(model, training_loader, criterion, optimizer):
     loss = running_loss/len(training_loader.dataset)
     accuracy = num_correct/len(training_loader.dataset)
     return loss, accuracy
-
+    
 def test(model, testing_loader, criterion, print_incorrect_images, downloaded_data_dir):
     model.eval()
     running_loss = 0.0
@@ -184,8 +181,8 @@ def train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testin
     print("\nTraining and Testing ResNet152")
     train_and_test(resnet152, training_loader, testing_loader, device, criterion, downloaded_data_dir)
 
-    print("\nTraining and Testing ViT Large 16")
-    train_and_test(vit_l_16, training_loader, testing_loader, device, criterion, downloaded_data_dir)
+    #print("\nTraining and Testing ViT Large 16")
+    #train_and_test(vit_l_16, training_loader, testing_loader, device, criterion, downloaded_data_dir)
 
 def train_and_test(model, training_loader, testing_loader, device, criterion, downloaded_data_dir):    
     model.to(device)
@@ -196,16 +193,18 @@ def train_and_test(model, training_loader, testing_loader, device, criterion, do
         
     testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False, downloaded_data_dir)
     print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
-
+    
+def flatten_list(data):
+    return [image for batch in data for image in batch]
 
 # Declaring Constants
-
 num_epochs = 1
 num_classes = 2
-batch_size = 20
+batch_size = 10
 json_file_name = "idaho-camera-traps.json"
-dir_prefix = "loc_"
+zip_prefix = "idaho-camera-traps-images.part_"
 downloaded_data_dir = "/nfs/hpc/share/isonc/downloaded_data/"
+saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/Idaho/"
 blob_name = "https://lilablobssc.blob.core.windows.net/idaho-camera-traps/"
 
 # Mapping canines, big cats, bears, and ungulates to wildlife present and all other categories to no wildlife present
@@ -222,48 +221,50 @@ categories_to_label_dict = {
 
 print(torch.__version__)
 print(torchvision.__version__)
-print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
+print("torch.cuda.is_available(): ", torch.cuda.is_available())
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 criterion = nn.CrossEntropyLoss()
 
-
 # Declaring Models
 resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
-resnet50.fc.out_features = num_classes
+in_features = resnet50.fc.in_features
+resnet50.fc = nn.Linear(in_features, 1)
 
 resnet152 = models.resnet152(weights = models.ResNet152_Weights.DEFAULT)
-resnet152.fc.out_features = num_classes
+in_features = resnet152.fc.in_features
+resnet152.fc = nn.Linear(in_features, 1)
 
 vit_l_16 = models.vit_l_16(weights = models.ViT_L_16_Weights.DEFAULT)
-vit_l_16.heads.out_features = num_classes
+in_features = vit_l_16.heads[0].in_features
+vit_l_16.heads[0] = nn.Linear(in_features, 1)
 
 if torch.cuda.device_count() > 1:
-    print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
+    print("Multiple GPUs available, using: ", torch.cuda.device_count())
     resnet50 = nn.DataParallel(resnet50)
     resnet152 = nn.DataParallel(resnet152)
     vit_l_16 = nn.DataParallel(vit_l_16)
 
-
 # Orchestration
-download_json_file(downloaded_data_dir, json_file_name, blob_name)
+download_zip(downloaded_data_dir, json_file_name, blob_name)
 
 all_testing_data, all_testing_labels = [], []
+total_num_wildlife_images = 0
 
 for epoch in range(num_epochs):
     
     print("Training epoch: " + str(epoch))
     
-    for i in range(276):
+    for i in range(5):
         
-        dir_name = dir_prefix + '{0:04}'.format(i)
-        download_images(dir_name, downloaded_data_dir, blob_name)
-        training_data, testing_data, training_labels, testing_labels = get_data_sets(dir_name, downloaded_data_dir, json_file_name, categories_to_label_dict)
-    
+        zip_name = zip_prefix + str(i)
+        download_zip(downloaded_data_dir, zip_name, blob_name)
+        training_data, testing_data, training_labels, testing_labels, num_wildlife_images = get_data_sets(downloaded_data_dir, json_file_name, categories_to_label_dict)
+
         if (epoch == 0):
             all_testing_data.append(testing_data)
             all_testing_labels.append(testing_labels)
-    
+            total_num_wildlife_images += num_wildlife_images
         training_data_set = image_data_set(training_data, training_labels)
         testing_data_set = image_data_set(testing_data, testing_labels)
         training_loader = DataLoader(dataset = training_data_set, batch_size = batch_size, shuffle = True)
@@ -272,21 +273,24 @@ for epoch in range(num_epochs):
         train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testing_loader, device, criterion, downloaded_data_dir)
 
 
-# Final Testing
+print("total_num_wildlife_images: ", total_num_wildlife_images)
 
+# Final Testing
 os.remove(downloaded_data_dir + json_file_name)
-final_testing_data_set = image_data_set(sum(all_testing_data, []), sum(all_testing_labels, []))
-print("Number of final testing photos: " + str(len(final_testing_data_set)))
+
+final_testing_data_set = image_data_set(flatten_list(all_testing_data), flatten_list(all_testing_labels))
+
+print("Number of final testing photos: ", len(final_testing_data_set))
 final_testing_loader = DataLoader(dataset = final_testing_data_set, batch_size = batch_size, shuffle = True)
 
-testing_loss, testing_accuracy, labels, predictions = test(resnet50, final_testing_loader, criterion, True, downloaded_data_dir)
+testing_loss, testing_accuracy, labels, predictions = test(resnet50, final_testing_loader, criterion, False, downloaded_data_dir)
 print_testing_analysis(labels, predictions, "ResNet50_Overall", downloaded_data_dir)
 
-testing_loss, testing_accuracy, labels, predictions = test(resnet152, final_testing_loader, criterion, True, downloaded_data_dir)
+testing_loss, testing_accuracy, labels, predictions = test(resnet152, final_testing_loader, criterion, False, downloaded_data_dir)
 print_testing_analysis(labels, predictions, "ResNet152_Overall", downloaded_data_dir)
 
-testing_loss, testing_accuracy, labels, predictions = test(vit_l_16, final_testing_loader, criterion, True, downloaded_data_dir)
-print_testing_analysis(labels, predictions, "ViT_Large_16_Overall", downloaded_data_dir)
+#testing_loss, testing_accuracy, labels, predictions = test(vit_l_16, final_testing_loader, criterion, False, downloaded_data_dir)
+#print_testing_analysis(labels, predictions, "ViT_Large_16_Overall", downloaded_data_dir)
 
 
 
