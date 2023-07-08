@@ -245,7 +245,7 @@ num_epochs = 5
 batch_size = 10
 json_file_name = "animal_count_key.json"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/animal_count_manually_labeled_wildlife_data/"
-saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/"
+saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/Oregon/"
 
 print(torch.__version__)
 print(torchvision.__version__)
