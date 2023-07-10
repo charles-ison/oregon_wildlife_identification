@@ -51,7 +51,7 @@ def get_image_tensor(file_path):
     image = Image.open(file_path)
     return transform(image)
     
-def get_data_sets(coco_key, images, unzipped_data_dir, json_file_name, categories_to_label_dict): 
+def get_data_sets(coco_key, images, unzipped_data_dir, json_file_name, categories_to_label_dict, current_step): 
     num_wildlife_present_images = 0
 
     data, labels = [], []
@@ -59,9 +59,10 @@ def get_data_sets(coco_key, images, unzipped_data_dir, json_file_name, categorie
         file_name = image["file_name"]
         file_path = unzipped_data_dir + file_name
         
-        if os.path.isfile(file_path):
-            category_id = coco_key["annotations"][index]["category_id"]
+        if image["seq_num_frames"] == 0 and image["id"] ==  coco_key["annotations"][current_step + index]["image_id"] and os.path.isfile(file_path):
+            category_id = coco_key["annotations"][current_step + index]["category_id"]
             label = categories_to_label_dict[category_id]
+            
             if label == 1:
                 num_wildlife_present_images += 1
             try:
@@ -71,12 +72,7 @@ def get_data_sets(coco_key, images, unzipped_data_dir, json_file_name, categorie
             except:
                 print("Truncated image encountered, leaving out of training and testing")
     
-    training_data, testing_data, training_labels, testing_labels = train_test_split(data, labels, test_size = 0.005)
-    
-    print("\nNumber of training photos: " + str(len(training_data)))
-    print("Number of testing photos: " + str(len(testing_data)))
-    
-    return training_data, testing_data, training_labels, testing_labels, num_wildlife_present_images
+    return  data, labels, num_wildlife_present_images
 
 def print_image(image_tensor, prediction, downloaded_data_dir, index):
     if(prediction == 1):
@@ -250,10 +246,11 @@ download_zip(downloaded_data_dir, json_file_name, blob_name)
 json_file = open(downloaded_data_dir + json_file_name)
 coco_key = json.load(json_file)
 images_json = coco_key["images"]
+print("len(images_json): ", len(images_json))
 
 all_testing_data, all_testing_labels = [], []
 total_num_wildlife_present_images = 0
-step_size = 2000
+step_size = 1000
 
 highest_resnet50_testing_accuracy = 0
 highest_resnet152_testing_accuracy = 0
@@ -261,7 +258,7 @@ highest_vit16_large_testing_accuracy = 0
 
 for epoch in range(num_epochs):
     
-    print("Training epoch: " + str(epoch))
+    print("\nTraining epoch: " + str(epoch))
     
     #TODO
     for i in range(1):
@@ -274,10 +271,15 @@ for epoch in range(num_epochs):
         
         # Inner loop needed to avoid memory issues
         for index in range(0, len(images_json), step_size):
-            training_data, testing_data, training_labels, testing_labels, num_wildlife_present_images = get_data_sets(coco_key, images_json[index:index+step_size], unzipped_data_dir, json_file_name, categories_to_label_dict)
+            print("\nindex: ", index)
+            data, labels, num_wildlife_present_images = get_data_sets(coco_key, images_json[index:index+step_size], unzipped_data_dir, json_file_name, categories_to_label_dict, index)
             
-            if len(training_data) == 0:
+            if len(data) == 0:
                 continue
+            
+            training_data, testing_data, training_labels, testing_labels = train_test_split(data, labels, test_size = 0.005)
+            print("Number of training photos: " + str(len(training_data)))
+            print("Number of testing photos: " + str(len(testing_data)))
 
             if epoch == 0:
                 all_testing_data.append(testing_data)
