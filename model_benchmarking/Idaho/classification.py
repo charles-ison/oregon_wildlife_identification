@@ -51,28 +51,19 @@ def get_image_tensor(file_path):
     image = Image.open(file_path)
     return transform(image)
     
-def get_data_sets(downloaded_data_dir, json_file_name, categories_to_label_dict): 
-    json_file = open(downloaded_data_dir + json_file_name)
-    coco_key = json.load(json_file)
-    images = coco_key["images"]
-    downloaded_data_dir = downloaded_data_dir + "public/"
-    num_wildlife_images = 0
+def get_data_sets(coco_key, images, unzipped_data_dir, json_file_name, categories_to_label_dict): 
+    num_wildlife_present_images = 0
 
     data, labels = [], []
     for index, image in enumerate(images):
-        
-        #TODO: remove
-        if index > 10000:
-            break
-        
         file_name = image["file_name"]
-        file_path = downloaded_data_dir + file_name
+        file_path = unzipped_data_dir + file_name
         
         if os.path.isfile(file_path):
             category_id = coco_key["annotations"][index]["category_id"]
             label = categories_to_label_dict[category_id]
             if label == 1:
-                num_wildlife_images += 1
+                num_wildlife_present_images += 1
             try:
                 image_tensor = get_image_tensor(file_path)
                 data.append(image_tensor)
@@ -85,10 +76,7 @@ def get_data_sets(downloaded_data_dir, json_file_name, categories_to_label_dict)
     print("\nNumber of training photos: " + str(len(training_data)))
     print("Number of testing photos: " + str(len(testing_data)))
     
-    json_file.close()
-    shutil.rmtree(downloaded_data_dir)
-    
-    return training_data, testing_data, training_labels, testing_labels, num_wildlife_images
+    return training_data, testing_data, training_labels, testing_labels, num_wildlife_present_images
 
 def print_image(image_tensor, prediction, downloaded_data_dir, index):
     if(prediction == 1):
@@ -104,7 +92,7 @@ def print_image(image_tensor, prediction, downloaded_data_dir, index):
     plt.show()
     plt.imsave(image_file_name, image_tensor[0].cpu(), cmap="gray")
 
-def print_testing_analysis(all_labels, all_predictions, title, downloaded_data_dir):
+def print_testing_analysis(all_labels, all_predictions, title, saving_dir):
     subplot = plt.subplot()
 
     cf_matrix = confusion_matrix(all_labels, all_predictions, labels=[1, 0])
@@ -116,7 +104,7 @@ def print_testing_analysis(all_labels, all_predictions, title, downloaded_data_d
     subplot.xaxis.set_ticklabels(['Wildlife Present', 'No Wildlife Present'])
     subplot.yaxis.set_ticklabels(['Wildlife Present', 'No Wildlife Present'])
     
-    plot_file_name = downloaded_data_dir + title + "_Confusion_Matrix.png"
+    plot_file_name = saving_dir + title + "_Confusion_Matrix.png"
     plt.savefig(plot_file_name)
     plt.show()
 
@@ -192,13 +180,24 @@ def train_and_test(model, training_loader, testing_loader, device, criterion, do
     print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
         
     testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False, downloaded_data_dir)
-    print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
+    print("partial testing loss: " + str(testing_loss) + " and partial testing accuracy: " + str(testing_accuracy))
     
 def flatten_list(data):
     return [image for batch in data for image in batch]
+    
+def final_testing(model, model_name, highest_model_accuracy, final_testing_loader, criterion, print_incorrect_images, downloaded_data_dir, saving_dir):
+    testing_loss, testing_accuracy, labels, predictions = test(model, final_testing_loader, criterion, print_incorrect_images, downloaded_data_dir, saving_dir)
+    print("final testing loss: " + str(testing_loss) + " and final testing accuracy: " + str(testing_accuracy))
+    if highest_model_accuracy < testing_accuracy:
+        print("Highest " + model_name + " accuracy achieved, saving weights")
+        highest_model_accuracy = testing_accuracy
+        torch.save(model.module.state_dict(), saving_dir + model_name + ".pt")
+        print_testing_analysis(labels, predictions, model_name + "_Overall", saving_dir)
+        
+    return highest_model_accuracy
 
 # Declaring Constants
-num_epochs = 1
+num_epochs = 5
 num_classes = 2
 batch_size = 10
 json_file_name = "idaho-camera-traps.json"
@@ -206,6 +205,7 @@ zip_prefix = "idaho-camera-traps-images.part_"
 downloaded_data_dir = "/nfs/hpc/share/isonc/downloaded_data/"
 saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/Idaho/"
 blob_name = "https://lilablobssc.blob.core.windows.net/idaho-camera-traps/"
+unzipped_data_dir = downloaded_data_dir + "public/"
 
 # Mapping canines, big cats, bears, and ungulates to wildlife present and all other categories to no wildlife present
 # This is mostly arbitrary and could be reworked, we just need to draw the line somewhere
@@ -247,51 +247,64 @@ if torch.cuda.device_count() > 1:
 
 # Orchestration
 download_zip(downloaded_data_dir, json_file_name, blob_name)
+json_file = open(downloaded_data_dir + json_file_name)
+coco_key = json.load(json_file)
+images_json = coco_key["images"]
 
 all_testing_data, all_testing_labels = [], []
-total_num_wildlife_images = 0
+total_num_wildlife_present_images = 0
+step_size = 2000
+
+highest_resnet50_testing_accuracy = 0
+highest_resnet152_testing_accuracy = 0
+highest_vit16_large_testing_accuracy = 0
 
 for epoch in range(num_epochs):
     
     print("Training epoch: " + str(epoch))
     
-    for i in range(5):
+    #TODO
+    for i in range(1):
         
         zip_name = zip_prefix + str(i)
-        download_zip(downloaded_data_dir, zip_name, blob_name)
-        training_data, testing_data, training_labels, testing_labels, num_wildlife_images = get_data_sets(downloaded_data_dir, json_file_name, categories_to_label_dict)
+        
+        #TODO  
+        #if epoch == 0:
+            #download_zip(downloaded_data_dir, zip_name, blob_name)
+        
+        # Inner loop needed to avoid memory issues
+        for index in range(0, len(images_json), step_size):
+            training_data, testing_data, training_labels, testing_labels, num_wildlife_present_images = get_data_sets(coco_key, images_json[index:index+step_size], unzipped_data_dir, json_file_name, categories_to_label_dict)
+            
+            if len(training_data) == 0:
+                continue
 
-        if (epoch == 0):
-            all_testing_data.append(testing_data)
-            all_testing_labels.append(testing_labels)
-            total_num_wildlife_images += num_wildlife_images
-        training_data_set = image_data_set(training_data, training_labels)
-        testing_data_set = image_data_set(testing_data, testing_labels)
-        training_loader = DataLoader(dataset = training_data_set, batch_size = batch_size, shuffle = True)
-        testing_loader = DataLoader(dataset = testing_data_set, batch_size = batch_size, shuffle = True)
+            if epoch == 0:
+                all_testing_data.append(testing_data)
+                all_testing_labels.append(testing_labels)
+                total_num_wildlife_present_images += num_wildlife_present_images
+                
+            training_data_set = image_data_set(training_data, training_labels)
+            testing_data_set = image_data_set(testing_data, testing_labels)
+            training_loader = DataLoader(dataset = training_data_set, batch_size = batch_size, shuffle = True)
+            testing_loader = DataLoader(dataset = testing_data_set, batch_size = batch_size, shuffle = True)
     
-        train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testing_loader, device, criterion, downloaded_data_dir)
+            train_and_test_models(resnet50, resnet152, vit_l_16, training_loader, testing_loader, device, criterion, downloaded_data_dir)
+         
+        #TODO   
+        #shutil.rmtree(unzipped_data_dir)    
 
+    print("total_num_wildlife_present_images: ", total_num_wildlife_present_images)
+    final_testing_data_set = image_data_set(flatten_list(all_testing_data), flatten_list(all_testing_labels))
+    
+    print("Number of final testing photos: ", len(final_testing_data_set))
+    final_testing_loader = DataLoader(dataset = final_testing_data_set, batch_size = batch_size, shuffle = True)
+        
+    highest_resnet50_testing_accuracy = final_testing(resnet50, "ResNet50", highest_resnet50_testing_accuracy, final_testing_loader, criterion, False, downloaded_data_dir, saving_dir)
+    highest_resnet152_testing_accuracy = final_testing(resnet152, "ResNet152", highest_resnet152_testing_accuracy, final_testing_loader, criterion, False, downloaded_data_dir, saving_dir)
+    #highest_vit16_large_testing_accuracy = final_testing(vit_l_16, "ViT_Large16", highest_vit16_large_testing_accuracy, final_testing_loader, criterion, False, downloaded_data_dir, saving_dir)
 
-print("total_num_wildlife_images: ", total_num_wildlife_images)
-
-# Final Testing
+json_file.close()
 os.remove(downloaded_data_dir + json_file_name)
-
-final_testing_data_set = image_data_set(flatten_list(all_testing_data), flatten_list(all_testing_labels))
-
-print("Number of final testing photos: ", len(final_testing_data_set))
-final_testing_loader = DataLoader(dataset = final_testing_data_set, batch_size = batch_size, shuffle = True)
-
-testing_loss, testing_accuracy, labels, predictions = test(resnet50, final_testing_loader, criterion, False, downloaded_data_dir)
-print_testing_analysis(labels, predictions, "ResNet50_Overall", downloaded_data_dir)
-
-testing_loss, testing_accuracy, labels, predictions = test(resnet152, final_testing_loader, criterion, False, downloaded_data_dir)
-print_testing_analysis(labels, predictions, "ResNet152_Overall", downloaded_data_dir)
-
-#testing_loss, testing_accuracy, labels, predictions = test(vit_l_16, final_testing_loader, criterion, False, downloaded_data_dir)
-#print_testing_analysis(labels, predictions, "ViT_Large_16_Overall", downloaded_data_dir)
-
-
 
 

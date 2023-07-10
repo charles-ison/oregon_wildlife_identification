@@ -14,4 +14,4 @@ source env/bin/activate
 
 module load python/3.10 cuda/11.7
 
-python3 model_benchmarking/Idaho/classification.py
+python3 -u model_benchmarking/Idaho/classification.py
