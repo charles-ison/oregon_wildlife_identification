@@ -41,15 +41,15 @@ def get_image_tensor(file_path):
 
 def remove_images_with_no_datetime(images):
     new_images = []
-    for image in images:
-        if("datetime" in image):
-            new_images.append(image)
+    for index, image in enumerate(images):
+        if "datetime" in image:
+            new_images.append((index, image))
     return new_images
 
 def get_sorted_images(coco_key):
     images = coco_key["images"]
-    images = remove_images_with_no_datetime(images)
-    return sorted(images, key=itemgetter("datetime"))
+    image_tuples = remove_images_with_no_datetime(images)
+    return sorted(image_tuples, key=lambda image_tuple: image_tuple[1]["datetime"])
 
 def flatten_list(data):
     return [image for batch in data for image in batch]
@@ -57,17 +57,22 @@ def flatten_list(data):
 def get_data_sets(data_dir, json_file_name):
     json_file = open(data_dir + json_file_name)
     coco_key = json.load(json_file)
-    images = get_sorted_images(coco_key)
+    annotations = coco_key["annotations"]
+    image_tuples = get_sorted_images(coco_key)
+    conflicting_indices_count = 0
 
     batch_data, batch_labels, data, labels = [], [], [], []
     previous_time_stamp = None
-    for index, image in enumerate(images):
+    for image_tuple in image_tuples:
+        index = image_tuple[0]
+        image = image_tuple[1]
         time_stamp = datetime.strptime(image["datetime"], '%Y:%m:%d %H:%M:%S')
         file_name = image["file_name"]
         file_path = data_dir + file_name
-
-        if os.path.isfile(file_path):
-            label = coco_key["annotations"][index]["category_id"]
+        
+        #TODO: Figure out why the index check is required here and why were dropping so many
+        if image["id"] == annotations[index]["image_id"] and os.path.isfile(file_path):
+            label = annotations[index]["category_id"]
             image_tensor = None
             try:
                 image_tensor = get_image_tensor(file_path)
@@ -75,7 +80,7 @@ def get_data_sets(data_dir, json_file_name):
                 print("Problematic image encountered, leaving out of training and testing")
                 continue
 
-            if index == 0 or (time_stamp - previous_time_stamp).total_seconds() < 60:
+            if previous_time_stamp == None or (time_stamp - previous_time_stamp).total_seconds() < 60:
                 batch_data.append(image_tensor)
                 batch_labels.append(label)
             else:
@@ -87,7 +92,9 @@ def get_data_sets(data_dir, json_file_name):
                 batch_labels.append(label)
 
             previous_time_stamp = time_stamp
-
+        else:
+            conflicting_indices_count += 1
+            
     data.append(torch.stack(batch_data))
     labels.append(torch.FloatTensor(batch_labels))
                 
@@ -97,9 +104,10 @@ def get_data_sets(data_dir, json_file_name):
     training_labels = flatten_list(batch_training_labels)
     testing_labels = flatten_list(batch_testing_labels)
 
-    print("\nNumber of training photos: " + str(len(training_data)))
-    print("Number of testing photos: " + str(len(testing_data)))
-    print("Number of batches for testing: " + str(len(batch_testing_data)))
+    print("\nNumber of training photos: ", len(training_data))
+    print("Number of testing photos: ", len(testing_data))
+    print("Number of batches for testing: ", len(batch_testing_data))
+    print("conflicting_indices_count: ", conflicting_indices_count)
 
     json_file.close()
 
@@ -245,7 +253,7 @@ num_epochs = 5
 batch_size = 10
 json_file_name = "animal_count_key.json"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/animal_count_manually_labeled_wildlife_data/"
-saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/Oregon/"
+saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/"
 
 print(torch.__version__)
 print(torchvision.__version__)
