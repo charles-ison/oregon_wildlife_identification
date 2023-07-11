@@ -6,12 +6,12 @@
 #SBATCH --gres=gpu:2       
 #SBATCH --mem=128G  
 
-#SBATCH -o model_benchmarking/Idaho/run_logs/logs.out
-#SBATCH -e model_benchmarking/Idaho/run_logs/logs.err
+#SBATCH -o model_benchmarking/run_logs/logs.out
+#SBATCH -e model_benchmarking/run_logs/logs.err
 
 # load env
 source env/bin/activate
 
 module load python/3.10 cuda/11.7
 
-python3 -u model_benchmarking/Idaho/classification.py
+python3 -u model_benchmarking/idaho_inference.py
