@@ -147,7 +147,7 @@ def print_testing_analysis(all_labels, all_predictions, title, data_dir, saving_
     print(title + " Recall: " + str(recall))
     print(title + " F-Score: " + str(f_score))
 
-def train(model, training_loader, criterion, optimizer):
+def train(model, training_loader, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
     num_correct = 0
@@ -169,7 +169,7 @@ def train(model, training_loader, criterion, optimizer):
     accuracy = num_correct/len(training_loader.dataset)
     return loss, accuracy
 
-def test(model, testing_loader, criterion, print_incorrect_images, data_dir):
+def test(model, testing_loader, criterion, print_incorrect_images, data_dir, device):
     model.eval()
     running_loss = 0.0
     num_correct = 0
@@ -196,9 +196,8 @@ def test(model, testing_loader, criterion, print_incorrect_images, data_dir):
     accuracy = num_correct/len(testing_loader.dataset)
     return loss, accuracy, all_labels, all_predictions
 
-def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, data_dir):
+def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, data_dir, device):
     model.eval()
-    running_loss = 0.0
     num_correct = 0
     all_labels, all_predictions = [], []
 
@@ -238,13 +237,13 @@ def train_and_test(num_epochs, model, model_name, training_loader, testing_loade
     for epoch in range(num_epochs):
         print("Epoch: " + str(epoch))
 
-        training_loss, training_accuracy = train(model, training_loader, criterion, optimizer)
+        training_loss, training_accuracy = train(model, training_loader, criterion, optimizer, device)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
 
-        testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False, data_dir)
+        testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False, data_dir, device)
         print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
 
-        batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_loader, criterion, False, data_dir)
+        batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_loader, criterion, False, data_dir, device)
         print("batch testing accuracy: " + str(batch_testing_accuracy))
 
         if highest_batch_testing_accuracy < batch_testing_accuracy:
