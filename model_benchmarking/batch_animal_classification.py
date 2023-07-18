@@ -70,7 +70,8 @@ def get_data_sets(data_dir, json_file_name):
         file_name = image["file_name"]
         file_path = data_dir + file_name
         
-        #TODO: Figure out why the index check is required here and why were dropping so many
+        # TODO: Use coco tools here instead to avoid dropping images
+        # https://pypi.org/project/pycocotools/ and https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoDemo.ipynb
         if image["id"] == annotations[index]["image_id"] and os.path.isfile(file_path):
             label = 1 if annotations[index]["category_id"] > 0 else 0
             image_tensor = None
