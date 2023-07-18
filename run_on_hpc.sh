@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH -J run_idaho_data_on_HPC
+#SBATCH -J run_batch_count_on_HPC
 #SBATCH -A eecs 
-#SBATCH -p dgx
+#SBATCH -p eecs
 #SBATCH -t 7-00:00:00   
 #SBATCH --gres=gpu:2       
-#SBATCH --mem=128G  
+#SBATCH --mem=100G  
 
 #SBATCH -o model_benchmarking/run_logs/logs.out
 #SBATCH -e model_benchmarking/run_logs/logs.err
@@ -14,4 +14,4 @@ source env/bin/activate
 
 module load python/3.10 cuda/11.7
 
-python3 -u model_benchmarking/idaho_inference.py
+python3 -u model_benchmarking/batch_animal_count.py

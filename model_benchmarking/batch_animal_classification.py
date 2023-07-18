@@ -225,7 +225,7 @@ def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, d
         all_predictions.append(batch_prediction)
         all_labels.append(batch_label)
 
-    accuracy = num_correct/len(batch_testing_data_set)
+    accuracy = num_correct/len(batch_testing_loader.dataset)
     return accuracy, all_labels, all_predictions
 
 def train_and_test(num_epochs, model, model_name, training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir, saving_dir):

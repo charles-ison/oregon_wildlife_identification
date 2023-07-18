@@ -70,7 +70,7 @@ def get_data_sets(data_dir, json_file_name):
         file_name = image["file_name"]
         file_path = data_dir + file_name
         
-        #TODO: Figure out why the index check is required here and why were dropping so many
+        #TODO: Figure out why the index check is required here and why we are dropping so many
         if image["id"] == annotations[index]["image_id"] and os.path.isfile(file_path):
             label = annotations[index]["category_id"]
             image_tensor = None
@@ -194,6 +194,7 @@ def test(model, testing_loader, criterion, print_incorrect_images, data_dir, dev
 def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, data_dir, device):
     model.eval()
     num_correct = 0
+    running_loss = 0.0
     all_labels, all_predictions = [], []
 
     for batch in batch_testing_loader:
@@ -208,6 +209,9 @@ def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, d
 
         max_prediction = torch.tensor(max_prediction).to(device)
         max_label = torch.max(labels)
+        
+        loss = criterion(max_prediction, max_label)
+        running_loss += loss.item()
 
         if max_prediction == max_label:
             num_correct += 1
@@ -215,8 +219,9 @@ def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, d
         all_predictions.append(max_prediction.cpu())
         all_labels.append(max_label.cpu())
 
-    accuracy = num_correct/len(batch_testing_data_set)
-    return accuracy, all_labels, all_predictions
+    loss = running_loss/len(batch_testing_loader.dataset)
+    accuracy = num_correct/len(batch_testing_loader.dataset)
+    return loss, accuracy, all_labels, all_predictions
 
 def train_and_test(num_epochs, model, model_name, training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir, saving_dir):
     model.to(device)
@@ -233,8 +238,8 @@ def train_and_test(num_epochs, model, model_name, training_loader, testing_loade
         testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False, data_dir, device)
         print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
 
-        batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_loader, criterion, False, data_dir, device)
-        print("batch testing accuracy: " + str(batch_testing_accuracy))
+        batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_loader, criterion, False, data_dir, device)
+        print("batch testing loss (MSE): " + str(batch_testing_loss) + " and batch testing accuracy: "+ str(batch_testing_accuracy))
 
         if highest_batch_testing_accuracy < batch_testing_accuracy:
             print("Highest batch testing accuracy achieved, saving weights")
