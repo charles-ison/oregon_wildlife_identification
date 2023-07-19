@@ -17,7 +17,6 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from operator import itemgetter
 from datetime import datetime
-
 from pycocotools.coco import COCO
 
 class image_data_set(torch.utils.data.Dataset):
@@ -68,12 +67,11 @@ def get_data_sets(data_dir, json_file_name):
         file_name = image["file_name"]
         file_path = data_dir + file_name
         
-        annotation_id = coco.getAnnIds(imgIds=[image["id"]])
-        annotation = coco.loadAnns(annotation_id)
+        annotation_id_list = coco.getAnnIds(imgIds=[image["id"]])
+        annotation_list = coco.loadAnns(annotation_id_list)
         
-        if len(annotation) != 0 and os.path.isfile(file_path):
-            annotation = annotation[0]
-            label = annotation["category_id"]
+        if len(annotation_list) != 0 and image["id"] == annotation_list[0]["image_id"] and os.path.isfile(file_path):
+            label = annotation_list[0]["category_id"]
             image_tensor = None
             try:
                 image_tensor = get_image_tensor(file_path)
