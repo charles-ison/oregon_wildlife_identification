@@ -81,8 +81,8 @@ def get_max_predictions(batched_images, model, device):
             image = torch.unsqueeze(image, dim=0).to(device)
             output = model(image).flatten()
             
-            #print_image(image, output.round().item(), count)
             count += 1
+            #print_image(image, output.round().item(), count)
             
             max_prediction = max(max_prediction, output.round().item())
         max_predictions.append(max_prediction)
@@ -96,6 +96,7 @@ def analyze(directory, model, device):
     print("len(batched_images):", len(batched_images))
 
     max_predictions = get_max_predictions(batched_images, model, device)
+    print(max_predictions)
     predicted_total_num_animals = sum(max_predictions)
     print("predicted_total_num_animals:", predicted_total_num_animals)
 
@@ -130,14 +131,5 @@ model.eval()
 model.to(device)
 
 # Orchestrating
-print("\nAnalyzing Cottonwood_Eastface_6.06_6.13")
-analyze(cottonwood_directory, model, device)
-
-print("\nAnalyzing NGilchrist_Eastface_6.06_6.13")
-analyze(ngilchrist_directory, model, device)
-
-print("\nAnalyzing SGilchrist_Eastface_6.06_6.13")
-analyze(sgilchrist_directory, model, device)
-
-print("\nAnalyzing MP152_ODOT003_EASTFACE")
-analyze(MP152_ODOT003_eastface_directory, model, device)
+#print("\nAnalyzing Cottonwood_Eastface_6.06_6.13")
+#analyze(cottonwood_directory, model, device)
