@@ -8,7 +8,7 @@ import torchvision.transforms as transforms
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-import json
+import utilities
 from PIL import Image
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
@@ -18,105 +18,6 @@ from sklearn.metrics import accuracy_score
 from operator import itemgetter
 from datetime import datetime
 from pycocotools.coco import COCO
-
-class image_data_set(torch.utils.data.Dataset):
-    def __init__(self, data, labels):
-        self.data = data
-        self.labels = labels
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, index):
-        return {'data': self.data[index], 'label': self.labels[index]}
-
-def get_image_tensor(file_path):
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
-
-    image = Image.open(file_path)
-    return transform(image)
-
-def remove_images_with_no_datetime(images):
-    new_images = []
-    for image in images:
-        if "datetime" in image:
-            new_images.append(image)
-    return new_images
-
-def get_sorted_images(images):
-    images = remove_images_with_no_datetime(images)
-    return sorted(images, key=lambda image: image["datetime"])
-
-def flatten_list(data):
-    return [image for batch in data for image in batch]
-
-def get_data_sets(data_dir, json_file_name):
-    coco = COCO(data_dir + json_file_name)
-    images = coco.loadImgs(coco.getImgIds())
-    sort_images = get_sorted_images(images)
-
-    batch_data, batch_labels, data, labels = [], [], [], []
-    previous_time_stamp = None
-    
-    for image in sort_images:
-        time_stamp = datetime.strptime(image["datetime"], '%Y:%m:%d %H:%M:%S')
-        file_name = image["file_name"]
-        file_path = data_dir + file_name
-        
-        annotation_id_list = coco.getAnnIds(imgIds=[image["id"]])
-        annotation_list = coco.loadAnns(annotation_id_list)
-        
-        if len(annotation_list) != 0 and image["id"] == annotation_list[0]["image_id"] and os.path.isfile(file_path):
-            label = annotation_list[0]["category_id"]
-            image_tensor = None
-            try:
-                image_tensor = get_image_tensor(file_path)
-            except:
-                print("Problematic image encountered, leaving out of training and testing")
-                continue
-
-            if previous_time_stamp == None or (time_stamp - previous_time_stamp).total_seconds() < 60:
-                batch_data.append(image_tensor)
-                batch_labels.append(label)
-            else:
-                data.append(torch.stack(batch_data))
-                labels.append(torch.FloatTensor(batch_labels))
-
-                batch_data, batch_labels = [], []
-                batch_data.append(image_tensor)
-                batch_labels.append(label)
-
-            previous_time_stamp = time_stamp
-            
-    data.append(torch.stack(batch_data))
-    labels.append(torch.FloatTensor(batch_labels))
-                
-    batch_training_data, batch_testing_data, batch_training_labels, batch_testing_labels = train_test_split(data, labels, test_size = 0.20)
-    training_data = flatten_list(batch_training_data)
-    testing_data = flatten_list(batch_testing_data)
-    training_labels = flatten_list(batch_training_labels)
-    testing_labels = flatten_list(batch_testing_labels)
-
-    print("\nNumber of training photos: ", len(training_data))
-    print("Number of testing photos: ", len(testing_data))
-    print("Number of batches for testing: ", len(batch_testing_data))
-
-    return training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels
-
-
-
-def print_image(image_tensor, prediction, data_dir, index):
-    image_file_name = data_dir + str(prediction.item()) + "_" + str(index) + ".png"
-
-    #Alternative normalized RGB visualization: plt.imshow(image_tensor.cpu().permute(1, 2, 0).numpy())
-    plt.imshow(image_tensor[0].cpu(), cmap="gray")
-    plt.title("Incorrectly Predicted " + str(prediction.item()) + " Animals Present")
-    plt.show()
-    #plt.imsave(image_file_name, image_tensor[0].cpu(), cmap="gray")
 
 def print_testing_analysis(all_labels, all_predictions, title, data_dir, saving_dir):
     subplot = plt.subplot()
@@ -174,7 +75,7 @@ def test(model, testing_loader, criterion, print_incorrect_images, data_dir, dev
     for i, batch in enumerate(testing_loader):
         data, labels = batch['data'].to(device), batch['label'].to(device)
         output = model(data)
-
+        
         loss = criterion(output, labels)
         running_loss += loss.item()
         
@@ -184,7 +85,7 @@ def test(model, testing_loader, criterion, print_incorrect_images, data_dir, dev
             if(prediction == labels[index]):
                 num_correct += 1
             elif(print_incorrect_images):
-                print_image(data[index], prediction, data_dir, i)
+                utilities.print_image(data[index], prediction, data_dir, i)
 
         all_labels.extend(labels.cpu())
 
@@ -264,10 +165,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 criterion = nn.CrossEntropyLoss()
 
-training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = get_data_sets(data_dir, json_file_name)
-training_data_set = image_data_set(training_data, training_labels)
-testing_data_set = image_data_set(testing_data, testing_labels)
-batch_testing_data_set = image_data_set(batch_testing_data, batch_testing_labels)
+training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = utilities.get_data_sets(data_dir, json_file_name, True)
+training_data_set = utilities.image_data_set(training_data, training_labels)
+testing_data_set = utilities.image_data_set(testing_data, testing_labels)
+batch_testing_data_set = utilities.image_data_set(batch_testing_data, batch_testing_labels)
 training_loader = DataLoader(dataset = training_data_set, batch_size = batch_size, shuffle = True)
 testing_loader = DataLoader(dataset = testing_data_set, batch_size = batch_size, shuffle = True)
 batch_testing_loader = DataLoader(dataset = batch_testing_data_set, batch_size = 1, shuffle = True)

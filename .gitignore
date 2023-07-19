@@ -1,3 +1,4 @@
 */data/
 *.pt
 env/
+*/__pycache__/

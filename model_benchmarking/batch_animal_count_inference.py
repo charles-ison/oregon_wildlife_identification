@@ -4,11 +4,11 @@ import torch.nn as nn
 import torchvision
 import torchvision.models as models
 import torchvision.transforms as transforms
+import matplotlib.pyplot as plt
 from PIL import Image
 from datetime import datetime, timedelta
 from collections import OrderedDict
 
-import matplotlib.pyplot as plt
 def print_image(image_tensor, prediction, index):
     image_file_name = str(prediction) + "_" + str(index) + ".png"
     plt.title("Predicted " + str(prediction) + " Animals Present")
