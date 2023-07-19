@@ -18,6 +18,8 @@ from sklearn.metrics import accuracy_score
 from operator import itemgetter
 from datetime import datetime
 
+from pycocotools.coco import COCO
+
 class image_data_set(torch.utils.data.Dataset):
     def __init__(self, data, labels):
         self.data = data
@@ -41,39 +43,37 @@ def get_image_tensor(file_path):
 
 def remove_images_with_no_datetime(images):
     new_images = []
-    for index, image in enumerate(images):
+    for image in images:
         if "datetime" in image:
-            new_images.append((index, image))
+            new_images.append(image)
     return new_images
 
-def get_sorted_images(coco_key):
-    images = coco_key["images"]
-    image_tuples = remove_images_with_no_datetime(images)
-    return sorted(image_tuples, key=lambda image_tuple: image_tuple[1]["datetime"])
+def get_sorted_images(images):
+    images = remove_images_with_no_datetime(images)
+    return sorted(images, key=lambda image: image["datetime"])
 
 def flatten_list(data):
     return [image for batch in data for image in batch]
 
 def get_data_sets(data_dir, json_file_name):
-    json_file = open(data_dir + json_file_name)
-    coco_key = json.load(json_file)
-    annotations = coco_key["annotations"]
-    image_tuples = get_sorted_images(coco_key)
-    conflicting_indices_count = 0
+    coco = COCO(data_dir + json_file_name)
+    images = coco.loadImgs(coco.getImgIds())
+    sort_images = get_sorted_images(images)
 
     batch_data, batch_labels, data, labels = [], [], [], []
     previous_time_stamp = None
-    for image_tuple in image_tuples:
-        index = image_tuple[0]
-        image = image_tuple[1]
+    
+    for image in sort_images:
         time_stamp = datetime.strptime(image["datetime"], '%Y:%m:%d %H:%M:%S')
         file_name = image["file_name"]
         file_path = data_dir + file_name
         
-        # TODO: Use coco tools here instead to avoid dropping images
-        # https://pypi.org/project/pycocotools/ and https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoDemo.ipynb
-        if image["id"] == annotations[index]["image_id"] and os.path.isfile(file_path):
-            label = annotations[index]["category_id"]
+        annotation_id = coco.getAnnIds(imgIds=[image["id"]])
+        annotation = coco.loadAnns(annotation_id)
+        
+        if len(annotation) != 0 and os.path.isfile(file_path):
+            annotation = annotation[0]
+            label = annotation["category_id"]
             image_tensor = None
             try:
                 image_tensor = get_image_tensor(file_path)
@@ -93,8 +93,6 @@ def get_data_sets(data_dir, json_file_name):
                 batch_labels.append(label)
 
             previous_time_stamp = time_stamp
-        else:
-            conflicting_indices_count += 1
             
     data.append(torch.stack(batch_data))
     labels.append(torch.FloatTensor(batch_labels))
@@ -108,9 +106,6 @@ def get_data_sets(data_dir, json_file_name):
     print("\nNumber of training photos: ", len(training_data))
     print("Number of testing photos: ", len(testing_data))
     print("Number of batches for testing: ", len(batch_testing_data))
-    print("conflicting_indices_count: ", conflicting_indices_count)
-
-    json_file.close()
 
     return training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels
 
