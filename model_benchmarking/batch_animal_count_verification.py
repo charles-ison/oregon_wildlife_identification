@@ -98,6 +98,7 @@ def get_data_loaders(data_dir, json_file_name):
 batch_size = 10
 cottonwood_eastface_json_file_name = "2023_Cottonwood_Eastface_5.30_7.10_key.json"
 cottonwood_westface_json_file_name = "2023_Cottonwood_Westface_5.30_7.10_102RECNX_key.json"
+ngilchrist_eastface_json_file_name = "2022_NGilchrist_Eastface_055_07.12_07.20_key.json"
 resnet50_weights_path = "/nfs/stak/users/isonc/hpc-share/saved_models/2022_Cottonwood_Eastface_batch_count_ResNet50/ResNet50.pt"
 resnet152_weights_path = "/nfs/stak/users/isonc/hpc-share/saved_models/2022_Cottonwood_Eastface_batch_count_ResNet152/ResNet152.pt"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/verification_animal_count/"
@@ -110,11 +111,14 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 criterion = nn.MSELoss()
 
-print("\n Getting Cottonwood Eastface data")
+print("\nGetting Cottonwood Eastface data")
 cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader = get_data_loaders(data_dir, cottonwood_eastface_json_file_name)
 
-print("\n Getting Cottonwood Westface data")
+print("\nGetting Cottonwood Westface data")
 cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader = get_data_loaders(data_dir, cottonwood_westface_json_file_name)
+
+print("\nGetting NGilchrist Eastface data")
+ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader = get_data_loaders(data_dir, ngilchrist_eastface_json_file_name)
 
 # Declaring Models
 # Have follow same steps used to create model during training
@@ -138,15 +142,17 @@ if torch.cuda.device_count() > 1:
 # Testing
 print("\nTesting ResNet50 on Cottonwood Eastface")
 verify(resnet50, "ResNet50 Cottonwood Eastface", cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, data_dir, saving_dir)
-
 print("\nTesting ResNet50 on Cottonwood Westface")
 verify(resnet50, "ResNet50 Cottonwood Westface", cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, data_dir, saving_dir)
+print("\nTesting ResNet50 on NGilchrist Eastface")
+verify(resnet50, "ResNet50 NGilchrist Eastface", ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, data_dir, saving_dir)
 
 print("\nTesting ResNet152 on Cottonwood Eastface")
 verify(resnet152, "ResNet152 Cottonwood Eastface", cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, data_dir, saving_dir)
-
 print("\nTesting ResNet152 on Cottonwood Westface")
 verify(resnet152, "ResNet152 Cottonwood Westface", cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, data_dir, saving_dir)
+print("\nTesting ResNet152 on NGilchrist Eastface")
+verify(resnet152, "ResNet152 NGilchrist Eastface", ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, data_dir, saving_dir)
 
 
 

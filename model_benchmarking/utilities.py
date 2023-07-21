@@ -125,7 +125,7 @@ def get_data_sets(data_dir, json_file_name, is_classification, is_training):
         individual_labels = flatten_list(labels)
         
         print("Number of batches for verification: ", len(data))
-        print("Number of individual photos for verification: ", len(data))
+        print("Number of individual photos for verification: ", len(individual_data))
         return data, labels, individual_data, individual_labels
 
 def print_image(image_tensor, prediction, data_dir, index):
