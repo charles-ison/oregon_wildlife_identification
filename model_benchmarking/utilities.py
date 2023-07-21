@@ -54,7 +54,8 @@ def get_sorted_images(images):
 def flatten_list(data):
     return [image for batch in data for image in batch]
 
-def get_data_sets(data_dir, json_file_name, is_classification):
+#TODO: Code smell here passing around these flags, should probably be refactored into separate classes
+def get_data_sets(data_dir, json_file_name, is_classification, is_training):
     coco = COCO(data_dir + json_file_name)
     images = coco.loadImgs(coco.getImgIds())
     sort_images = get_sorted_images(images)
@@ -106,18 +107,26 @@ def get_data_sets(data_dir, json_file_name, is_classification):
         labels.append(torch.LongTensor(batch_labels))
     else:
         labels.append(torch.FloatTensor(batch_labels))
-                
-    batch_training_data, batch_testing_data, batch_training_labels, batch_testing_labels = train_test_split(data, labels, test_size = 0.20)
-    training_data = flatten_list(batch_training_data)
-    testing_data = flatten_list(batch_testing_data)
-    training_labels = flatten_list(batch_training_labels)
-    testing_labels = flatten_list(batch_testing_labels)
+    
+    if is_training:
+        batch_training_data, batch_testing_data, batch_training_labels, batch_testing_labels = train_test_split(data, labels, test_size = 0.20)
+        training_data = flatten_list(batch_training_data)
+        testing_data = flatten_list(batch_testing_data)
+        training_labels = flatten_list(batch_training_labels)
+        testing_labels = flatten_list(batch_testing_labels)
 
-    print("\nNumber of training photos: ", len(training_data))
-    print("Number of testing photos: ", len(testing_data))
-    print("Number of batches for testing: ", len(batch_testing_data))
+        print("\nNumber of training photos: ", len(training_data))
+        print("Number of testing photos: ", len(testing_data))
+        print("Number of batches for testing: ", len(batch_testing_data))
 
-    return training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels
+        return training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels
+    else:
+        individual_data = flatten_list(data)
+        individual_labels = flatten_list(labels)
+        
+        print("Number of batches for verification: ", len(data))
+        print("Number of individual photos for verification: ", len(data))
+        return data, labels, individual_data, individual_labels
 
 def print_image(image_tensor, prediction, data_dir, index):
     image_file_name = data_dir + str(prediction.item()) + "_" + str(index) + ".png"
