@@ -149,7 +149,7 @@ def train_and_test(num_epochs, model, model_name, training_loader, testing_loade
 num_epochs = 5
 batch_size = 10
 json_file_name = "animal_count_key.json"
-data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/animal_count_manually_labeled_wildlife_data/"
+data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/2022_Cottonwood_Eastface_and_Repelcam/"
 saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/"
 
 print(torch.__version__)
