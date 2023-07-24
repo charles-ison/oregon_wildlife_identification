@@ -18,8 +18,9 @@ from sklearn.metrics import accuracy_score
 from operator import itemgetter
 from datetime import datetime
 from pycocotools.coco import COCO
+from pytorch_grad_cam import GradCAM
 
-def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, data_dir, device):
+def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, saving_dir, device):
     model.eval()
     num_correct = 0
     running_loss = 0.0
@@ -51,7 +52,7 @@ def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, d
     accuracy = num_correct/len(batch_testing_loader.dataset)
     return loss, accuracy, all_labels, all_predictions
     
-def test_individual(model, testing_loader, criterion, print_incorrect_images, data_dir, device):
+def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_images, saving_dir, device):
     model.eval()
     running_loss = 0.0
     num_correct = 0
@@ -60,15 +61,19 @@ def test_individual(model, testing_loader, criterion, print_incorrect_images, da
     for i, batch in enumerate(testing_loader):
         data, labels = batch['data'].to(device), batch['label'].to(device)
         output = model(data).flatten()
+        
+        #TODO: Its a bug to use labels here
+        utilities.create_heat_map(grad_cam, data[0], labels[0], saving_dir)
 
         loss = criterion(output, labels)
         running_loss += loss.item()
         for index, prediction in enumerate(output.round()):
-            all_predictions.append(prediction.cpu().item())
+            prediction = prediction.cpu().item()
+            all_predictions.append(prediction)
             if(prediction == labels[index]):
                 num_correct += 1
             elif(print_incorrect_images):
-                utilities.print_image(data[index], prediction, data_dir, i)
+                utilities.print_image(data[index], prediction, saving_dir, i)
 
         all_labels.extend(labels.cpu())
 
@@ -76,14 +81,13 @@ def test_individual(model, testing_loader, criterion, print_incorrect_images, da
     accuracy = num_correct/len(testing_loader.dataset)
     return loss, accuracy, all_labels, all_predictions
 
-def verify(model, model_name, batch_testing_loader, individual_testing_loader, device, criterion, data_dir, saving_dir):
+def verify(model, grad_cam, batch_testing_loader, individual_testing_loader, device, criterion, saving_dir):
     model.to(device)
-    saving_dir = saving_dir + "batch_count_" + model_name + "/"
     
-    individual_testing_loss, individual_testing_accuracy, individual_labels, individual_predictions = test_individual(model, individual_testing_loader, criterion, False, data_dir, device)
+    individual_testing_loss, individual_testing_accuracy, individual_labels, individual_predictions = test_individual(model, grad_cam, individual_testing_loader, criterion, False, saving_dir, device)
     print("individual testing loss (MSE): " + str(individual_testing_loss) + " and individual testing accuracy: "+ str(individual_testing_accuracy))
 
-    batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_loader, criterion, False, data_dir, device)
+    batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_loader, criterion, False, saving_dir, device)
     print("batch testing loss (MSE): " + str(batch_testing_loss) + " and batch testing accuracy: "+ str(batch_testing_accuracy))
     
 def get_data_loaders(data_dir, json_file_name):
@@ -100,10 +104,16 @@ cottonwood_eastface_json_file_name = "2023_Cottonwood_Eastface_5.30_7.10_key.jso
 cottonwood_westface_json_file_name = "2023_Cottonwood_Westface_5.30_7.10_102RECNX_key.json"
 ngilchrist_eastface_json_file_name = "2022_NGilchrist_Eastface_055_07.12_07.20_key.json"
 idaho_json_file_name = "Idaho_loc_0099_key.json"
-resnet50_weights_path = "/nfs/stak/users/isonc/hpc-share/saved_models/2022_Cottonwood_Eastface_batch_count_ResNet50/ResNet50.pt"
-resnet152_weights_path = "/nfs/stak/users/isonc/hpc-share/saved_models/2022_Cottonwood_Eastface_batch_count_ResNet152/ResNet152.pt"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/verification_animal_count/"
-saving_dir = "/nfs/stak/users/isonc/hpc-share/run_logs/"
+
+resnet_50_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/2022_Cottonwood_Eastface_batch_count_ResNet50/"
+resnet_152_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/2022_Cottonwood_Eastface_batch_count_ResNet152/"
+
+resnet50_weights_path = resnet_50_saving_dir + "ResNet50.pt"
+resnet152_weights_path = resnet_152_saving_dir + "ResNet152.pt"
+
+resnet_50_grad_cam_path = resnet_50_saving_dir + "grad_cam/"
+resnet_152_grad_cam_path = resnet_152_saving_dir + "grad_cam/"
 
 print(torch.__version__)
 print(torchvision.__version__)
@@ -134,6 +144,10 @@ resnet152 = models.resnet152()
 in_features = resnet152.fc.in_features
 resnet152.fc = nn.Linear(in_features, 1)
 
+#Layer 4 is just recommended by GradCam documentation for ResNet
+resnet50_cam = GradCAM(model=resnet50, target_layers=[resnet50.layer4[-1]], use_cuda=torch.cuda.is_available())
+resnet152_cam = GradCAM(model=resnet152, target_layers=[resnet152.layer4[-1]], use_cuda=torch.cuda.is_available())
+
 #Loading trained model weights
 resnet50.load_state_dict(torch.load(resnet50_weights_path))
 resnet152.load_state_dict(torch.load(resnet152_weights_path))
@@ -145,22 +159,22 @@ if torch.cuda.device_count() > 1:
 
 # Testing
 print("\nTesting ResNet50 on Cottonwood Eastface")
-verify(resnet50, "ResNet50 Cottonwood Eastface", cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, data_dir, saving_dir)
+verify(resnet50, resnet50_cam, cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, resnet_50_grad_cam_path)
 print("\nTesting ResNet50 on Cottonwood Westface")
-verify(resnet50, "ResNet50 Cottonwood Westface", cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, data_dir, saving_dir)
+verify(resnet50, resnet50_cam, cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, resnet_50_grad_cam_path)
 print("\nTesting ResNet50 on NGilchrist Eastface")
-verify(resnet50, "ResNet50 NGilchrist Eastface", ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, data_dir, saving_dir)
+verify(resnet50, resnet50_cam, ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, resnet_50_grad_cam_path)
 print("\nTesting ResNet50 on Idaho")
-verify(resnet50, "ResNet50 NGilchrist Eastface", idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, data_dir, saving_dir)
+verify(resnet50, resnet50_cam, idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, resnet_50_grad_cam_path)
 
 print("\nTesting ResNet152 on Cottonwood Eastface")
-verify(resnet152, "ResNet152 Cottonwood Eastface", cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, data_dir, saving_dir)
+verify(resnet152, resnet152_cam, cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, resnet_152_grad_cam_path)
 print("\nTesting ResNet152 on Cottonwood Westface")
-verify(resnet152, "ResNet152 Cottonwood Westface", cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, data_dir, saving_dir)
+verify(resnet152, resnet152_cam, cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, resnet_152_grad_cam_path)
 print("\nTesting ResNet152 on NGilchrist Eastface")
-verify(resnet152, "ResNet152 NGilchrist Eastface", ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, data_dir, saving_dir)
+verify(resnet152, resnet152_cam, ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, resnet_152_grad_cam_path)
 print("\nTesting ResNet152 on Idaho")
-verify(resnet152, "ResNet152 Idaho", idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, data_dir, saving_dir)
+verify(resnet152, resnet152_cam, idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, resnet_152_grad_cam_path)
 
 
 

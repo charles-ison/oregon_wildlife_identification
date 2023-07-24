@@ -30,6 +30,7 @@ ftfy==6.1.1
 future==0.18.3
 gitdb==4.0.10
 GitPython==3.1.31
+grad-cam==1.4.8
 huggingface-hub==0.15.1
 hydra-core==1.0.7
 idna==3.4
@@ -68,6 +69,7 @@ nvidia-nccl-cu11==2.14.3
 nvidia-nvtx-cu11==11.7.91
 oauthlib==3.2.2
 omegaconf==2.0.6
+opencv-python==4.8.0.74
 packaging==23.1
 pandas==2.0.2
 Pillow==9.5.0
@@ -106,6 +108,7 @@ torchvision==0.15.2
 tqdm==4.65.0
 transformers==4.29.2
 triton==2.0.0
+ttach==0.0.3
 typing_extensions==4.6.3
 tzdata==2023.3
 uri-template==1.2.0
