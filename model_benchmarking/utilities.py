@@ -8,7 +8,6 @@ import torchvision.transforms as transforms
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as matplotlib
 import json
 from pytorch_grad_cam.utils.image import show_cam_on_image
 from PIL import Image
@@ -131,22 +130,31 @@ def get_data_sets(data_dir, json_file_name, is_classification, is_training):
         return data, labels, individual_data, individual_labels
 
 def print_image(image_tensor, prediction, data_dir, index):
-    image_file_name = data_dir + str(prediction) + "_" + str(index) + ".png"
-    plt.imshow(image_tensor[0].cpu(), cmap="gray")
-    plt.title("Predicted: " + str(prediction))
-    plt.imsave(image_file_name, image_tensor[0].cpu(), cmap="gray")
+    image_tensor = image_tensor.permute(1, 2, 0).cpu()
+    normalize = plt.Normalize()
+    image_tensor = normalize(image_tensor)
+    
+    title = str(prediction) + "_" + str(index)
+    image_file_name = data_dir + title + ".png"
+    plt.imshow(image_tensor)
+    plt.title(title)
+    plt.imsave(image_file_name, image_tensor)
 
-def create_heat_map(grad_cam, image, prediction, saving_dir):
+def create_heat_map(grad_cam, image, prediction, saving_dir, index):
+    
+    title = "grad_cam_for_prediction_" + str(prediction) + "_" + str(index)
+    image_file_name = saving_dir + title + ".png"
+    plt.title(title)
+    
     # Just processing one image at a time
     grayscale_cam = grad_cam(input_tensor=image.unsqueeze(dim=0))[0]
         
     # Transformations required for Grad Cam
-    image = image.reshape([224, 224, 3]).cpu().numpy()
+    image = image.permute(1, 2, 0).cpu().numpy()
     image_with_heat_map = show_cam_on_image(image, grayscale_cam, use_rgb=True)
     
-    title = "grad_cam_for_prediction_" + str(prediction.item())
-    image_file_name = saving_dir + title + ".png"
-    plt.title(title)
+    normalize = plt.Normalize()
+    normalized_image_with_heat_map = normalize(image_with_heat_map)
     
-    plt.imshow(image[:, :, 0], cmap="gray")
-    plt.imsave(image_file_name, image[:, :, 0], cmap="gray")
+    plt.imshow(normalized_image_with_heat_map)
+    plt.imsave(image_file_name, normalized_image_with_heat_map)

@@ -52,7 +52,7 @@ def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, s
     accuracy = num_correct/len(batch_testing_loader.dataset)
     return loss, accuracy, all_labels, all_predictions
     
-def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_images, saving_dir, device):
+def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_images, print_heat_map, saving_dir, device):
     model.eval()
     running_loss = 0.0
     num_correct = 0
@@ -61,19 +61,20 @@ def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_
     for i, batch in enumerate(testing_loader):
         data, labels = batch['data'].to(device), batch['label'].to(device)
         output = model(data).flatten()
-        
-        #TODO: Its a bug to use labels here
-        utilities.create_heat_map(grad_cam, data[0], labels[0], saving_dir)
 
         loss = criterion(output, labels)
         running_loss += loss.item()
         for index, prediction in enumerate(output.round()):
             prediction = prediction.cpu().item()
             all_predictions.append(prediction)
-            if(prediction == labels[index]):
+            if prediction == labels[index]:
                 num_correct += 1
-            elif(print_incorrect_images):
+            elif print_incorrect_images:
                 utilities.print_image(data[index], prediction, saving_dir, i)
+            
+            # Just looking at every 5 samples
+            if print_heat_map and index % 5 == 0:
+                utilities.create_heat_map(grad_cam, data[index], prediction, saving_dir, i)
 
         all_labels.extend(labels.cpu())
 
@@ -84,7 +85,7 @@ def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_
 def verify(model, grad_cam, batch_testing_loader, individual_testing_loader, device, criterion, saving_dir):
     model.to(device)
     
-    individual_testing_loss, individual_testing_accuracy, individual_labels, individual_predictions = test_individual(model, grad_cam, individual_testing_loader, criterion, False, saving_dir, device)
+    individual_testing_loss, individual_testing_accuracy, individual_labels, individual_predictions = test_individual(model, grad_cam, individual_testing_loader, criterion, False, True, saving_dir, device)
     print("individual testing loss (MSE): " + str(individual_testing_loss) + " and individual testing accuracy: "+ str(individual_testing_accuracy))
 
     batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_loader, criterion, False, saving_dir, device)
