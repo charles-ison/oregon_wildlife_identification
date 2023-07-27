@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J run_batch_count_on_HPC
+#SBATCH -J run_on_HPC
 #SBATCH -A eecs 
 #SBATCH -p eecs
 #SBATCH -t 7-00:00:00   
@@ -14,4 +14,4 @@ source env/bin/activate
 
 module load python/3.10 cuda/11.7
 
-python3 -u model_benchmarking/batch_animal_count.py
+python3 -u model_benchmarking/batch_animal_count_verification.py

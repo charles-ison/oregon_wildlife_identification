@@ -31,15 +31,24 @@ class image_data_set(torch.utils.data.Dataset):
     def __getitem__(self, index):
         return {'data': self.data[index], 'label': self.labels[index]}
 
-def get_image_tensor(file_path):
+def get_image_tensor(file_path, is_training):
+    image = Image.open(file_path)
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    image = Image.open(file_path)
-    return transform(image)
+    tensor = transform(image)
+    
+    if is_training:
+        transform = transforms.Compose([
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.RandomRotation(degrees=15)
+        ])
+        tensor = transform(tensor)
+        
+    return tensor
 
 def remove_images_with_no_datetime(images):
     new_images = []
@@ -80,7 +89,7 @@ def get_data_sets(data_dir, json_file_name, is_classification, is_training):
                 
             image_tensor = None
             try:
-                image_tensor = get_image_tensor(file_path)
+                image_tensor = get_image_tensor(file_path, is_training)
             except:
                 print("Problematic image encountered, leaving out of training and testing")
                 continue
