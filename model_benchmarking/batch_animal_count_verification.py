@@ -18,7 +18,7 @@ from sklearn.metrics import accuracy_score
 from operator import itemgetter
 from datetime import datetime
 from pycocotools.coco import COCO
-from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam import FullGrad
 
 def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, saving_dir, device):
     model.eval()
@@ -74,7 +74,7 @@ def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_
                 utilities.print_image(data[index], prediction, saving_dir, i)
             
             # Just looking at every 5 samples
-            if print_heat_map and grad_cam_identifier % 2 == 0:
+            if print_heat_map and grad_cam_identifier % 10 == 0:
                 utilities.create_heat_map(grad_cam, data[index], prediction, labels[index], saving_dir, grad_cam_identifier)
             grad_cam_identifier += 1
 
@@ -148,8 +148,8 @@ in_features = resnet152.fc.in_features
 resnet152.fc = nn.Linear(in_features, 1)
 
 #Layer 4 is just recommended by GradCam documentation for ResNet
-resnet50_cam = GradCAM(model=resnet50, target_layers=[resnet50.layer4[-1]], use_cuda=torch.cuda.is_available())
-resnet152_cam = GradCAM(model=resnet152, target_layers=[resnet152.layer4[-1]], use_cuda=torch.cuda.is_available())
+resnet50_cam = FullGrad(model=resnet50, target_layers=[], use_cuda=torch.cuda.is_available())
+resnet152_cam = FullGrad(model=resnet152, target_layers=[], use_cuda=torch.cuda.is_available())
 
 #Loading trained model weights
 resnet50.load_state_dict(torch.load(resnet50_weights_path))
