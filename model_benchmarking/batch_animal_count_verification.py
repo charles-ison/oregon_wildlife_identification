@@ -57,6 +57,7 @@ def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_
     running_loss = 0.0
     num_correct = 0
     all_labels, all_predictions = [], []
+    grad_cam_identifier = 0
 
     for i, batch in enumerate(testing_loader):
         data, labels = batch['data'].to(device), batch['label'].to(device)
@@ -73,8 +74,9 @@ def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_
                 utilities.print_image(data[index], prediction, saving_dir, i)
             
             # Just looking at every 5 samples
-            if print_heat_map and index % 5 == 0:
-                utilities.create_heat_map(grad_cam, data[index], prediction, saving_dir, i)
+            if print_heat_map and grad_cam_identifier % 2 == 0:
+                utilities.create_heat_map(grad_cam, data[index], prediction, labels[index], saving_dir, grad_cam_identifier)
+            grad_cam_identifier += 1
 
         all_labels.extend(labels.cpu())
 
@@ -160,22 +162,22 @@ if torch.cuda.device_count() > 1:
 
 # Testing
 print("\nTesting ResNet50 on Cottonwood Eastface")
-verify(resnet50, resnet50_cam, cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, resnet_50_grad_cam_path)
+verify(resnet50, resnet50_cam, cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_eastface/")
 print("\nTesting ResNet50 on Cottonwood Westface")
-verify(resnet50, resnet50_cam, cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, resnet_50_grad_cam_path)
+verify(resnet50, resnet50_cam, cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_westface/")
 print("\nTesting ResNet50 on NGilchrist Eastface")
-verify(resnet50, resnet50_cam, ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, resnet_50_grad_cam_path)
+verify(resnet50, resnet50_cam, ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "ngilchrist_eastface/")
 print("\nTesting ResNet50 on Idaho")
-verify(resnet50, resnet50_cam, idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, resnet_50_grad_cam_path)
+verify(resnet50, resnet50_cam, idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "idaho/")
 
 print("\nTesting ResNet152 on Cottonwood Eastface")
-verify(resnet152, resnet152_cam, cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, resnet_152_grad_cam_path)
+verify(resnet152, resnet152_cam, cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "cottonwood_eastface/")
 print("\nTesting ResNet152 on Cottonwood Westface")
-verify(resnet152, resnet152_cam, cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, resnet_152_grad_cam_path)
+verify(resnet152, resnet152_cam, cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "cottonwood_westface/")
 print("\nTesting ResNet152 on NGilchrist Eastface")
-verify(resnet152, resnet152_cam, ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, resnet_152_grad_cam_path)
+verify(resnet152, resnet152_cam, ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "ngilchrist_eastface/")
 print("\nTesting ResNet152 on Idaho")
-verify(resnet152, resnet152_cam, idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, resnet_152_grad_cam_path)
+verify(resnet152, resnet152_cam, idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "idaho/")
 
 
 

@@ -149,9 +149,9 @@ def print_image(image_tensor, prediction, data_dir, index):
     plt.title(title)
     plt.imsave(image_file_name, image_tensor)
 
-def create_heat_map(grad_cam, image, prediction, saving_dir, index):
+def create_heat_map(grad_cam, image, prediction, label, saving_dir, identifier):
     
-    title = "grad_cam_for_prediction_" + str(prediction) + "_" + str(index)
+    title = "grad_cam_for_prediction_" + str(int(prediction)) + "_and_label_" + str(int(label)) + "_identifier_" + str(identifier)
     image_file_name = saving_dir + title + ".png"
     plt.title(title)
     
