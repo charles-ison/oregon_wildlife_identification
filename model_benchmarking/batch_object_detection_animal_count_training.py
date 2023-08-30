@@ -19,6 +19,7 @@ from operator import itemgetter
 from datetime import datetime
 from pycocotools.coco import COCO
 
+
 def print_testing_analysis(all_labels, all_predictions, title, data_dir, saving_dir):
     subplot = plt.subplot()
 
@@ -43,28 +44,41 @@ def print_testing_analysis(all_labels, all_predictions, title, data_dir, saving_
     print(title + " Precision: " + str(precision))
     print(title + " Recall: " + str(recall))
     print(title + " F-Score: " + str(f_score))
+    
+
+def set_device_for_list_of_dicts(some_list, device):
+    for some_dict in some_list:
+        some_dict["boxes"] = some_dict["boxes"].to(device)
+        some_dict["labels"] = some_dict["labels"].to(device)
+    
+
+def set_device_for_list_of_tensors(some_list, device):
+    for index, tensor in enumerate(some_list):
+        some_list[index] = tensor.to(device)
+
 
 def train(model, training_data_set, batch_size, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
     num_correct = 0
-    #TODO: Add batch size here
-    for batch in training_data_set:
-        data, targets = batch['data'].to(device), batch['label']
-        targets["boxes"] = targets["boxes"].to(device)
-        targets["labels"] = targets["labels"].to(device)
+    for index in range(0, len(training_data_set), batch_size):
+        batch = training_data_set[index:index + batch_size]
+        data, targets = batch['data'], batch['label']
+        set_device_for_list_of_tensors(data, device)
+        set_device_for_list_of_dicts(targets, device)
         optimizer.zero_grad()
-        output = model([data], [targets])
+        output = model(data, targets)
 
-        loss = criterion(output, labels)
+        loss = criterion(output, targets["labels"])
         running_loss += loss.item()
-        num_correct += (output.round() == labels).sum().item()
+        num_correct += (output.round() == targets["labels"]).sum().item()
         loss.backward()
         optimizer.step()
 
     loss = running_loss/len(training_loader.dataset)
     accuracy = num_correct/len(training_loader.dataset)
     return loss, accuracy
+
 
 def test(model, testing_data_set, batch_size, criterion, print_incorrect_images, data_dir, device):
     model.eval()
@@ -90,6 +104,7 @@ def test(model, testing_data_set, batch_size, criterion, print_incorrect_images,
     loss = running_loss/len(testing_loader.dataset)
     accuracy = num_correct/len(testing_loader.dataset)
     return loss, accuracy, all_labels, all_predictions
+
 
 def test_batch(model, batch_testing_data_set, criterion, print_incorrect_images, data_dir, device):
     model.eval()
@@ -123,6 +138,7 @@ def test_batch(model, batch_testing_data_set, criterion, print_incorrect_images,
     accuracy = num_correct/len(batch_testing_loader.dataset)
     return loss, accuracy, all_labels, all_predictions
 
+
 def train_and_test(num_epochs, model, model_name, training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, criterion, data_dir, saving_dir):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -150,7 +166,7 @@ def train_and_test(num_epochs, model, model_name, training_data_set, testing_dat
 
 # Declaring Constants
 num_epochs = 5
-batch_size = 10
+batch_size = 5
 json_file_name = "animal_count_key.json"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/object_detection_testing/"
 saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/"
@@ -170,10 +186,8 @@ batch_testing_data_set = utilities.image_data_set(batch_testing_data, batch_test
 # Declaring Models
 # TODO: YOLO and SSD
 faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2(weights=models.detection.FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT)
-#in_features = faster_rcnn.roi_heads.box_predictor.cls_score.in_features
-#faster_rcnn.roi_heads.box_predictor = models.detection.faster_rcnn.FastRCNNPredictor(in_features, 1)
-
-print(faster_rcnn)
+in_features = faster_rcnn.roi_heads.box_predictor.cls_score.in_features
+faster_rcnn.roi_heads.box_predictor = models.detection.faster_rcnn.FastRCNNPredictor(in_features, 10)
 
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))

@@ -80,7 +80,7 @@ def get_label(annotation_list, is_classification, is_object_detection):
         bounding_box[2] = bounding_box[0] + bounding_box[2]
         bounding_box[3] = bounding_box[1] + bounding_box[3]
         bounding_box = torch.FloatTensor(bounding_box).reshape(1, 4)
-        label = torch.LongTensor(label)
+        label = torch.LongTensor([label])
         return {"boxes":  bounding_box, "labels": label}
     else:
         return label
