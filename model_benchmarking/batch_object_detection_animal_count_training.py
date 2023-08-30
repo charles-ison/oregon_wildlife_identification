@@ -44,14 +44,17 @@ def print_testing_analysis(all_labels, all_predictions, title, data_dir, saving_
     print(title + " Recall: " + str(recall))
     print(title + " F-Score: " + str(f_score))
 
-def train(model, training_loader, criterion, optimizer, device):
+def train(model, training_data_set, batch_size, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
     num_correct = 0
-    for batch in training_loader:
-        data, labels = batch['data'].to(device), batch['label'].to(device)
+    #TODO: Add batch size here
+    for batch in training_data_set:
+        data, targets = batch['data'].to(device), batch['label']
+        targets["boxes"] = targets["boxes"].to(device)
+        targets["labels"] = targets["labels"].to(device)
         optimizer.zero_grad()
-        output = model(data).flatten()
+        output = model([data], [targets])
 
         loss = criterion(output, labels)
         running_loss += loss.item()
@@ -63,7 +66,7 @@ def train(model, training_loader, criterion, optimizer, device):
     accuracy = num_correct/len(training_loader.dataset)
     return loss, accuracy
 
-def test(model, testing_loader, criterion, print_incorrect_images, data_dir, device):
+def test(model, testing_data_set, batch_size, criterion, print_incorrect_images, data_dir, device):
     model.eval()
     running_loss = 0.0
     num_correct = 0
@@ -88,7 +91,7 @@ def test(model, testing_loader, criterion, print_incorrect_images, data_dir, dev
     accuracy = num_correct/len(testing_loader.dataset)
     return loss, accuracy, all_labels, all_predictions
 
-def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, data_dir, device):
+def test_batch(model, batch_testing_data_set, criterion, print_incorrect_images, data_dir, device):
     model.eval()
     num_correct = 0
     running_loss = 0.0
@@ -120,7 +123,7 @@ def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, d
     accuracy = num_correct/len(batch_testing_loader.dataset)
     return loss, accuracy, all_labels, all_predictions
 
-def train_and_test(num_epochs, model, model_name, training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir, saving_dir):
+def train_and_test(num_epochs, model, model_name, training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, criterion, data_dir, saving_dir):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     highest_batch_testing_accuracy = 0.0
@@ -129,13 +132,13 @@ def train_and_test(num_epochs, model, model_name, training_loader, testing_loade
     for epoch in range(num_epochs):
         print("Epoch: " + str(epoch))
 
-        training_loss, training_accuracy = train(model, training_loader, criterion, optimizer, device)
+        training_loss, training_accuracy = train(model, training_data_set, batch_size, criterion, optimizer, device)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
 
-        testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False, data_dir, device)
+        testing_loss, testing_accuracy, _, _ = test(model, testing_data_set, batch_size, criterion, False, data_dir, device)
         print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
 
-        batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_loader, criterion, False, data_dir, device)
+        batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_data_set, criterion, False, data_dir, device)
         print("batch testing loss (MSE): " + str(batch_testing_loss) + " and batch testing accuracy: "+ str(batch_testing_accuracy))
 
         if highest_batch_testing_accuracy < batch_testing_accuracy:
@@ -149,7 +152,7 @@ def train_and_test(num_epochs, model, model_name, training_loader, testing_loade
 num_epochs = 5
 batch_size = 10
 json_file_name = "animal_count_key.json"
-data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/2022_Cottonwood_Eastface_and_Repelcam/"
+data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/object_detection_testing/"
 saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/"
 
 print(torch.__version__)
@@ -159,39 +162,27 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 criterion = nn.MSELoss()
 
-training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = utilities.fetch_data(data_dir, json_file_name, False, False, True)
+training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = utilities.fetch_data(data_dir, json_file_name, False, True, True)
 training_data_set = utilities.image_data_set(training_data, training_labels)
 testing_data_set = utilities.image_data_set(testing_data, testing_labels)
 batch_testing_data_set = utilities.image_data_set(batch_testing_data, batch_testing_labels)
-training_loader = DataLoader(dataset = training_data_set, batch_size = batch_size, shuffle = True)
-testing_loader = DataLoader(dataset = testing_data_set, batch_size = batch_size, shuffle = True)
-batch_testing_loader = DataLoader(dataset = batch_testing_data_set, batch_size = 1, shuffle = True)
 
 # Declaring Models
-resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
-in_features = resnet50.fc.in_features
-resnet50.fc = nn.Linear(in_features, 1)
+# TODO: YOLO and SSD
+faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2(weights=models.detection.FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT)
+#in_features = faster_rcnn.roi_heads.box_predictor.cls_score.in_features
+#faster_rcnn.roi_heads.box_predictor = models.detection.faster_rcnn.FastRCNNPredictor(in_features, 1)
 
-resnet152 = models.resnet152(weights = models.ResNet152_Weights.DEFAULT)
-in_features = resnet152.fc.in_features
-resnet152.fc = nn.Linear(in_features, 1)
-
-vit_l_16 = models.vit_l_16(weights = models.ViT_L_16_Weights.DEFAULT)
-in_features = vit_l_16.heads[0].in_features
-vit_l_16.heads[0] = nn.Linear(in_features, 1)
+print(faster_rcnn)
 
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
-    resnet50 = nn.DataParallel(resnet50)
-    resnet152 = nn.DataParallel(resnet152)
-    vit_l_16 = nn.DataParallel(vit_l_16)
+    faster_rcnn = nn.DataParallel(faster_rcnn)
 
 # Training
-print("\nTraining and Testing ResNet50")
-train_and_test(num_epochs, resnet50, "ResNet50", training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir, saving_dir)
+print("\nTraining and Testing Faster R-CNN")
+train_and_test(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, criterion, data_dir, saving_dir)
 
-print("\nTraining and Testing ResNet152")
-train_and_test(num_epochs, resnet152, "ResNet152", training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir, saving_dir)
 
 
 

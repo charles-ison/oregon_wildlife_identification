@@ -165,7 +165,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 criterion = nn.CrossEntropyLoss()
 
-training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = utilities.get_data_sets(data_dir, json_file_name, True, True)
+training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = utilities.fetch_data(data_dir, json_file_name, True, False, True)
 training_data_set = utilities.image_data_set(training_data, training_labels)
 testing_data_set = utilities.image_data_set(testing_data, testing_labels)
 batch_testing_data_set = utilities.image_data_set(batch_testing_data, batch_testing_labels)

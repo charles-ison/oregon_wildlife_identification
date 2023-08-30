@@ -20,6 +20,7 @@ from operator import itemgetter
 from datetime import datetime
 from pycocotools.coco import COCO
 
+
 class image_data_set(torch.utils.data.Dataset):
     def __init__(self, data, labels):
         self.data = data
@@ -30,6 +31,7 @@ class image_data_set(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         return {'data': self.data[index], 'label': self.labels[index]}
+
 
 def get_image_tensor(file_path, is_training):
     image = Image.open(file_path)
@@ -50,6 +52,7 @@ def get_image_tensor(file_path, is_training):
         
     return tensor
 
+
 def remove_images_with_no_datetime(images):
     new_images = []
     for image in images:
@@ -57,23 +60,51 @@ def remove_images_with_no_datetime(images):
             new_images.append(image)
     return new_images
 
+
 def get_sorted_images(images):
     images = remove_images_with_no_datetime(images)
     return sorted(images, key=lambda image: image["datetime"])
 
+
 def flatten_list(data):
     return [image for batch in data for image in batch]
+    
+    
+def get_label(annotation_list, is_classification, is_object_detection):
+    label = annotation_list["category_id"]
+    if is_classification and label > 0:
+        return 1
+    elif is_object_detection and "bbox" in annotation_list:
+        bounding_box = annotation_list["bbox"]
+        bounding_box[1] = bounding_box[1] - bounding_box[3]
+        bounding_box[2] = bounding_box[0] + bounding_box[2]
+        bounding_box[3] = bounding_box[1] + bounding_box[3]
+        bounding_box = torch.FloatTensor(bounding_box).reshape(1, 4)
+        label = torch.LongTensor(label)
+        return {"boxes":  bounding_box, "labels": label}
+    else:
+        return label
+    
+    
+def append_batch_labels(labels, batch_labels, is_classification, is_object_detection):
+    if is_classification:
+        labels.append(torch.LongTensor(batch_labels))
+    elif is_object_detection:
+        labels.append(batch_labels)
+    else:
+        labels.append(torch.FloatTensor(batch_labels))
+    
 
 #TODO: Code smell here passing around these flags, should probably be refactored into separate classes
-def get_data_sets(data_dir, json_file_name, is_classification, is_training):
+def fetch_data(data_dir, json_file_name, is_classification, is_object_detection, is_training):
     coco = COCO(data_dir + json_file_name)
     images = coco.loadImgs(coco.getImgIds())
-    sort_images = get_sorted_images(images)
+    sorted_images = get_sorted_images(images)
 
     batch_data, batch_labels, data, labels = [], [], [], []
     previous_time_stamp = None
     
-    for image in sort_images:
+    for image in sorted_images:
         time_stamp = datetime.strptime(image["datetime"], '%Y:%m:%d %H:%M:%S')
         file_name = image["file_name"]
         file_path = data_dir + file_name
@@ -81,13 +112,11 @@ def get_data_sets(data_dir, json_file_name, is_classification, is_training):
         annotation_id_list = coco.getAnnIds(imgIds=[image["id"]])
         annotation_list = coco.loadAnns(annotation_id_list)
         
+        #TODO: Update this to work with multiple annotations
         if len(annotation_list) != 0 and image["id"] == annotation_list[0]["image_id"] and os.path.isfile(file_path):
-            label = annotation_list[0]["category_id"]
-            
-            if is_classification and label > 0:
-                label = 1
-                
+            label = get_label(annotation_list[0], is_classification, is_object_detection)
             image_tensor = None
+            
             try:
                 image_tensor = get_image_tensor(file_path, is_training)
             except:
@@ -99,11 +128,7 @@ def get_data_sets(data_dir, json_file_name, is_classification, is_training):
                 batch_labels.append(label)
             else:
                 data.append(torch.stack(batch_data))
-                
-                if is_classification:
-                    labels.append(torch.LongTensor(batch_labels))
-                else:
-                    labels.append(torch.FloatTensor(batch_labels))
+                append_batch_labels(labels, batch_labels, is_classification, is_object_detection)
 
                 batch_data, batch_labels = [], []
                 batch_data.append(image_tensor)
@@ -112,11 +137,7 @@ def get_data_sets(data_dir, json_file_name, is_classification, is_training):
             previous_time_stamp = time_stamp
             
     data.append(torch.stack(batch_data))
-    
-    if is_classification:
-        labels.append(torch.LongTensor(batch_labels))
-    else:
-        labels.append(torch.FloatTensor(batch_labels))
+    append_batch_labels(labels, batch_labels, is_classification, is_object_detection)
     
     if is_training:
         batch_training_data, batch_testing_data, batch_training_labels, batch_testing_labels = train_test_split(data, labels, test_size = 0.20)

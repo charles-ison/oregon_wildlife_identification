@@ -94,7 +94,7 @@ def verify(model, grad_cam, batch_testing_loader, individual_testing_loader, dev
     print("batch testing loss (MSE): " + str(batch_testing_loss) + " and batch testing accuracy: "+ str(batch_testing_accuracy))
     
 def get_data_loaders(data_dir, json_file_name):
-    batch_testing_data, batch_testing_labels, individual_data, individual_labels = utilities.get_data_sets(data_dir, json_file_name, False, False)
+    batch_testing_data, batch_testing_labels, individual_data, individual_labels = utilities.fetch_data(data_dir, json_file_name, False, False, False)
     batch_testing_data_set = utilities.image_data_set(batch_testing_data, batch_testing_labels)
     individual_testing_data_set = utilities.image_data_set(individual_data, individual_labels)
     batch_data_loader = DataLoader(dataset = batch_testing_data_set, batch_size = 1, shuffle = True)
