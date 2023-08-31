@@ -69,21 +69,33 @@ def get_sorted_images(images):
 def flatten_list(data):
     return [image for batch in data for image in batch]
     
+        
+def get_object_detection_label(annotation_list):
+    bounding_boxes = torch.zeros(len(annotation_list), 4)
+    labels = torch.zeros(len(annotation_list))
+    for index, annotation in enumerate(annotation_list):
+        if "bbox" in annotation:
+            bounding_box = annotation["bbox"]
+            bounding_box[1] = bounding_box[1] - bounding_box[3]
+            bounding_box[2] = bounding_box[0] + bounding_box[2]
+            bounding_box[3] = bounding_box[1] + bounding_box[3]
+            bounding_boxes[index] = torch.FloatTensor(bounding_box).reshape(1, 4)
     
-def get_label(annotation, is_classification, is_object_detection):
-    label = annotation["category_id"]
-    if is_classification and label > 0:
-        return 1
-    elif is_object_detection and "bbox" in annotation:
-        bounding_box = annotation["bbox"]
-        bounding_box[1] = bounding_box[1] - bounding_box[3]
-        bounding_box[2] = bounding_box[0] + bounding_box[2]
-        bounding_box[3] = bounding_box[1] + bounding_box[3]
-        bounding_box = torch.FloatTensor(bounding_box).reshape(1, 4)
-        label = torch.LongTensor([label])
-        return {"boxes":  bounding_box, "labels": label}
-    else:
-        return label
+            label = annotation["category_id"]
+            labels[index] = label
+    return {"boxes":  bounding_boxes, "labels": labels.long()}
+    
+    
+def get_label(annotation_list, image, is_classification, is_object_detection):
+    if is_object_detection:
+        return get_object_detection_label(annotation_list)
+    elif image["id"] == annotation_list[0]["image_id"]:
+        label = annotation_list[0]["category_id"]
+        if is_classification and label > 1:
+            return 1
+        else:
+            return label
+    raise Exception("No label found for image.")
     
     
 def append_batch_labels(labels, batch_labels, is_classification, is_object_detection):
@@ -111,29 +123,29 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
         
         annotation_id_list = coco.getAnnIds(imgIds=[image["id"]])
         annotation_list = coco.loadAnns(annotation_id_list)
-        for annotation in annotation_list:
-            if image["id"] == annotation["image_id"] and os.path.isfile(file_path):
-                label = get_label(annotation, is_classification, is_object_detection)
-                image_tensor = None
-            
-                try:
-                    image_tensor = get_image_tensor(file_path, is_training)
-                except:
-                    print("Problematic image encountered, leaving out of training and testing")
-                    continue
 
-                if previous_time_stamp == None or (time_stamp - previous_time_stamp).total_seconds() < 60:
-                    batch_data.append(image_tensor)
-                    batch_labels.append(label)
-                else:
-                    data.append(torch.stack(batch_data))
-                    append_batch_labels(labels, batch_labels, is_classification, is_object_detection)
+        if os.path.isfile(file_path):
+            image_tensor = None
+            label = None
+            try:
+                image_tensor = get_image_tensor(file_path, is_training)
+                label = get_label(annotation_list, image, is_classification, is_object_detection)
+            except:
+                print("Problematic image or label encountered, leaving out of training and testing")
+                continue
 
-                    batch_data, batch_labels = [], []
-                    batch_data.append(image_tensor)
-                    batch_labels.append(label)
+            if previous_time_stamp == None or (time_stamp - previous_time_stamp).total_seconds() < 60:
+                batch_data.append(image_tensor)
+                batch_labels.append(label)
+            else:
+                data.append(torch.stack(batch_data))
+                append_batch_labels(labels, batch_labels, is_classification, is_object_detection)
 
-                previous_time_stamp = time_stamp
+                batch_data, batch_labels = [], []
+                batch_data.append(image_tensor)
+                batch_labels.append(label)
+
+            previous_time_stamp = time_stamp
             
     data.append(torch.stack(batch_data))
     append_batch_labels(labels, batch_labels, is_classification, is_object_detection)
