@@ -67,12 +67,12 @@ def get_info_from_batch(batch):
 def get_predictions_and_labels(bounding_boxes, targets):
     num_correct = 0
     labels, predictions = [], []
-    for index, box in enumerate(bounding_boxes):
+    for index, boxes in enumerate(bounding_boxes):
         num_animals = 0
-        for score in box["scores"]:
+        for score in boxes["scores"]:
             if score > 0.5:
                 num_animals += 1
-        label = targets[index]["labels"].size()
+        label = targets[index]["labels"].size(dim=0)
         labels.append(label)
         predictions.append(num_animals)
         if num_animals == label:
@@ -136,31 +136,31 @@ def test_batch(model, batch_testing_data_set, print_incorrect_images, data_dir, 
     num_correct = 0
     running_loss = 0.0
     all_labels, all_predictions = [], []
+    mse = nn.MSELoss()
 
-    for batch in batch_testing_loader:
-        data, labels = torch.squeeze(batch['data'], dim=0).to(device), batch['label'].to(device)
+    for batch in batch_testing_data_set:
+        data, targets = batch['data'], batch['label']
 
         # This is to prevent cuda memory issues for large batches
         max_prediction = 0
+        max_label = 0
         for image in data:
-            image = torch.unsqueeze(image, dim=0)
-            output = model(image).flatten()
-            max_prediction = max(max_prediction, output.round().item())
-
-        max_prediction = torch.tensor(max_prediction).to(device)
-        max_label = torch.max(labels)
+            image = torch.unsqueeze(image, dim=0).to(device)
+            bounding_boxes = model(image)
+            labels, predictions, _ = get_predictions_and_labels(bounding_boxes, targets)
+            max_prediction = max(max_prediction, predictions[0])
+            max_label = max(max_label, labels[0])
         
-        loss = 0
-        running_loss += loss.item()
+        running_loss += mse(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
 
         if max_prediction == max_label:
             num_correct += 1
 
-        all_predictions.append(max_prediction.cpu())
-        all_labels.append(max_label.cpu())
+        all_predictions.append(max_prediction)
+        all_labels.append(max_label)
 
-    loss = running_loss/len(batch_testing_loader.dataset)
-    accuracy = num_correct/len(batch_testing_loader.dataset)
+    loss = running_loss/len(batch_testing_data_set)
+    accuracy = num_correct/len(batch_testing_data_set)
     return loss, accuracy, all_labels, all_predictions
 
 
