@@ -185,12 +185,12 @@ def train_and_test(num_epochs, model, model_name, training_data_set, testing_dat
         if highest_batch_testing_accuracy < batch_testing_accuracy:
             print("Highest batch testing accuracy achieved, saving weights")
             highest_batch_testing_accuracy = batch_testing_accuracy
-            torch.save(model.module.state_dict(), saving_dir + model_name + ".pt")
+            torch.save(model.state_dict(), saving_dir + model_name + ".pt")
             print_testing_analysis(batch_labels, batch_predictions, model_name, data_dir, saving_dir)
 
 
 # Declaring Constants
-num_epochs = 5
+num_epochs = 10
 batch_size = 5
 json_file_name = "animal_count_key.json"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/object_detection_testing/"
@@ -213,15 +213,12 @@ faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2(weights=models.detecti
 in_features = faster_rcnn.roi_heads.box_predictor.cls_score.in_features
 faster_rcnn.roi_heads.box_predictor = models.detection.faster_rcnn.FastRCNNPredictor(in_features, 10)
 
-if torch.cuda.device_count() > 1:
-    print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
-    faster_rcnn = nn.DataParallel(faster_rcnn)
+# TODO: Need to use distributed data parallel for object detection models
+# if torch.cuda.device_count() > 1:
+    #print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
+    #faster_rcnn = nn.DataParallel(faster_rcnn)
 
 # Training
 print("\nTraining and Testing Faster R-CNN")
 train_and_test(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, data_dir, saving_dir)
-
-
-
-
 
