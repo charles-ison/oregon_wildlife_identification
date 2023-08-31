@@ -70,12 +70,12 @@ def flatten_list(data):
     return [image for batch in data for image in batch]
     
     
-def get_label(annotation_list, is_classification, is_object_detection):
-    label = annotation_list["category_id"]
+def get_label(annotation, is_classification, is_object_detection):
+    label = annotation["category_id"]
     if is_classification and label > 0:
         return 1
-    elif is_object_detection and "bbox" in annotation_list:
-        bounding_box = annotation_list["bbox"]
+    elif is_object_detection and "bbox" in annotation:
+        bounding_box = annotation["bbox"]
         bounding_box[1] = bounding_box[1] - bounding_box[3]
         bounding_box[2] = bounding_box[0] + bounding_box[2]
         bounding_box[3] = bounding_box[1] + bounding_box[3]
@@ -111,30 +111,29 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
         
         annotation_id_list = coco.getAnnIds(imgIds=[image["id"]])
         annotation_list = coco.loadAnns(annotation_id_list)
-        
-        #TODO: Update this to work with multiple annotations
-        if len(annotation_list) != 0 and image["id"] == annotation_list[0]["image_id"] and os.path.isfile(file_path):
-            label = get_label(annotation_list[0], is_classification, is_object_detection)
-            image_tensor = None
+        for annotation in annotation_list:
+            if image["id"] == annotation["image_id"] and os.path.isfile(file_path):
+                label = get_label(annotation, is_classification, is_object_detection)
+                image_tensor = None
             
-            try:
-                image_tensor = get_image_tensor(file_path, is_training)
-            except:
-                print("Problematic image encountered, leaving out of training and testing")
-                continue
+                try:
+                    image_tensor = get_image_tensor(file_path, is_training)
+                except:
+                    print("Problematic image encountered, leaving out of training and testing")
+                    continue
 
-            if previous_time_stamp == None or (time_stamp - previous_time_stamp).total_seconds() < 60:
-                batch_data.append(image_tensor)
-                batch_labels.append(label)
-            else:
-                data.append(torch.stack(batch_data))
-                append_batch_labels(labels, batch_labels, is_classification, is_object_detection)
+                if previous_time_stamp == None or (time_stamp - previous_time_stamp).total_seconds() < 60:
+                    batch_data.append(image_tensor)
+                    batch_labels.append(label)
+                else:
+                    data.append(torch.stack(batch_data))
+                    append_batch_labels(labels, batch_labels, is_classification, is_object_detection)
 
-                batch_data, batch_labels = [], []
-                batch_data.append(image_tensor)
-                batch_labels.append(label)
+                    batch_data, batch_labels = [], []
+                    batch_data.append(image_tensor)
+                    batch_labels.append(label)
 
-            previous_time_stamp = time_stamp
+                previous_time_stamp = time_stamp
             
     data.append(torch.stack(batch_data))
     append_batch_labels(labels, batch_labels, is_classification, is_object_detection)
