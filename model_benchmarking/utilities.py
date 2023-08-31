@@ -72,7 +72,7 @@ def flatten_list(data):
         
 def get_object_detection_label(annotation_list):
     bounding_boxes = torch.zeros(len(annotation_list), 4)
-    labels = torch.zeros(len(annotation_list))
+    labels = torch.zeros(len(annotation_list)).long()
     for index, annotation in enumerate(annotation_list):
         if "bbox" in annotation:
             bounding_box = annotation["bbox"]
@@ -83,7 +83,7 @@ def get_object_detection_label(annotation_list):
     
             label = annotation["category_id"]
             labels[index] = label
-    return {"boxes":  bounding_boxes, "labels": labels.long()}
+    return {"boxes":  bounding_boxes, "labels": labels}
     
     
 def get_label(annotation_list, image, is_classification, is_object_detection):

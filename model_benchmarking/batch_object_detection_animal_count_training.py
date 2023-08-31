@@ -83,9 +83,15 @@ def train(model, training_data_set, batch_size, optimizer, device):
     running_loss = 0.0
     num_correct = 0
     for index in range(0, len(training_data_set), batch_size):
-        model.train()
         batch = training_data_set[index:index + batch_size]
         data, targets = get_info_from_batch(batch)
+        
+        model.eval()
+        bounding_boxes = model(data)
+        _, _, batch_num_correct = get_predictions_and_labels(bounding_boxes, targets)
+        num_correct += batch_num_correct
+        
+        model.train()
         optimizer.zero_grad()
         losses_dict = model(data, targets)
         
@@ -93,11 +99,6 @@ def train(model, training_data_set, batch_size, optimizer, device):
         running_loss += sum_losses.item()
         sum_losses.backward()
         optimizer.step()
-        
-        model.eval()
-        bounding_boxes = model(data)
-        _, _, batch_num_correct = get_predictions_and_labels(bounding_boxes, targets)
-        num_correct += batch_num_correct
 
     loss = running_loss/len(training_data_set)
     accuracy = num_correct/len(training_data_set)
