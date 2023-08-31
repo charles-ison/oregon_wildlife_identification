@@ -55,58 +55,83 @@ def set_device_for_list_of_dicts(some_list, device):
 def set_device_for_list_of_tensors(some_list, device):
     for index, tensor in enumerate(some_list):
         some_list[index] = tensor.to(device)
+        
 
+def get_info_from_batch(batch):
+    data, targets = batch['data'], batch['label']
+    set_device_for_list_of_tensors(data, device)
+    set_device_for_list_of_dicts(targets, device)
+    return data, targets
+    
+    
+def get_predictions_and_labels(bounding_boxes, targets):
+    num_correct = 0
+    labels, predictions = [], []
+    for index, box in enumerate(bounding_boxes):
+        num_animals = 0
+        for score in box["scores"]:
+            if score > 0.5:
+                num_animals += 1
+        label = targets[index]["labels"].size()
+        labels.append(label)
+        predictions.append(num_animals)
+        if num_animals == label:
+            num_correct += 1
+    return labels, predictions, num_correct
 
-def train(model, training_data_set, batch_size, criterion, optimizer, device):
-    model.train()
+def train(model, training_data_set, batch_size, optimizer, device):
     running_loss = 0.0
     num_correct = 0
     for index in range(0, len(training_data_set), batch_size):
+        model.train()
         batch = training_data_set[index:index + batch_size]
-        data, targets = batch['data'], batch['label']
-        set_device_for_list_of_tensors(data, device)
-        set_device_for_list_of_dicts(targets, device)
+        data, targets = get_info_from_batch(batch)
         optimizer.zero_grad()
-        output = model(data, targets)
-
-        loss = criterion(output, targets["labels"])
-        running_loss += loss.item()
-        num_correct += (output.round() == targets["labels"]).sum().item()
-        loss.backward()
+        losses_dict = model(data, targets)
+        
+        sum_losses = sum(loss for loss in losses_dict.values())
+        running_loss += sum_losses.item()
+        sum_losses.backward()
         optimizer.step()
+        
+        model.eval()
+        bounding_boxes = model(data)
+        _, _, batch_num_correct = get_predictions_and_labels(bounding_boxes, targets)
+        num_correct += batch_num_correct
 
-    loss = running_loss/len(training_loader.dataset)
-    accuracy = num_correct/len(training_loader.dataset)
+    loss = running_loss/len(training_data_set)
+    accuracy = num_correct/len(training_data_set)
     return loss, accuracy
 
 
-def test(model, testing_data_set, batch_size, criterion, print_incorrect_images, data_dir, device):
+def test(model, testing_data_set, batch_size, print_incorrect_images, data_dir, device):
     model.eval()
     running_loss = 0.0
     num_correct = 0
-    all_labels, all_predictions = [], []
+    labels, predictions = [], []
 
-    for i, batch in enumerate(testing_loader):
-        data, labels = batch['data'].to(device), batch['label'].to(device)
-        output = model(data).flatten()
+    for index in range(0, len(testing_data_set), batch_size):
+        model.train()
+        batch = training_data_set[index:index + batch_size]
+        data, targets = get_info_from_batch(batch)
+        losses_dict = model(data, targets)
+        
+        sum_losses = sum(loss for loss in losses_dict.values())
+        running_loss += sum_losses.item()
+        
+        model.eval()
+        bounding_boxes = model(data)
+        batch_labels, batch_predictions, batch_num_correct = get_predictions_and_labels(bounding_boxes, targets)
+        num_correct += batch_num_correct
+        labels.extend(batch_labels)
+        predictions.extend(batch_predictions)
 
-        loss = criterion(output, labels)
-        running_loss += loss.item()
-        for index, prediction in enumerate(output.round()):
-            all_predictions.append(prediction.cpu().item())
-            if(prediction == labels[index]):
-                num_correct += 1
-            elif(print_incorrect_images):
-                utilities.print_image(data[index], prediction, data_dir, i)
-
-        all_labels.extend(labels.cpu())
-
-    loss = running_loss/len(testing_loader.dataset)
-    accuracy = num_correct/len(testing_loader.dataset)
-    return loss, accuracy, all_labels, all_predictions
+    loss = running_loss/len(testing_data_set)
+    accuracy = num_correct/len(testing_data_set)
+    return loss, accuracy, labels, predictions
 
 
-def test_batch(model, batch_testing_data_set, criterion, print_incorrect_images, data_dir, device):
+def test_batch(model, batch_testing_data_set, print_incorrect_images, data_dir, device):
     model.eval()
     num_correct = 0
     running_loss = 0.0
@@ -125,7 +150,7 @@ def test_batch(model, batch_testing_data_set, criterion, print_incorrect_images,
         max_prediction = torch.tensor(max_prediction).to(device)
         max_label = torch.max(labels)
         
-        loss = criterion(max_prediction, max_label)
+        loss = 0
         running_loss += loss.item()
 
         if max_prediction == max_label:
@@ -139,7 +164,7 @@ def test_batch(model, batch_testing_data_set, criterion, print_incorrect_images,
     return loss, accuracy, all_labels, all_predictions
 
 
-def train_and_test(num_epochs, model, model_name, training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, criterion, data_dir, saving_dir):
+def train_and_test(num_epochs, model, model_name, training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, data_dir, saving_dir):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     highest_batch_testing_accuracy = 0.0
@@ -148,13 +173,13 @@ def train_and_test(num_epochs, model, model_name, training_data_set, testing_dat
     for epoch in range(num_epochs):
         print("Epoch: " + str(epoch))
 
-        training_loss, training_accuracy = train(model, training_data_set, batch_size, criterion, optimizer, device)
+        training_loss, training_accuracy = train(model, training_data_set, batch_size, optimizer, device)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
 
-        testing_loss, testing_accuracy, _, _ = test(model, testing_data_set, batch_size, criterion, False, data_dir, device)
+        testing_loss, testing_accuracy, _, _ = test(model, testing_data_set, batch_size, False, data_dir, device)
         print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
 
-        batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_data_set, criterion, False, data_dir, device)
+        batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_data_set, False, data_dir, device)
         print("batch testing loss (MSE): " + str(batch_testing_loss) + " and batch testing accuracy: "+ str(batch_testing_accuracy))
 
         if highest_batch_testing_accuracy < batch_testing_accuracy:
@@ -176,7 +201,6 @@ print(torchvision.__version__)
 print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
-criterion = nn.MSELoss()
 
 training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = utilities.fetch_data(data_dir, json_file_name, False, True, True)
 training_data_set = utilities.image_data_set(training_data, training_labels)
@@ -195,7 +219,7 @@ if torch.cuda.device_count() > 1:
 
 # Training
 print("\nTraining and Testing Faster R-CNN")
-train_and_test(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, criterion, data_dir, saving_dir)
+train_and_test(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, data_dir, saving_dir)
 
 
 

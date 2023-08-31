@@ -159,6 +159,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
         print("Number of individual photos for verification: ", len(individual_data))
         return data, labels, individual_data, individual_labels
 
+
 def print_image(image_tensor, prediction, data_dir, index):
     image_tensor = image_tensor.permute(1, 2, 0).cpu()
     normalize = plt.Normalize()
@@ -169,6 +170,7 @@ def print_image(image_tensor, prediction, data_dir, index):
     plt.imshow(image_tensor)
     plt.title(title)
     plt.imsave(image_file_name, image_tensor)
+
 
 def create_heat_map(grad_cam, image, prediction, label, saving_dir, identifier):
     
