@@ -173,7 +173,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
 
 
 def print_image(image_tensor, prediction, saving_dir, index, boxes = None):
-    plt.figure()
+    fig, ax = plt.subplots()
     image_tensor = image_tensor.permute(1, 2, 0).cpu()
     normalize = plt.Normalize()
     image_tensor = normalize(image_tensor)
@@ -183,16 +183,16 @@ def print_image(image_tensor, prediction, saving_dir, index, boxes = None):
     plt.imshow(image_tensor)
     
     if boxes is not None:
-        ax = plt.gca()
         for index, box in enumerate(boxes):
             print("Adding bounding box at index: ", index)
             width = box[2] - box[0]
             height = box[3] - box[1]
-            #ax.add_patch(patches.Rectangle((box[0].item(), box[1].item()), width.item(), height.item(), linewidth=1, edgecolor='r', facecolor='none'))
+            ax.add_patch(patches.Rectangle((box[0].item(), box[1].item()), width.item(), height.item(), linewidth=1, edgecolor='r', facecolor='none'))
             ax.add_patch(patches.Rectangle((100 + 2 * index, 100 + 2 * index), 10, 10, linewidth=1, edgecolor='r', facecolor='none'))
     
     image_file_name = saving_dir + title + ".png"
     plt.savefig(image_file_name)
+    plt.close(fig)
 
 
 def create_heat_map(grad_cam, image, prediction, label, saving_dir, identifier):
