@@ -221,8 +221,8 @@ batch_testing_data_set = utilities.image_data_set(batch_testing_data, batch_test
 # Declaring Models
 # TODO: YOLO and SSD
 faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2(weights=models.detection.FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT)
-in_features = faster_rcnn.roi_heads.box_predictor.cls_score.in_features
-faster_rcnn.roi_heads.box_predictor = models.detection.faster_rcnn.FastRCNNPredictor(in_features, 10)
+ssd = models.detection.ssd300_vgg16(weights=models.detection.SSD300_VGG16_Weights.DEFAULT)
+retina_net = models.detection.retinanet_resnet50_fpn_v2(weights=models.detection.RetinaNet_ResNet50_FPN_V2_Weights.DEFAULT)
 
 # TODO: Need to use distributed data parallel for object detection models
 # if torch.cuda.device_count() > 1:
@@ -232,4 +232,12 @@ faster_rcnn.roi_heads.box_predictor = models.detection.faster_rcnn.FastRCNNPredi
 # Training
 print("\nTraining and Testing Faster R-CNN")
 train_and_test(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, saving_dir)
+
+# Training
+print("\nTraining and Testing SSD")
+train_and_test(num_epochs, ssd, "SSD", training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, saving_dir)
+
+# Training
+print("\nTraining and Testing RetinaNet")
+train_and_test(num_epochs, retina_net, "RetinaNet", training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, saving_dir)
 
