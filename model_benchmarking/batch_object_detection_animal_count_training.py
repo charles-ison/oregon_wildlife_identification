@@ -155,8 +155,8 @@ def test_batch(model, batch_testing_data_set, print_incorrect_images, saving_dir
             bounding_boxes = model(image)
             labels, predictions, _ = get_predictions_and_labels(bounding_boxes, targets)
             
-            if print_incorrect_images:
-                utilities.print_image(torch.squeeze(image), predictions[0], saving_dir, count, bounding_boxes[0]["boxes"])
+            if print_incorrect_images and labels[0] != predictions[0]:
+                utilities.print_image(torch.squeeze(image), predictions[0], saving_dir + "incorrect_images/", count, bounding_boxes)
             
             max_prediction = max(max_prediction, predictions[0])
             max_label = max(max_label, labels[0])
@@ -201,7 +201,7 @@ def train_and_test(num_epochs, model, model_name, training_data_set, testing_dat
 
 
 # Declaring Constants
-num_epochs = 5
+num_epochs = 3
 batch_size = 5
 json_file_name = "animal_count_key.json"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/object_detection_testing/"

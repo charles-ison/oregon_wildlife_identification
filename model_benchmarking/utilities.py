@@ -34,10 +34,10 @@ class image_data_set(torch.utils.data.Dataset):
         return {'data': self.data[index], 'label': self.labels[index]}
 
 
-def get_image_tensor(file_path, is_training, is_object_detection):
+def get_image_tensor(file_path, is_training, is_object_detection, new_image_height_and_width):
     image = Image.open(file_path)
     transform = transforms.Compose([
-        transforms.Resize((224, 224)),
+        transforms.Resize((new_image_height_and_width, new_image_height_and_width)),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
@@ -70,13 +70,23 @@ def get_sorted_images(images):
 def flatten_list(data):
     return [image for batch in data for image in batch]
     
+
+def rescale_bounding_box(bounding_box, old_image_width, old_image_height, new_image_height_and_width):
+    bounding_box[0] = (bounding_box[0] * new_image_height_and_width) / old_image_width
+    bounding_box[1] = (bounding_box[1] * new_image_height_and_width) / old_image_height
+    bounding_box[2] = (bounding_box[2] * new_image_height_and_width) / old_image_width
+    bounding_box[3] = (bounding_box[3] * new_image_height_and_width) / old_image_height
+    return bounding_box
         
-def get_object_detection_label(annotation_list):
+        
+def get_object_detection_label(annotation_list, image, new_image_height_and_width):
     bounding_boxes = torch.zeros(len(annotation_list), 4)
     labels = torch.zeros(len(annotation_list)).long()
+    old_image_width = image["width"]
+    old_image_height = image["height"]
     for index, annotation in enumerate(annotation_list):
         if "bbox" in annotation:
-            bounding_box = annotation["bbox"]
+            bounding_box = rescale_bounding_box(annotation["bbox"], old_image_width, old_image_height, new_image_height_and_width)
             bounding_box[1] = bounding_box[1] - bounding_box[3]
             bounding_box[2] = bounding_box[0] + bounding_box[2]
             bounding_box[3] = bounding_box[1] + bounding_box[3]
@@ -87,9 +97,9 @@ def get_object_detection_label(annotation_list):
     return {"boxes":  bounding_boxes, "labels": labels}
     
     
-def get_label(annotation_list, image, is_classification, is_object_detection):
+def get_label(annotation_list, image, is_classification, is_object_detection, new_image_height_and_width):
     if is_object_detection:
-        return get_object_detection_label(annotation_list)
+        return get_object_detection_label(annotation_list, image, new_image_height_and_width)
     elif image["id"] == annotation_list[0]["image_id"]:
         label = annotation_list[0]["category_id"]
         if is_classification and label > 1:
@@ -129,8 +139,9 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
             image_tensor = None
             label = None
             try:
-                image_tensor = get_image_tensor(file_path, is_training, is_object_detection)
-                label = get_label(annotation_list, image, is_classification, is_object_detection)
+                new_image_height_and_width = 224
+                image_tensor = get_image_tensor(file_path, is_training, is_object_detection, new_image_height_and_width)
+                label = get_label(annotation_list, image, is_classification, is_object_detection, new_image_height_and_width)
             except:
                 print("Problematic image or label encountered, leaving out of training and testing")
                 continue
@@ -172,7 +183,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
         return data, labels, individual_data, individual_labels
 
 
-def print_image(image_tensor, prediction, saving_dir, index, boxes = None):
+def print_image(image_tensor, prediction, saving_dir, index, bounding_boxes = None):
     fig, ax = plt.subplots()
     image_tensor = image_tensor.permute(1, 2, 0).cpu()
     normalize = plt.Normalize()
@@ -182,13 +193,14 @@ def print_image(image_tensor, prediction, saving_dir, index, boxes = None):
     plt.title(title)
     plt.imshow(image_tensor)
     
-    if boxes is not None:
-        for index, box in enumerate(boxes):
-            print("Adding bounding box at index: ", index)
+    if bounding_boxes is not None:
+        boxes = bounding_boxes[0]["boxes"]
+        # Can use scores here to only print bounding boxes > 0.5
+        scores = bounding_boxes[0]["scores"]
+        for box_index, box in enumerate(boxes):
             width = box[2] - box[0]
             height = box[3] - box[1]
             ax.add_patch(patches.Rectangle((box[0].item(), box[1].item()), width.item(), height.item(), linewidth=1, edgecolor='r', facecolor='none'))
-            ax.add_patch(patches.Rectangle((100 + 2 * index, 100 + 2 * index), 10, 10, linewidth=1, edgecolor='r', facecolor='none'))
     
     image_file_name = saving_dir + title + ".png"
     plt.savefig(image_file_name)
