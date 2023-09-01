@@ -67,17 +67,18 @@ def get_info_from_batch(batch):
 def get_predictions_and_labels(bounding_boxes, targets):
     num_correct = 0
     labels, predictions = [], []
-    for index, boxes in enumerate(bounding_boxes):
+    for box_index, boxes in enumerate(bounding_boxes):
         num_animals = 0
-        for score in boxes["scores"]:
-            if score > 0.5:
+        for score_index, score in enumerate(boxes["scores"]):
+            if score > 0.5 and boxes["labels"][score_index] == 1:
                 num_animals += 1
-        label = targets[index]["labels"].size(dim=0)
+        label = targets[box_index]["labels"].size(dim=0)
         labels.append(label)
         predictions.append(num_animals)
         if num_animals == label:
             num_correct += 1
     return labels, predictions, num_correct
+
 
 def train(model, training_data_set, batch_size, optimizer, device):
     running_loss = 0.0
@@ -112,17 +113,18 @@ def test(model, testing_data_set, batch_size, print_incorrect_images, data_dir, 
     labels, predictions = [], []
 
     for index in range(0, len(testing_data_set), batch_size):
-        model.train()
         batch = training_data_set[index:index + batch_size]
         data, targets = get_info_from_batch(batch)
-        losses_dict = model(data, targets)
         
+        model.train()
+        losses_dict = model(data, targets)
         sum_losses = sum(loss for loss in losses_dict.values())
         running_loss += sum_losses.item()
         
         model.eval()
         bounding_boxes = model(data)
         batch_labels, batch_predictions, batch_num_correct = get_predictions_and_labels(bounding_boxes, targets)
+        
         num_correct += batch_num_correct
         labels.extend(batch_labels)
         predictions.extend(batch_predictions)
@@ -151,9 +153,8 @@ def test_batch(model, batch_testing_data_set, print_incorrect_images, data_dir, 
             labels, predictions, _ = get_predictions_and_labels(bounding_boxes, targets)
             max_prediction = max(max_prediction, predictions[0])
             max_label = max(max_label, labels[0])
-        
+            
         running_loss += mse(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
-
         if max_prediction == max_label:
             num_correct += 1
 
