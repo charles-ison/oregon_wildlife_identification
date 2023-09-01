@@ -18,9 +18,11 @@ from sklearn.metrics import accuracy_score
 from operator import itemgetter
 from datetime import datetime
 from pycocotools.coco import COCO
+from torchvision.utils import draw_bounding_boxes
 
 
-def print_testing_analysis(all_labels, all_predictions, title, data_dir, saving_dir):
+def print_testing_analysis(all_labels, all_predictions, title, saving_dir):
+    plt.figure()
     subplot = plt.subplot()
 
     cf_matrix = confusion_matrix(all_labels, all_predictions, labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
@@ -106,14 +108,14 @@ def train(model, training_data_set, batch_size, optimizer, device):
     return loss, accuracy
 
 
-def test(model, testing_data_set, batch_size, print_incorrect_images, data_dir, device):
+def test(model, testing_data_set, batch_size, print_incorrect_images, saving_dir, device):
     model.eval()
     running_loss = 0.0
     num_correct = 0
     labels, predictions = [], []
 
     for index in range(0, len(testing_data_set), batch_size):
-        batch = training_data_set[index:index + batch_size]
+        batch = testing_data_set[index:index + batch_size]
         data, targets = get_info_from_batch(batch)
         
         model.train()
@@ -134,12 +136,13 @@ def test(model, testing_data_set, batch_size, print_incorrect_images, data_dir, 
     return loss, accuracy, labels, predictions
 
 
-def test_batch(model, batch_testing_data_set, print_incorrect_images, data_dir, device):
+def test_batch(model, batch_testing_data_set, print_incorrect_images, saving_dir, device):
     model.eval()
     num_correct = 0
     running_loss = 0.0
     all_labels, all_predictions = [], []
     mse = nn.MSELoss()
+    count = 0
 
     for batch in batch_testing_data_set:
         data, targets = batch['data'], batch['label']
@@ -151,8 +154,13 @@ def test_batch(model, batch_testing_data_set, print_incorrect_images, data_dir, 
             image = torch.unsqueeze(image, dim=0).to(device)
             bounding_boxes = model(image)
             labels, predictions, _ = get_predictions_and_labels(bounding_boxes, targets)
+            
+            if print_incorrect_images:
+                utilities.print_image(torch.squeeze(image), predictions[0], saving_dir, count, bounding_boxes[0]["boxes"])
+            
             max_prediction = max(max_prediction, predictions[0])
             max_label = max(max_label, labels[0])
+            count += 1
             
         running_loss += mse(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
         if max_prediction == max_label:
@@ -166,7 +174,7 @@ def test_batch(model, batch_testing_data_set, print_incorrect_images, data_dir, 
     return loss, accuracy, all_labels, all_predictions
 
 
-def train_and_test(num_epochs, model, model_name, training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, data_dir, saving_dir):
+def train_and_test(num_epochs, model, model_name, training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, saving_dir):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     highest_batch_testing_accuracy = 0.0
@@ -178,21 +186,22 @@ def train_and_test(num_epochs, model, model_name, training_data_set, testing_dat
         training_loss, training_accuracy = train(model, training_data_set, batch_size, optimizer, device)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
 
-        testing_loss, testing_accuracy, _, _ = test(model, testing_data_set, batch_size, False, data_dir, device)
+        testing_loss, testing_accuracy, _, _ = test(model, testing_data_set, batch_size, False, saving_dir, device)
         print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
 
-        batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_data_set, False, data_dir, device)
+        should_print_images = (epoch == num_epochs - 1)
+        batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_data_set, should_print_images, saving_dir, device)
         print("batch testing loss (MSE): " + str(batch_testing_loss) + " and batch testing accuracy: "+ str(batch_testing_accuracy))
 
         if highest_batch_testing_accuracy < batch_testing_accuracy:
             print("Highest batch testing accuracy achieved, saving weights")
             highest_batch_testing_accuracy = batch_testing_accuracy
             torch.save(model.state_dict(), saving_dir + model_name + ".pt")
-            print_testing_analysis(batch_labels, batch_predictions, model_name, data_dir, saving_dir)
+            print_testing_analysis(batch_labels, batch_predictions, model_name, saving_dir)
 
 
 # Declaring Constants
-num_epochs = 10
+num_epochs = 5
 batch_size = 5
 json_file_name = "animal_count_key.json"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/object_detection_testing/"
@@ -222,5 +231,5 @@ faster_rcnn.roi_heads.box_predictor = models.detection.faster_rcnn.FastRCNNPredi
 
 # Training
 print("\nTraining and Testing Faster R-CNN")
-train_and_test(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, data_dir, saving_dir)
+train_and_test(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, saving_dir)
 

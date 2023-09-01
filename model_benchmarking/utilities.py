@@ -8,6 +8,7 @@ import torchvision.transforms as transforms
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 import json
 from pytorch_grad_cam.utils.image import show_cam_on_image
 from PIL import Image
@@ -33,7 +34,7 @@ class image_data_set(torch.utils.data.Dataset):
         return {'data': self.data[index], 'label': self.labels[index]}
 
 
-def get_image_tensor(file_path, is_training):
+def get_image_tensor(file_path, is_training, is_object_detection):
     image = Image.open(file_path)
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -43,7 +44,7 @@ def get_image_tensor(file_path, is_training):
 
     tensor = transform(image)
     
-    if is_training:
+    if is_training and not is_object_detection:
         transform = transforms.Compose([
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomRotation(degrees=15)
@@ -128,7 +129,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
             image_tensor = None
             label = None
             try:
-                image_tensor = get_image_tensor(file_path, is_training)
+                image_tensor = get_image_tensor(file_path, is_training, is_object_detection)
                 label = get_label(annotation_list, image, is_classification, is_object_detection)
             except:
                 print("Problematic image or label encountered, leaving out of training and testing")
@@ -171,16 +172,27 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
         return data, labels, individual_data, individual_labels
 
 
-def print_image(image_tensor, prediction, data_dir, index):
+def print_image(image_tensor, prediction, saving_dir, index, boxes = None):
+    plt.figure()
     image_tensor = image_tensor.permute(1, 2, 0).cpu()
     normalize = plt.Normalize()
     image_tensor = normalize(image_tensor)
     
     title = str(prediction) + "_" + str(index)
-    image_file_name = data_dir + title + ".png"
-    plt.imshow(image_tensor)
     plt.title(title)
-    plt.imsave(image_file_name, image_tensor)
+    plt.imshow(image_tensor)
+    
+    if boxes is not None:
+        ax = plt.gca()
+        for index, box in enumerate(boxes):
+            print("Adding bounding box at index: ", index)
+            width = box[2] - box[0]
+            height = box[3] - box[1]
+            #ax.add_patch(patches.Rectangle((box[0].item(), box[1].item()), width.item(), height.item(), linewidth=1, edgecolor='r', facecolor='none'))
+            ax.add_patch(patches.Rectangle((100 + 2 * index, 100 + 2 * index), 10, 10, linewidth=1, edgecolor='r', facecolor='none'))
+    
+    image_file_name = saving_dir + title + ".png"
+    plt.savefig(image_file_name)
 
 
 def create_heat_map(grad_cam, image, prediction, label, saving_dir, identifier):
