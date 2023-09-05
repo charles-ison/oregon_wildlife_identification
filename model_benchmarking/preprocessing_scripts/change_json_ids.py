@@ -2,12 +2,13 @@ import json
 import os
 from PIL import Image
 
-json_file = open("7.06-7.12.json")
+file_name = "instances_default.json"
+json_file = open(file_name)
 coco_key = json.load(json_file)
 images = coco_key["images"]
 annotations = coco_key["annotations"]
-new_starting_image_id = 1657
-new_starting_annotation_id = 174
+new_starting_image_id = 3085
+new_starting_annotation_id = 912
 
 for json_image in images:
     new_id_string = new_starting_image_id
@@ -23,6 +24,6 @@ for json_annotation in annotations:
 
 json_file.close()
 
-json_file = open("7.06-7.12.json", "w")
+json_file = open(file_name, "w")
 json.dump(coco_key, json_file, indent = 4)
 json_file.close()
