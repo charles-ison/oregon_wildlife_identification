@@ -49,7 +49,7 @@ def get_image_dictionary(directory):
                 timestamp = get_timestamp(image, image_dictionary)
                 image_dictionary[timestamp] = get_image_tensor(image)
             except:
-                print("Problematic image encountered, leaving out of training and testing")
+                print("Problematic image encountered, leaving out of inference")
                 continue
 
     image_dictionary = OrderedDict(sorted(image_dictionary.items()))

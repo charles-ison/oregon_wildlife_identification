@@ -84,7 +84,7 @@ def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_
     accuracy = num_correct/len(testing_loader.dataset)
     return loss, accuracy, all_labels, all_predictions
 
-def verify(model, grad_cam, batch_testing_loader, individual_testing_loader, device, criterion, saving_dir):
+def test(model, grad_cam, batch_testing_loader, individual_testing_loader, device, criterion, saving_dir):
     model.to(device)
     
     individual_testing_loss, individual_testing_accuracy, individual_labels, individual_predictions = test_individual(model, grad_cam, individual_testing_loader, criterion, False, True, saving_dir, device)
@@ -107,7 +107,7 @@ cottonwood_eastface_json_file_name = "2023_Cottonwood_Eastface_5.30_7.10_key.jso
 cottonwood_westface_json_file_name = "2023_Cottonwood_Westface_5.30_7.10_102RECNX_key.json"
 ngilchrist_eastface_json_file_name = "2022_NGilchrist_Eastface_055_07.12_07.20_key.json"
 idaho_json_file_name = "Idaho_loc_0099_key.json"
-data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/verification_animal_count/"
+data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/testing_animal_count/"
 
 resnet_50_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet50/"
 resnet_152_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet152/"
@@ -162,22 +162,22 @@ if torch.cuda.device_count() > 1:
 
 # Testing
 print("\nTesting ResNet50 on Cottonwood Eastface")
-verify(resnet50, resnet50_cam, cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_eastface/")
+test(resnet50, resnet50_cam, cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_eastface/")
 print("\nTesting ResNet50 on Cottonwood Westface")
-verify(resnet50, resnet50_cam, cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_westface/")
+test(resnet50, resnet50_cam, cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_westface/")
 print("\nTesting ResNet50 on NGilchrist Eastface")
-verify(resnet50, resnet50_cam, ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "ngilchrist_eastface/")
+test(resnet50, resnet50_cam, ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "ngilchrist_eastface/")
 print("\nTesting ResNet50 on Idaho")
-verify(resnet50, resnet50_cam, idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "idaho/")
+test(resnet50, resnet50_cam, idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "idaho/")
 
 print("\nTesting ResNet152 on Cottonwood Eastface")
-verify(resnet152, resnet152_cam, cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "cottonwood_eastface/")
+test(resnet152, resnet152_cam, cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "cottonwood_eastface/")
 print("\nTesting ResNet152 on Cottonwood Westface")
-verify(resnet152, resnet152_cam, cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "cottonwood_westface/")
+test(resnet152, resnet152_cam, cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "cottonwood_westface/")
 print("\nTesting ResNet152 on NGilchrist Eastface")
-verify(resnet152, resnet152_cam, ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "ngilchrist_eastface/")
+test(resnet152, resnet152_cam, ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "ngilchrist_eastface/")
 print("\nTesting ResNet152 on Idaho")
-verify(resnet152, resnet152_cam, idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "idaho/")
+test(resnet152, resnet152_cam, idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "idaho/")
 
 
 

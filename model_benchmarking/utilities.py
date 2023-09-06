@@ -143,7 +143,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
                 image_tensor = get_image_tensor(file_path, is_training, is_object_detection, new_image_height_and_width)
                 label = get_label(annotation_list, image, is_classification, is_object_detection, new_image_height_and_width)
             except:
-                print("Problematic image or label encountered, leaving out of training and testing")
+                print("Problematic image or label encountered, leaving out of training and validation")
                 continue
 
             if previous_time_stamp == None or (time_stamp - previous_time_stamp).total_seconds() < 60:
@@ -163,17 +163,17 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
     append_batch_labels(labels, batch_labels, is_classification, is_object_detection)
     
     if is_training:
-        batch_training_data, batch_testing_data, batch_training_labels, batch_testing_labels = train_test_split(data, labels, test_size = 0.20)
+        batch_training_data, batch_validation_data, batch_training_labels, batch_validation_labels = train_test_split(data, labels, test_size = 0.20)
         training_data = flatten_list(batch_training_data)
-        testing_data = flatten_list(batch_testing_data)
+        validation_data = flatten_list(batch_validation_data)
         training_labels = flatten_list(batch_training_labels)
-        testing_labels = flatten_list(batch_testing_labels)
+        validation_labels = flatten_list(batch_validation_labels)
 
         print("\nNumber of training photos: ", len(training_data))
-        print("Number of testing photos: ", len(testing_data))
-        print("Number of batches for testing: ", len(batch_testing_data))
+        print("Number of validation photos: ", len(validation_data))
+        print("Number of batches for validation: ", len(batch_validation_data))
 
-        return training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels
+        return training_data, validation_data, training_labels, validation_labels, batch_validation_data, batch_validation_labels
     else:
         individual_data = flatten_list(data)
         individual_labels = flatten_list(labels)

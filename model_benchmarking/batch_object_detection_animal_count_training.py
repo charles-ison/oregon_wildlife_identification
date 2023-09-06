@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import utilities
 from PIL import Image
 from torch.utils.data import DataLoader
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
@@ -21,7 +20,7 @@ from pycocotools.coco import COCO
 from torchvision.utils import draw_bounding_boxes
 
 
-def print_testing_analysis(all_labels, all_predictions, title, saving_dir):
+def print_validation_analysis(all_labels, all_predictions, title, saving_dir):
     plt.figure()
     subplot = plt.subplot()
 
@@ -31,7 +30,7 @@ def print_testing_analysis(all_labels, all_predictions, title, saving_dir):
 
     subplot.set_xlabel('Predictions')
     subplot.set_ylabel('Labels')
-    subplot.set_title(title + ' Testing Confusion Matrix')
+    subplot.set_title(title + ' Validation Confusion Matrix')
     subplot.xaxis.set_ticklabels([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     subplot.yaxis.set_ticklabels([9, 8, 7, 6, 5, 4, 3, 2, 1, 0])
 
@@ -108,14 +107,14 @@ def train(model, training_data_set, batch_size, optimizer, device):
     return loss, accuracy
 
 
-def test(model, testing_data_set, batch_size, print_incorrect_images, saving_dir, device):
+def validation(model, validation_data_set, batch_size, print_incorrect_images, saving_dir, device):
     model.eval()
     running_loss = 0.0
     num_correct = 0
     labels, predictions = [], []
 
-    for index in range(0, len(testing_data_set), batch_size):
-        batch = testing_data_set[index:index + batch_size]
+    for index in range(0, len(validation_data_set), batch_size):
+        batch = validation_data_set[index:index + batch_size]
         data, targets = get_info_from_batch(batch)
         
         model.train()
@@ -131,12 +130,12 @@ def test(model, testing_data_set, batch_size, print_incorrect_images, saving_dir
         labels.extend(batch_labels)
         predictions.extend(batch_predictions)
 
-    loss = running_loss/len(testing_data_set)
-    accuracy = num_correct/len(testing_data_set)
+    loss = running_loss/len(validation_data_set)
+    accuracy = num_correct/len(validation_data_set)
     return loss, accuracy, labels, predictions
 
 
-def test_batch(model, batch_testing_data_set, print_incorrect_images, saving_dir, device):
+def batch_validation(model, batch_validation_data_set, print_incorrect_images, saving_dir, device):
     model.eval()
     num_correct = 0
     running_loss = 0.0
@@ -144,7 +143,7 @@ def test_batch(model, batch_testing_data_set, print_incorrect_images, saving_dir
     mse = nn.MSELoss()
     count = 0
 
-    for batch in batch_testing_data_set:
+    for batch in batch_validation_data_set:
         data, targets = batch['data'], batch['label']
 
         # This is to prevent cuda memory issues for large batches
@@ -169,15 +168,15 @@ def test_batch(model, batch_testing_data_set, print_incorrect_images, saving_dir
         all_predictions.append(max_prediction)
         all_labels.append(max_label)
 
-    loss = running_loss/len(batch_testing_data_set)
-    accuracy = num_correct/len(batch_testing_data_set)
+    loss = running_loss/len(batch_validation_data_set)
+    accuracy = num_correct/len(batch_validation_data_set)
     return loss, accuracy, all_labels, all_predictions
 
 
-def train_and_test(num_epochs, model, model_name, training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, saving_dir):
+def train_and_validate(num_epochs, model, model_name, training_data_set, validation_data_set, batch_validation_data_set, batch_size, device, saving_dir):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
-    highest_batch_testing_accuracy = 0.0
+    highest_batch_validation_accuracy = 0.0
     saving_dir = saving_dir + "batch_count_" + model_name + "/"
 
     for epoch in range(num_epochs):
@@ -186,18 +185,18 @@ def train_and_test(num_epochs, model, model_name, training_data_set, testing_dat
         training_loss, training_accuracy = train(model, training_data_set, batch_size, optimizer, device)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
 
-        testing_loss, testing_accuracy, _, _ = test(model, testing_data_set, batch_size, False, saving_dir, device)
-        print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
+        validation_loss, validation_accuracy, _, _ = validation(model, validation_data_set, batch_size, False, saving_dir, device)
+        print("validation loss: " + str(validation_loss) + " and validation accuracy: " + str(validation_accuracy))
 
         should_print_images = (epoch == num_epochs - 1)
-        batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_data_set, should_print_images, saving_dir, device)
-        print("batch testing loss (MSE): " + str(batch_testing_loss) + " and batch testing accuracy: "+ str(batch_testing_accuracy))
+        batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation(model, batch_validation_data_set, should_print_images, saving_dir, device)
+        print("batch validation loss (MSE): " + str(batch_validation_loss) + " and batch validation accuracy: "+ str(batch_validation_accuracy))
 
-        if highest_batch_testing_accuracy < batch_testing_accuracy:
-            print("Highest batch testing accuracy achieved, saving weights")
-            highest_batch_testing_accuracy = batch_testing_accuracy
+        if highest_batch_validation_accuracy < batch_validation_accuracy:
+            print("Highest batch validation accuracy achieved, saving weights")
+            highest_batch_validation_accuracy = batch_validation_accuracy
             torch.save(model.state_dict(), saving_dir + model_name + ".pt")
-            print_testing_analysis(batch_labels, batch_predictions, model_name, saving_dir)
+            print_validation_analysis(batch_labels, batch_predictions, model_name, saving_dir)
 
 
 # Declaring Constants
@@ -213,10 +212,10 @@ print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 
-training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = utilities.fetch_data(data_dir, json_file_name, False, True, True)
+training_data, validation_data, training_labels, validation_labels, batch_validation_data, batch_validation_labels = utilities.fetch_data(data_dir, json_file_name, False, True, True)
 training_data_set = utilities.image_data_set(training_data, training_labels)
-testing_data_set = utilities.image_data_set(testing_data, testing_labels)
-batch_testing_data_set = utilities.image_data_set(batch_testing_data, batch_testing_labels)
+validation_data_set = utilities.image_data_set(validation_data, validation_labels)
+batch_validation_data_set = utilities.image_data_set(batch_validation_data, batch_validation_labels)
 
 # Declaring Models
 # TODO: YOLO and SSD
@@ -230,14 +229,14 @@ retina_net = models.detection.retinanet_resnet50_fpn_v2(weights=models.detection
     #faster_rcnn = nn.DataParallel(faster_rcnn)
 
 # Training
-print("\nTraining and Testing Faster R-CNN")
-train_and_test(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, saving_dir)
+print("\nTraining and Validating Faster R-CNN")
+train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_validation_data_set, batch_size, device, saving_dir)
 
 # Training
-print("\nTraining and Testing SSD")
-train_and_test(num_epochs, ssd, "SSD", training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, saving_dir)
+print("\nTraining and Validating SSD")
+train_and_validate(num_epochs, ssd, "SSD", training_data_set, validation_data_set, batch_validation_data_set, batch_size, device, saving_dir)
 
 # Training
-print("\nTraining and Testing RetinaNet")
-train_and_test(num_epochs, retina_net, "RetinaNet", training_data_set, testing_data_set, batch_testing_data_set, batch_size, device, saving_dir)
+print("\nTraining and Validating RetinaNet")
+train_and_validate(num_epochs, retina_net, "RetinaNet", training_data_set, validation_data_set, batch_validation_data_set, batch_size, device, saving_dir)
 

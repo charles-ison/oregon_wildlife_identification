@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import utilities
 from PIL import Image
 from torch.utils.data import DataLoader
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
@@ -19,7 +18,7 @@ from operator import itemgetter
 from datetime import datetime
 from pycocotools.coco import COCO
 
-def print_testing_analysis(all_labels, all_predictions, title, data_dir, saving_dir):
+def print_validation_analysis(all_labels, all_predictions, title, data_dir, saving_dir):
     subplot = plt.subplot()
 
     cf_matrix = confusion_matrix(all_labels, all_predictions, labels=[0, 1])
@@ -28,7 +27,7 @@ def print_testing_analysis(all_labels, all_predictions, title, data_dir, saving_
 
     subplot.set_xlabel('Predictions')
     subplot.set_ylabel('Labels')
-    subplot.set_title(title + ' Testing Confusion Matrix')
+    subplot.set_title(title + ' Validation Confusion Matrix')
     subplot.xaxis.set_ticklabels([0, 1])
     subplot.yaxis.set_ticklabels([1, 0])
 
@@ -66,13 +65,13 @@ def train(model, training_loader, criterion, optimizer, device):
     accuracy = num_correct/len(training_loader.dataset)
     return loss, accuracy
 
-def test(model, testing_loader, criterion, print_incorrect_images, data_dir, device):
+def validation(model, validation_loader, criterion, print_incorrect_images, data_dir, device):
     model.eval()
     running_loss = 0.0
     num_correct = 0
     all_labels, all_predictions = [], []
 
-    for i, batch in enumerate(testing_loader):
+    for i, batch in enumerate(validation_loader):
         data, labels = batch['data'].to(device), batch['label'].to(device)
         output = model(data)
         
@@ -89,16 +88,16 @@ def test(model, testing_loader, criterion, print_incorrect_images, data_dir, dev
 
         all_labels.extend(labels.cpu())
 
-    loss = running_loss/len(testing_loader.dataset)
-    accuracy = num_correct/len(testing_loader.dataset)
+    loss = running_loss/len(validation_loader.dataset)
+    accuracy = num_correct/len(validation_loader.dataset)
     return loss, accuracy, all_labels, all_predictions
 
-def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, data_dir, device):
+def batch_validation(model, batch_validation_loader, criterion, print_incorrect_images, data_dir, device):
     model.eval()
     num_correct = 0
     all_labels, all_predictions = [], []
 
-    for batch in batch_testing_loader:
+    for batch in batch_validation_loader:
         data, labels = torch.squeeze(batch['data'], dim=0).to(device), batch['label'].to(device)
 
         # This is to prevent cuda memory issues for large batches
@@ -122,13 +121,13 @@ def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, d
         all_predictions.append(batch_prediction)
         all_labels.append(batch_label)
 
-    accuracy = num_correct/len(batch_testing_loader.dataset)
+    accuracy = num_correct/len(batch_validation_loader.dataset)
     return accuracy, all_labels, all_predictions
 
-def train_and_test(num_epochs, model, model_name, training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir, saving_dir):
+def train_and_validate(num_epochs, model, model_name, training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
-    highest_batch_testing_accuracy = 0.0
+    highest_batch_validation_accuracy = 0.0
     saving_dir = saving_dir + "batch_classification_" + model_name + "/"
 
     for epoch in range(num_epochs):
@@ -137,17 +136,17 @@ def train_and_test(num_epochs, model, model_name, training_loader, testing_loade
         training_loss, training_accuracy = train(model, training_loader, criterion, optimizer, device)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
 
-        testing_loss, testing_accuracy, _, _ = test(model, testing_loader, criterion, False, data_dir, device)
-        print("testing loss: " + str(testing_loss) + " and testing accuracy: " + str(testing_accuracy))
+        validation_loss, validation_accuracy, _, _ = validation(model, validation_loader, criterion, False, data_dir, device)
+        print("validation loss: " + str(validation_loss) + " and validation accuracy: " + str(validation_accuracy))
 
-        batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_loader, criterion, False, data_dir, device)
-        print("batch testing accuracy: " + str(batch_testing_accuracy))
+        batch_validation_accuracy, batch_labels, batch_predictions = batch_validation(model, batch_validation_loader, criterion, False, data_dir, device)
+        print("batch validation accuracy: " + str(batch_validation_accuracy))
 
-        if highest_batch_testing_accuracy < batch_testing_accuracy:
-            print("Highest batch testing accuracy achieved, saving weights")
-            highest_batch_testing_accuracy = batch_testing_accuracy
+        if highest_batch_validation_accuracy < batch_validation_accuracy:
+            print("Highest batch validation accuracy achieved, saving weights")
+            highest_batch_validation_accuracy = batch_validation_accuracy
             torch.save(model.module.state_dict(), saving_dir + model_name + ".pt")
-            print_testing_analysis(batch_labels, batch_predictions, model_name, data_dir, saving_dir)
+            print_validation_analysis(batch_labels, batch_predictions, model_name, data_dir, saving_dir)
 
 
 # Declaring Constants
@@ -165,13 +164,13 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 criterion = nn.CrossEntropyLoss()
 
-training_data, testing_data, training_labels, testing_labels, batch_testing_data, batch_testing_labels = utilities.fetch_data(data_dir, json_file_name, True, False, True)
+training_data, validation_data, training_labels, validation_labels, batch_validation_data, batch_validation_labels = utilities.fetch_data(data_dir, json_file_name, True, False, True)
 training_data_set = utilities.image_data_set(training_data, training_labels)
-testing_data_set = utilities.image_data_set(testing_data, testing_labels)
-batch_testing_data_set = utilities.image_data_set(batch_testing_data, batch_testing_labels)
+validation_data_set = utilities.image_data_set(validation_data, validation_labels)
+batch_validation_data_set = utilities.image_data_set(batch_validation_data, batch_validation_labels)
 training_loader = DataLoader(dataset = training_data_set, batch_size = batch_size, shuffle = True)
-testing_loader = DataLoader(dataset = testing_data_set, batch_size = batch_size, shuffle = True)
-batch_testing_loader = DataLoader(dataset = batch_testing_data_set, batch_size = 1, shuffle = True)
+validation_loader = DataLoader(dataset = validation_data_set, batch_size = batch_size, shuffle = True)
+batch_validation_loader = DataLoader(dataset = batch_validation_data_set, batch_size = 1, shuffle = True)
 
 # Declaring Models
 resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
@@ -193,11 +192,11 @@ if torch.cuda.device_count() > 1:
     vit_l_16 = nn.DataParallel(vit_l_16)
 
 # Training
-print("\nTraining and Testing ResNet50")
-train_and_test(num_epochs, resnet50, "ResNet50", training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir, saving_dir)
+print("\nTraining and Validating ResNet50")
+train_and_validate(num_epochs, resnet50, "ResNet50", training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir)
 
-print("\nTraining and Testing ResNet152")
-train_and_test(num_epochs, resnet152, "ResNet152", training_loader, testing_loader, batch_testing_loader, device, criterion, data_dir, saving_dir)
+print("\nTraining and Validating ResNet152")
+train_and_validate(num_epochs, resnet152, "ResNet152", training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir)
 
 
 
