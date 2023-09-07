@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import utilities
 from PIL import Image
 from torch.utils.data import DataLoader
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
@@ -20,11 +19,11 @@ from datetime import datetime
 from pycocotools.coco import COCO
 from pytorch_grad_cam import FullGrad
 
+
 def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, saving_dir, device):
     model.eval()
     num_correct = 0
     running_loss = 0.0
-    all_labels, all_predictions = [], []
 
     for batch in batch_testing_loader:
         data, labels = torch.squeeze(batch['data'], dim=0).to(device), batch['label'].to(device)
@@ -45,18 +44,15 @@ def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, s
         if max_prediction == max_label:
             num_correct += 1
 
-        all_predictions.append(max_prediction.cpu())
-        all_labels.append(max_label.cpu())
-
     loss = running_loss/len(batch_testing_loader.dataset)
     accuracy = num_correct/len(batch_testing_loader.dataset)
-    return loss, accuracy, all_labels, all_predictions
+    return loss, accuracy
+    
     
 def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_images, print_heat_map, saving_dir, device):
     model.eval()
     running_loss = 0.0
     num_correct = 0
-    all_labels, all_predictions = [], []
     grad_cam_identifier = 0
 
     for i, batch in enumerate(testing_loader):
@@ -67,7 +63,6 @@ def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_
         running_loss += loss.item()
         for index, prediction in enumerate(output.round()):
             prediction = prediction.cpu().item()
-            all_predictions.append(prediction)
             if prediction == labels[index]:
                 num_correct += 1
             elif print_incorrect_images:
@@ -78,31 +73,103 @@ def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_
                 utilities.create_heat_map(grad_cam, data[index], prediction, labels[index], saving_dir, grad_cam_identifier)
             grad_cam_identifier += 1
 
-        all_labels.extend(labels.cpu())
-
     loss = running_loss/len(testing_loader.dataset)
     accuracy = num_correct/len(testing_loader.dataset)
-    return loss, accuracy, all_labels, all_predictions
+    return loss, accuracy
 
-def test(model, grad_cam, batch_testing_loader, individual_testing_loader, device, criterion, saving_dir):
+
+def test(model, grad_cam, batch_loader, individual_loader, device, criterion, saving_dir):
     model.to(device)
     
-    individual_testing_loss, individual_testing_accuracy, individual_labels, individual_predictions = test_individual(model, grad_cam, individual_testing_loader, criterion, False, True, saving_dir, device)
-    print("individual testing loss (MSE): " + str(individual_testing_loss) + " and individual testing accuracy: "+ str(individual_testing_accuracy))
+    individual_loss, individual_accuracy = test_individual(model, grad_cam, individual_loader, criterion, False, True, saving_dir, device)
+    print("individual testing loss (MSE): " + str(individual_loss) + " and individual testing accuracy: "+ str(individual_accuracy))
 
-    batch_testing_loss, batch_testing_accuracy, batch_labels, batch_predictions = test_batch(model, batch_testing_loader, criterion, False, saving_dir, device)
-    print("batch testing loss (MSE): " + str(batch_testing_loss) + " and batch testing accuracy: "+ str(batch_testing_accuracy))
+    batch_loss, batch_accuracy = test_batch(model, batch_loader, criterion, False, saving_dir, device)
+    print("batch testing loss (MSE): " + str(batch_loss) + " and batch testing accuracy: "+ str(batch_accuracy))
     
-def get_data_loaders(data_dir, json_file_name):
+    
+def get_predictions(bounding_boxes):
+    num_correct = 0
+    labels, predictions = [], []
+    for box_index, boxes in enumerate(bounding_boxes):
+        num_animals = 0
+        for score_index, score in enumerate(boxes["scores"]):
+            if score > 0.5 and boxes["labels"][score_index] == 1:
+                num_animals += 1
+        predictions.append(num_animals)
+    return predictions
+
+
+def test_individual_object_detection(model, individual_data_set, batch_size, criterion, saving_dir, device):
+    model.eval()
+    running_loss = 0.0
+    num_correct = 0
+
+    for index in range(0, len(individual_data_set), batch_size):
+        batch = individual_data_set[index:index + batch_size]
+        data, labels = batch['data'], batch['label']
+        utilities.set_device_for_list_of_tensors(data, device)
+        bounding_boxes = model(data)
+        predictions = get_predictions(bounding_boxes)
+        labels_tensor = torch.FloatTensor(labels)
+        predictions_tensor = torch.FloatTensor(predictions)
+        running_loss += criterion(labels_tensor, predictions_tensor).item()
+        num_correct += (labels_tensor == predictions_tensor).sum().item()
+
+    loss = running_loss/len(individual_data_set)
+    accuracy = num_correct/len(individual_data_set)
+    return loss, accuracy
+    
+
+def test_batch_object_detection(model, batch_data_set, criterion, saving_dir, device):
+    model.eval()
+    num_correct = 0
+    running_loss = 0.0
+
+    for batch in batch_data_set:
+        data, labels = batch['data'], batch['label']
+
+        # This is to prevent cuda memory issues for large batches
+        max_prediction = 0
+        max_label = 0
+        for image in data:
+            image = torch.unsqueeze(image, dim=0).to(device)
+            bounding_boxes = model(image)
+            predictions = get_predictions(bounding_boxes)
+            
+            max_prediction = max(max_prediction, predictions[0])
+            max_label = max(max_label, labels[0])
+            
+        running_loss += criterion(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
+        if max_prediction == max_label:
+            num_correct += 1
+
+    loss = running_loss/len(batch_data_set)
+    accuracy = num_correct/len(batch_data_set)
+    return loss, accuracy
+
+    
+def test_object_detection(model, batch_data_set, individual_data_set, batch_size, device, criterion, saving_dir):
+    model.to(device)
+    
+    individual_loss, individual_accuracy = test_individual_object_detection(model, individual_data_set, batch_size, criterion, saving_dir, device)
+    print("individual testing loss (MSE): " + str(individual_loss) + " and individual testing accuracy: "+ str(individual_accuracy))
+
+    batch_loss, batch_accuracy = test_batch_object_detection(model, batch_data_set, criterion, saving_dir, device)
+    print("batch testing loss (MSE): " + str(batch_loss) + " and batch testing accuracy: "+ str(batch_accuracy))
+
+    
+def get_data(batch_size, data_dir, json_file_name):
     batch_testing_data, batch_testing_labels, individual_data, individual_labels = utilities.fetch_data(data_dir, json_file_name, False, False, False)
-    batch_testing_data_set = utilities.image_data_set(batch_testing_data, batch_testing_labels)
-    individual_testing_data_set = utilities.image_data_set(individual_data, individual_labels)
-    batch_data_loader = DataLoader(dataset = batch_testing_data_set, batch_size = 1, shuffle = True)
-    individual_data_loader = DataLoader(dataset = individual_testing_data_set, batch_size = 10, shuffle = True)
-    return batch_data_loader, individual_data_loader
+    batch_data_set = utilities.image_data_set(batch_testing_data, batch_testing_labels)
+    individual_data_set = utilities.image_data_set(individual_data, individual_labels)
+    batch_data_loader = DataLoader(dataset = batch_data_set, batch_size = 1, shuffle = True)
+    individual_data_loader = DataLoader(dataset = individual_data_set, batch_size = batch_size, shuffle = True)
+    return batch_data_loader, individual_data_loader, batch_data_set, individual_data_set
+
 
 # Declaring Constants
-batch_size = 10
+batch_size = 5
 cottonwood_eastface_json_file_name = "2023_Cottonwood_Eastface_5.30_7.10_key.json"
 cottonwood_westface_json_file_name = "2023_Cottonwood_Westface_5.30_7.10_102RECNX_key.json"
 ngilchrist_eastface_json_file_name = "2022_NGilchrist_Eastface_055_07.12_07.20_key.json"
@@ -111,9 +178,15 @@ data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/testing_animal_count/"
 
 resnet_50_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet50/"
 resnet_152_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet152/"
+faster_rcnn_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_FasterR-CNN/"
+ssd_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_SSD/"
+retina_net_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_RetinaNet/"
 
 resnet50_weights_path = resnet_50_saving_dir + "ResNet50.pt"
 resnet152_weights_path = resnet_152_saving_dir + "ResNet152.pt"
+faster_rcnn_weights_path = faster_rcnn_saving_dir + "FasterR-CNN.pt"
+ssd_weights_path = ssd_saving_dir + "SSD.pt"
+retina_net_weights_path = retina_net_saving_dir + "RetinaNet.pt"
 
 resnet_50_grad_cam_path = resnet_50_saving_dir + "grad_cam/"
 resnet_152_grad_cam_path = resnet_152_saving_dir + "grad_cam/"
@@ -126,19 +199,19 @@ torch.cuda.empty_cache()
 criterion = nn.MSELoss()
 
 print("\nGetting Cottonwood Eastface data")
-cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader = get_data_loaders(data_dir, cottonwood_eastface_json_file_name)
+cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set = get_data(batch_size, data_dir, cottonwood_eastface_json_file_name)
 
 print("\nGetting Cottonwood Westface data")
-cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader = get_data_loaders(data_dir, cottonwood_westface_json_file_name)
+cottonwood_wf_batch_loader, cottonwood_wf_individual_loader, cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set = get_data(batch_size, data_dir, cottonwood_westface_json_file_name)
 
 print("\nGetting NGilchrist Eastface data")
-ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader = get_data_loaders(data_dir, ngilchrist_eastface_json_file_name)
+ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set = get_data(batch_size, data_dir, ngilchrist_eastface_json_file_name)
 
 print("\nGetting Idaho data")
-idaho_batch_testing_loader, idaho_individual_data_loader = get_data_loaders(data_dir, idaho_json_file_name)
+idaho_batch_loader, idaho_individual_loader, idaho_batch_data_set, idaho_individual_data_set = get_data(batch_size, data_dir, idaho_json_file_name)
 
 # Declaring Models
-# Have follow same steps used to create model during training
+# Have to follow same steps used to create model during training
 resnet50 = models.resnet50()
 in_features = resnet50.fc.in_features
 resnet50.fc = nn.Linear(in_features, 1)
@@ -147,6 +220,10 @@ resnet152 = models.resnet152()
 in_features = resnet152.fc.in_features
 resnet152.fc = nn.Linear(in_features, 1)
 
+faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2()
+ssd = models.detection.ssd300_vgg16()
+retina_net = models.detection.retinanet_resnet50_fpn_v2()
+
 #Layer 4 is just recommended by GradCam documentation for ResNet
 resnet50_cam = FullGrad(model=resnet50, target_layers=[], use_cuda=torch.cuda.is_available())
 resnet152_cam = FullGrad(model=resnet152, target_layers=[], use_cuda=torch.cuda.is_available())
@@ -154,7 +231,11 @@ resnet152_cam = FullGrad(model=resnet152, target_layers=[], use_cuda=torch.cuda.
 #Loading trained model weights
 resnet50.load_state_dict(torch.load(resnet50_weights_path))
 resnet152.load_state_dict(torch.load(resnet152_weights_path))
+faster_rcnn.load_state_dict(torch.load(faster_rcnn_weights_path))
+ssd.load_state_dict(torch.load(ssd_weights_path))
+retina_net.load_state_dict(torch.load(retina_net_weights_path))
 
+# Object Detection models cannot be used with data parallel
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
     resnet50 = nn.DataParallel(resnet50)
@@ -162,23 +243,48 @@ if torch.cuda.device_count() > 1:
 
 # Testing
 print("\nTesting ResNet50 on Cottonwood Eastface")
-test(resnet50, resnet50_cam, cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_eastface/")
+test(resnet50, resnet50_cam, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_eastface/")
 print("\nTesting ResNet50 on Cottonwood Westface")
-test(resnet50, resnet50_cam, cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_westface/")
+test(resnet50, resnet50_cam, cottonwood_wf_batch_loader, cottonwood_wf_individual_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_westface/")
 print("\nTesting ResNet50 on NGilchrist Eastface")
-test(resnet50, resnet50_cam, ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "ngilchrist_eastface/")
+test(resnet50, resnet50_cam, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, criterion, resnet_50_grad_cam_path + "ngilchrist_eastface/")
 print("\nTesting ResNet50 on Idaho")
-test(resnet50, resnet50_cam, idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, resnet_50_grad_cam_path + "idaho/")
+test(resnet50, resnet50_cam, idaho_batch_loader, idaho_individual_loader, device, criterion, resnet_50_grad_cam_path + "idaho/")
 
 print("\nTesting ResNet152 on Cottonwood Eastface")
-test(resnet152, resnet152_cam, cottonwood_eastface_batch_testing_loader, cottonwood_eastface_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "cottonwood_eastface/")
+test(resnet152, resnet152_cam, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, criterion, resnet_152_grad_cam_path + "cottonwood_eastface/")
 print("\nTesting ResNet152 on Cottonwood Westface")
-test(resnet152, resnet152_cam, cottonwood_westface_batch_testing_loader, cottonwood_westface_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "cottonwood_westface/")
+test(resnet152, resnet152_cam, cottonwood_wf_batch_loader, cottonwood_wf_individual_loader, device, criterion, resnet_152_grad_cam_path + "cottonwood_westface/")
 print("\nTesting ResNet152 on NGilchrist Eastface")
-test(resnet152, resnet152_cam, ngilchrist_eastface_batch_testing_loader, ngilchrist_eastface_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "ngilchrist_eastface/")
+test(resnet152, resnet152_cam, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, criterion, resnet_152_grad_cam_path + "ngilchrist_eastface/")
 print("\nTesting ResNet152 on Idaho")
-test(resnet152, resnet152_cam, idaho_batch_testing_loader, idaho_individual_data_loader, device, criterion, resnet_152_grad_cam_path + "idaho/")
+test(resnet152, resnet152_cam, idaho_batch_loader, idaho_individual_loader, device, criterion, resnet_152_grad_cam_path + "idaho/")
 
+print("\nTesting Faster R-CNN on Cottonwood Eastface")
+test_object_detection(faster_rcnn, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
+print("\nTesting Faster R-CNN on Cottonwood Westface")
+test_object_detection(faster_rcnn, cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
+print("\nTesting Faster R-CNN on NGilchrist Eastface")
+test_object_detection(faster_rcnn, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
+print("\nTesting Faster R-CNN on Idaho")
+test_object_detection(faster_rcnn, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
 
+print("\nTesting SSD on Cottonwood Eastface")
+test_object_detection(ssd, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
+print("\nTesting SSD on Cottonwood Westface")
+test_object_detection(ssd, cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
+print("\nTesting SSD on NGilchrist Eastface")
+test_object_detection(ssd, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
+print("\nTesting SSD on Idaho")
+test_object_detection(ssd, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
+
+print("\nTesting RetinaNet on Cottonwood Eastface")
+test_object_detection(retina_net, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
+print("\nTesting RetinaNet on Cottonwood Westface")
+test_object_detection(retina_net, cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
+print("\nTesting RetinaNet on NGilchrist Eastface")
+test_object_detection(retina_net, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
+print("\nTesting RetinaNet on Idaho")
+test_object_detection(retina_net, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
 
 

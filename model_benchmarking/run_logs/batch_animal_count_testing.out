@@ -1,0 +1,118 @@
+2.0.1+cu117
+0.15.2+cu117
+torch.cuda.is_available(): True
+
+Getting Cottonwood Eastface data
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Number of batches for verification:  6
+Number of individual photos for verification:  100
+
+Getting Cottonwood Westface data
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Number of batches for verification:  4
+Number of individual photos for verification:  100
+
+Getting NGilchrist Eastface data
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Problematic image or label encountered, leaving out of training and validation
+Number of batches for verification:  33
+Number of individual photos for verification:  99
+
+Getting Idaho data
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Problematic image or label encountered, leaving out of training and validation
+Problematic image or label encountered, leaving out of training and validation
+Number of batches for verification:  82
+Number of individual photos for verification:  122
+
+Testing ResNet50 on Cottonwood Eastface
+individual testing loss (MSE): 0.07396752122789621 and individual testing accuracy: 0.68
+batch testing loss (MSE): 0.8333333333333334 and batch testing accuracy: 0.6666666666666666
+
+Testing ResNet50 on Cottonwood Westface
+individual testing loss (MSE): 0.004099747175350785 and individual testing accuracy: 1.0
+batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+
+Testing ResNet50 on NGilchrist Eastface
+individual testing loss (MSE): 0.029224327041043177 and individual testing accuracy: 0.8888888888888888
+batch testing loss (MSE): 0.15151515151515152 and batch testing accuracy: 0.8484848484848485
+
+Testing ResNet50 on Idaho
+individual testing loss (MSE): 0.17842198047237318 and individual testing accuracy: 0.5983606557377049
+batch testing loss (MSE): 0.9146341463414634 and batch testing accuracy: 0.6097560975609756
+
+Testing ResNet152 on Cottonwood Eastface
+individual testing loss (MSE): 0.05545792482793331 and individual testing accuracy: 0.6
+batch testing loss (MSE): 0.3333333333333333 and batch testing accuracy: 0.6666666666666666
+
+Testing ResNet152 on Cottonwood Westface
+individual testing loss (MSE): 0.0031296804547309874 and individual testing accuracy: 1.0
+batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+
+Testing ResNet152 on NGilchrist Eastface
+individual testing loss (MSE): 0.04163239851142421 and individual testing accuracy: 0.9292929292929293
+batch testing loss (MSE): 0.21212121212121213 and batch testing accuracy: 0.8787878787878788
+
+Testing ResNet152 on Idaho
+individual testing loss (MSE): 0.22636758291819056 and individual testing accuracy: 0.4262295081967213
+batch testing loss (MSE): 1.0731707317073171 and batch testing accuracy: 0.47560975609756095
+
+Testing Faster R-CNN on Cottonwood Eastface
+individual testing loss (MSE): 0.10800000041723251 and individual testing accuracy: 0.46
+batch testing loss (MSE): 0.5 and batch testing accuracy: 0.5
+
+Testing Faster R-CNN on Cottonwood Westface
+individual testing loss (MSE): 0.0 and individual testing accuracy: 1.0
+batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+
+Testing Faster R-CNN on NGilchrist Eastface
+individual testing loss (MSE): 0.028282828854792046 and individual testing accuracy: 0.9191919191919192
+batch testing loss (MSE): 0.24242424242424243 and batch testing accuracy: 0.8484848484848485
+
+Testing Faster R-CNN on Idaho
+individual testing loss (MSE): 0.3508196703967501 and individual testing accuracy: 0.2786885245901639
+batch testing loss (MSE): 1.5121951219512195 and batch testing accuracy: 0.3048780487804878
+
+Testing SSD on Cottonwood Eastface
+individual testing loss (MSE): 0.10800000041723251 and individual testing accuracy: 0.46
+batch testing loss (MSE): 0.5 and batch testing accuracy: 0.5
+
+Testing SSD on Cottonwood Westface
+individual testing loss (MSE): 0.0 and individual testing accuracy: 1.0
+batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+
+Testing SSD on NGilchrist Eastface
+individual testing loss (MSE): 0.028282828854792046 and individual testing accuracy: 0.9191919191919192
+batch testing loss (MSE): 0.24242424242424243 and batch testing accuracy: 0.8484848484848485
+
+Testing SSD on Idaho
+individual testing loss (MSE): 0.3508196703967501 and individual testing accuracy: 0.2786885245901639
+batch testing loss (MSE): 1.5121951219512195 and batch testing accuracy: 0.3048780487804878
+
+Testing RetinaNet on Cottonwood Eastface
+individual testing loss (MSE): 0.10800000041723251 and individual testing accuracy: 0.46
+batch testing loss (MSE): 0.5 and batch testing accuracy: 0.5
+
+Testing RetinaNet on Cottonwood Westface
+individual testing loss (MSE): 0.0 and individual testing accuracy: 1.0
+batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+
+Testing RetinaNet on NGilchrist Eastface
+individual testing loss (MSE): 0.028282828854792046 and individual testing accuracy: 0.9191919191919192
+batch testing loss (MSE): 0.24242424242424243 and batch testing accuracy: 0.8484848484848485
+
+Testing RetinaNet on Idaho
+individual testing loss (MSE): 0.3508196703967501 and individual testing accuracy: 0.2786885245901639
+batch testing loss (MSE): 1.5121951219512195 and batch testing accuracy: 0.3048780487804878

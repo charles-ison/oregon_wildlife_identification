@@ -46,16 +46,11 @@ def print_validation_analysis(all_labels, all_predictions, title, saving_dir):
     print(title + " Recall: " + str(recall))
     print(title + " F-Score: " + str(f_score))
     
-
+    
 def set_device_for_list_of_dicts(some_list, device):
     for some_dict in some_list:
         some_dict["boxes"] = some_dict["boxes"].to(device)
         some_dict["labels"] = some_dict["labels"].to(device)
-    
-
-def set_device_for_list_of_tensors(some_list, device):
-    for index, tensor in enumerate(some_list):
-        some_list[index] = tensor.to(device)
         
 
 def get_info_from_batch(batch):
@@ -108,7 +103,6 @@ def train(model, training_data_set, batch_size, optimizer, device):
 
 
 def validation(model, validation_data_set, batch_size, print_incorrect_images, saving_dir, device):
-    model.eval()
     running_loss = 0.0
     num_correct = 0
     labels, predictions = [], []
@@ -218,7 +212,7 @@ validation_data_set = utilities.image_data_set(validation_data, validation_label
 batch_validation_data_set = utilities.image_data_set(batch_validation_data, batch_validation_labels)
 
 # Declaring Models
-# TODO: YOLO and SSD
+# TODO: YOLO
 faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2(weights=models.detection.FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT)
 ssd = models.detection.ssd300_vgg16(weights=models.detection.SSD300_VGG16_Weights.DEFAULT)
 retina_net = models.detection.retinanet_resnet50_fpn_v2(weights=models.detection.RetinaNet_ResNet50_FPN_V2_Weights.DEFAULT)

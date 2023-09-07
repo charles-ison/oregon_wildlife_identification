@@ -32,7 +32,12 @@ class image_data_set(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         return {'data': self.data[index], 'label': self.labels[index]}
+        
 
+def set_device_for_list_of_tensors(some_list, device):
+    for index, tensor in enumerate(some_list):
+        some_list[index] = tensor.to(device)
+    
 
 def get_image_tensor(file_path, is_training, is_object_detection, new_image_height_and_width):
     image = Image.open(file_path)
