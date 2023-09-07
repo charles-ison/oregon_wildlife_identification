@@ -55,7 +55,7 @@ def set_device_for_list_of_dicts(some_list, device):
 
 def get_info_from_batch(batch):
     data, targets = batch['data'], batch['label']
-    set_device_for_list_of_tensors(data, device)
+    utilities.set_device_for_list_of_tensors(data, device)
     set_device_for_list_of_dicts(targets, device)
     return data, targets
     
