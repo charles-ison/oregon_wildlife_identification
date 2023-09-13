@@ -14,9 +14,7 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
-from operator import itemgetter
-from datetime import datetime
-from pycocotools.coco import COCO
+
 
 def print_validation_analysis(all_labels, all_predictions, title, data_dir, saving_dir):
     subplot = plt.subplot()
@@ -170,17 +168,20 @@ class CustomModel(nn.Module):
     def __init__(self, max_batch_size):
         super().__init__()
         self.max_batch_size = max_batch_size
-        self.resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
-        self.resnet50_out_features = self.resnet50.fc.out_features
-        self.resnet50_in_features = self.resnet50.fc.in_features
-        self.fc1 = nn.Linear(self.resnet50_out_features, 1)
-        self.fc2 = nn.Linear(self.resnet50_in_features, 1)
+        self.cnn = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
+        self.cnn_out_features = self.cnn.fc.out_features
+        self.fc1 = nn.Linear(self.max_batch_size, 1)
+        self.fc2 = nn.Linear(self.cnn_out_features, 1)
 
     def forward(self, x):
-        embeddings = torch.zeros(max_batch_size, self.resnet50_in_features, self.resnet50_out_features)
+        embeddings = []
         for index, image in enumerate(x):
-            embedding = resnet50(image)
-            embeddings[index] = embedding
+            image = torch.unsqueeze(image, dim=0)
+            embedding = self.cnn(image)
+            embeddings.append(embedding)
+        
+        embeddings = torch.stack(embeddings, dim=2)
+        embeddings = nn.functional.pad(embeddings, pad=(self.max_batch_size - embeddings.shape[2], 0, 0, 0, 0, 0))
         
         x = self.fc1(embeddings)
         x = x.flatten(start_dim = 1)
@@ -188,12 +189,17 @@ class CustomModel(nn.Module):
 
 max_batch_size = 100
 custom_model = CustomModel(max_batch_size)
-output = custom_model(batch_validation_data_set[0])
+custom_model.to(device)
+
+for batch in batch_validation_loader:
+    data, labels = batch['data'].to(device), batch['label'].to(device)
+    data = torch.squeeze(data, dim=0)
+    output = custom_model(data)
 
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
     custom_model = nn.DataParallel(custom_model)
 
-print("\nTraining and Validating Custom Model")
-train_and_validate(num_epochs, custom_model, "CustomModel", training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir)
+#print("\nTraining and Validating Custom Model")
+#train_and_validate(num_epochs, custom_model, "CustomModel", training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir)
 
