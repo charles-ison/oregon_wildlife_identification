@@ -198,7 +198,7 @@ num_epochs = 3
 batch_size = 5
 json_file_name = "animal_count_key.json"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/2022_Cottonwood_Eastface_bounding_boxes/"
-saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/"
+saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/"
 
 print(torch.__version__)
 print(torchvision.__version__)

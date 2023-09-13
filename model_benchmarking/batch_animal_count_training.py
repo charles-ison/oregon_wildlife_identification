@@ -14,9 +14,7 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
-from operator import itemgetter
-from datetime import datetime
-from pycocotools.coco import COCO
+
 
 def print_validation_analysis(all_labels, all_predictions, title, data_dir, saving_dir):
     subplot = plt.subplot()
@@ -149,7 +147,7 @@ num_epochs = 5
 batch_size = 10
 json_file_name = "animal_count_key.json"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/2022_Cottonwood_Eastface_and_Repelcam/"
-saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/"
+saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/"
 
 print(torch.__version__)
 print(torchvision.__version__)
@@ -179,6 +177,12 @@ vit_l_16 = models.vit_l_16(weights = models.ViT_L_16_Weights.DEFAULT)
 in_features = vit_l_16.heads[0].in_features
 vit_l_16.heads[0] = nn.Linear(in_features, 1)
 
+faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2(weights=models.detection.FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT)
+
+ssd = models.detection.ssd300_vgg16(weights=models.detection.SSD300_VGG16_Weights.DEFAULT)
+
+retina_net = models.detection.retinanet_resnet50_fpn_v2(weights=models.detection.RetinaNet_ResNet50_FPN_V2_Weights.DEFAULT)
+
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
     resnet50 = nn.DataParallel(resnet50)
@@ -191,6 +195,9 @@ train_and_validate(num_epochs, resnet50, "ResNet50", training_loader, validation
 
 print("\nTraining and Validating ResNet152")
 train_and_validate(num_epochs, resnet152, "ResNet152", training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir)
+
+print("\nTraining and Validating Vision Transformer Large 16")
+train_and_validate(num_epochs, vit_l_16, "ViTL16", training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir)
 
 
 
