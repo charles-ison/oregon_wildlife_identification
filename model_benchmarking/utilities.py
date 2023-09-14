@@ -39,7 +39,7 @@ def set_device_for_list_of_tensors(some_list, device):
         some_list[index] = tensor.to(device)
     
 
-def get_image_tensor(file_path, is_training, is_object_detection, new_image_height_and_width):
+def get_image_tensor(file_path, new_image_height_and_width):
     image = Image.open(file_path)
     transform = transforms.Compose([
         transforms.Resize((new_image_height_and_width, new_image_height_and_width)),
@@ -47,16 +47,7 @@ def get_image_tensor(file_path, is_training, is_object_detection, new_image_heig
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    tensor = transform(image)
-    
-    if is_training and not is_object_detection:
-        transform = transforms.Compose([
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomRotation(degrees=15)
-        ])
-        tensor = transform(tensor)
-        
-    return tensor
+    return transform(image)
 
 
 def remove_images_with_no_datetime(images):
@@ -145,7 +136,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
             label = None
             try:
                 new_image_height_and_width = 224
-                image_tensor = get_image_tensor(file_path, is_training, is_object_detection, new_image_height_and_width)
+                image_tensor = get_image_tensor(file_path, new_image_height_and_width)
                 label = get_label(annotation_list, image, is_classification, is_object_detection, new_image_height_and_width)
             except:
                 print("Problematic image or label encountered, leaving out of training and validation")

@@ -60,20 +60,27 @@ def get_info_from_batch(batch):
     return data, targets
     
     
-def get_predictions_and_labels(bounding_boxes, targets):
-    num_correct = 0
-    labels, predictions = [], []
-    for box_index, boxes in enumerate(bounding_boxes):
+def get_predictions(bounding_boxes):
+    predictions = []
+    for boxes in bounding_boxes:
         num_animals = 0
         for score_index, score in enumerate(boxes["scores"]):
             if score > 0.5 and boxes["labels"][score_index] == 1:
                 num_animals += 1
-        label = targets[box_index]["labels"].size(dim=0)
-        labels.append(label)
         predictions.append(num_animals)
-        if num_animals == label:
-            num_correct += 1
-    return labels, predictions, num_correct
+    return predictions
+    
+
+def get_labels(targets):
+    labels = []
+    for target in targets:
+        label = target["labels"].size(dim=0)
+        labels.append(label)
+    return labels
+    
+    
+def get_num_equal_elements(labels, predictions):
+    return sum(label == prediction for label, prediction in zip(labels, predictions))
 
 
 def train(model, training_data_set, batch_size, optimizer, device):
@@ -85,8 +92,10 @@ def train(model, training_data_set, batch_size, optimizer, device):
         
         model.eval()
         bounding_boxes = model(data)
-        _, _, batch_num_correct = get_predictions_and_labels(bounding_boxes, targets)
-        num_correct += batch_num_correct
+        
+        labels = get_labels(targets)
+        predictions = get_predictions(bounding_boxes)
+        num_correct += get_num_equal_elements(labels, predictions)
         
         model.train()
         optimizer.zero_grad()
@@ -105,7 +114,6 @@ def train(model, training_data_set, batch_size, optimizer, device):
 def validation(model, validation_data_set, batch_size, print_incorrect_images, saving_dir, device):
     running_loss = 0.0
     num_correct = 0
-    labels, predictions = [], []
 
     for index in range(0, len(validation_data_set), batch_size):
         batch = validation_data_set[index:index + batch_size]
@@ -118,15 +126,14 @@ def validation(model, validation_data_set, batch_size, print_incorrect_images, s
         
         model.eval()
         bounding_boxes = model(data)
-        batch_labels, batch_predictions, batch_num_correct = get_predictions_and_labels(bounding_boxes, targets)
         
-        num_correct += batch_num_correct
-        labels.extend(batch_labels)
-        predictions.extend(batch_predictions)
+        batch_labels = get_labels(targets)
+        batch_predictions = get_predictions(bounding_boxes)
+        num_correct += get_num_equal_elements(labels, predictions)
 
     loss = running_loss/len(validation_data_set)
     accuracy = num_correct/len(validation_data_set)
-    return loss, accuracy, labels, predictions
+    return loss, accuracy
 
 
 def batch_validation(model, batch_validation_data_set, print_incorrect_images, saving_dir, device):
@@ -146,7 +153,9 @@ def batch_validation(model, batch_validation_data_set, print_incorrect_images, s
         for image in data:
             image = torch.unsqueeze(image, dim=0).to(device)
             bounding_boxes = model(image)
-            labels, predictions, _ = get_predictions_and_labels(bounding_boxes, targets)
+            
+            labels = get_labels(targets)
+            predictions = get_predictions(bounding_boxes)
             
             if print_incorrect_images and labels[0] != predictions[0]:
                 utilities.print_image(torch.squeeze(image), predictions[0], saving_dir + "incorrect_images/", count, bounding_boxes)
@@ -179,7 +188,7 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
         training_loss, training_accuracy = train(model, training_data_set, batch_size, optimizer, device)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
 
-        validation_loss, validation_accuracy, _, _ = validation(model, validation_data_set, batch_size, False, saving_dir, device)
+        validation_loss, validation_accuracy = validation(model, validation_data_set, batch_size, False, saving_dir, device)
         print("validation loss: " + str(validation_loss) + " and validation accuracy: " + str(validation_accuracy))
 
         should_print_images = (epoch == num_epochs - 1)
