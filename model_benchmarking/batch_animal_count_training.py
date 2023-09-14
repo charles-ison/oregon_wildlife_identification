@@ -10,7 +10,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import utilities
 from PIL import Image
-from torch.utils.data import DataLoader
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
@@ -40,13 +39,41 @@ def print_validation_analysis(all_labels, all_predictions, title, data_dir, savi
     print(title + " Precision: " + str(precision))
     print(title + " Recall: " + str(recall))
     print(title + " F-Score: " + str(f_score))
+    
 
-def train(model, training_loader, criterion, optimizer, device):
+def set_device_for_list_of_dicts(some_list, device):
+    for some_dict in some_list:
+        some_dict["boxes"] = some_dict["boxes"].to(device)
+        some_dict["labels"] = some_dict["labels"].to(device)
+        
+
+def get_info_from_batch(batch):
+    data, targets = batch['data'], batch['label']
+    utilities.set_device_for_list_of_tensors(data, device)
+    set_device_for_list_of_dicts(targets, device)
+    return data, targets
+    
+    
+def get_labels(targets):
+    labels = []
+    for target in targets:
+        label = target["labels"].size(dim=0)
+        labels.append(label)
+    return labels
+    
+
+def train(model, training_data_set, criterion, optimizer, device, batch_size):
     model.train()
     running_loss = 0.0
     num_correct = 0
-    for batch in training_loader:
-        data, labels = batch['data'].to(device), batch['label'].to(device)
+    
+    for index in range(0, len(training_data_set), batch_size):
+        batch = training_data_set[index:index + batch_size]
+        data, targets = get_info_from_batch(batch)
+        data = torch.stack(data)
+        labels = get_labels(targets)
+        labels = torch.FloatTensor(labels).to(device)
+        
         optimizer.zero_grad()
         output = model(data).flatten()
 
@@ -56,48 +83,47 @@ def train(model, training_loader, criterion, optimizer, device):
         loss.backward()
         optimizer.step()
 
-    loss = running_loss/len(training_loader.dataset)
-    accuracy = num_correct/len(training_loader.dataset)
+    loss = running_loss/len(training_data_set)
+    accuracy = num_correct/len(training_data_set)
     return loss, accuracy
 
-def validation(model, validation_loader, criterion, print_incorrect_images, data_dir, device):
+def validation(model, validation_data_set, criterion, print_incorrect_images, data_dir, device, batch_size):
     model.eval()
     running_loss = 0.0
     num_correct = 0
-    all_labels, all_predictions = [], []
 
-    for i, batch in enumerate(validation_loader):
-        data, labels = batch['data'].to(device), batch['label'].to(device)
+    for index in range(0, len(validation_data_set), batch_size):
+        batch = validation_data_set[index:index + batch_size]
+        data, targets = get_info_from_batch(batch)
+        data = torch.stack(data)
+        labels = get_labels(targets)
+        labels = torch.FloatTensor(labels).to(device)
+        
         output = model(data).flatten()
 
         loss = criterion(output, labels)
         running_loss += loss.item()
-        for index, prediction in enumerate(output.round()):
-            all_predictions.append(prediction.cpu().item())
-            if(prediction == labels[index]):
-                num_correct += 1
-            elif(print_incorrect_images):
-                utilities.print_image(data[index], prediction, data_dir, i)
+        num_correct += (output.round() == labels).sum().item()
 
-        all_labels.extend(labels.cpu())
+    loss = running_loss/len(validation_data_set)
+    accuracy = num_correct/len(validation_data_set)
+    return loss, accuracy
 
-    loss = running_loss/len(validation_loader.dataset)
-    accuracy = num_correct/len(validation_loader.dataset)
-    return loss, accuracy, all_labels, all_predictions
-
-def batch_validation(model, batch_validation_loader, criterion, print_incorrect_images, data_dir, device):
+def batch_validation(model, batch_validation_data_set, criterion, print_incorrect_images, data_dir, device, batch_size):
     model.eval()
     num_correct = 0
     running_loss = 0.0
     all_labels, all_predictions = [], []
 
-    for batch in batch_validation_loader:
-        data, labels = torch.squeeze(batch['data'], dim=0).to(device), batch['label'].to(device)
-
+    for batch in batch_validation_data_set:
+        data, targets = batch['data'], batch['label']
+        labels = get_labels(targets)
+        labels = torch.FloatTensor(labels).to(device)
+        
         # This is to prevent cuda memory issues for large batches
         max_prediction = 0
         for image in data:
-            image = torch.unsqueeze(image, dim=0)
+            image = torch.unsqueeze(image, dim=0).to(device)
             output = model(image).flatten()
             max_prediction = max(max_prediction, output.round().item())
 
@@ -113,26 +139,27 @@ def batch_validation(model, batch_validation_loader, criterion, print_incorrect_
         all_predictions.append(max_prediction.cpu())
         all_labels.append(max_label.cpu())
 
-    loss = running_loss/len(batch_validation_loader.dataset)
-    accuracy = num_correct/len(batch_validation_loader.dataset)
+    loss = running_loss/len(batch_validation_data_set)
+    accuracy = num_correct/len(batch_validation_data_set)
     return loss, accuracy, all_labels, all_predictions
 
-def train_and_validate(num_epochs, model, model_name, training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir):
+def train_and_validate(num_epochs, model, model_name, training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
+    criterion = nn.MSELoss()
     highest_batch_validation_accuracy = 0.0
     saving_dir = saving_dir + "batch_count_" + model_name + "/"
 
     for epoch in range(num_epochs):
         print("Epoch: " + str(epoch))
 
-        training_loss, training_accuracy = train(model, training_loader, criterion, optimizer, device)
+        training_loss, training_accuracy = train(model, training_data_set, criterion, optimizer, device, batch_size)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
 
-        validation_loss, validation_accuracy, _, _ = validation(model, validation_loader, criterion, False, data_dir, device)
+        validation_loss, validation_accuracy = validation(model, validation_data_set, criterion, False, data_dir, device, batch_size)
         print("validation loss: " + str(validation_loss) + " and validation accuracy: " + str(validation_accuracy))
 
-        batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation(model, batch_validation_loader, criterion, False, data_dir, device)
+        batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation(model, batch_validation_data_set, criterion, False, data_dir, device, batch_size)
         print("batch validation loss (MSE): " + str(batch_validation_loss) + " and batch validation accuracy: "+ str(batch_validation_accuracy))
 
         if highest_batch_validation_accuracy < batch_validation_accuracy:
@@ -146,7 +173,7 @@ def train_and_validate(num_epochs, model, model_name, training_loader, validatio
 num_epochs = 5
 batch_size = 10
 json_file_name = "animal_count_key.json"
-data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/2022_Cottonwood_Eastface_and_Repelcam/"
+data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/2022_Cottonwood_Eastface_bounding_boxes/"
 saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/"
 
 print(torch.__version__)
@@ -154,15 +181,11 @@ print(torchvision.__version__)
 print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
-criterion = nn.MSELoss()
 
-training_data, validation_data, training_labels, validation_labels, batch_validation_data, batch_validation_labels = utilities.fetch_data(data_dir, json_file_name, False, False, True)
+training_data, validation_data, training_labels, validation_labels, batch_validation_data, batch_validation_labels = utilities.fetch_data(data_dir, json_file_name, False, True, True)
 training_data_set = utilities.image_data_set(training_data, training_labels)
 validation_data_set = utilities.image_data_set(validation_data, validation_labels)
 batch_validation_data_set = utilities.image_data_set(batch_validation_data, batch_validation_labels)
-training_loader = DataLoader(dataset = training_data_set, batch_size = batch_size, shuffle = True)
-validation_loader = DataLoader(dataset = validation_data_set, batch_size = batch_size, shuffle = True)
-batch_validation_loader = DataLoader(dataset = batch_validation_data_set, batch_size = 1, shuffle = True)
 
 # Declaring Models
 resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
@@ -191,13 +214,13 @@ if torch.cuda.device_count() > 1:
 
 # Training
 print("\nTraining and Validating ResNet50")
-train_and_validate(num_epochs, resnet50, "ResNet50", training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir)
+train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size)
 
 print("\nTraining and Validating ResNet152")
-train_and_validate(num_epochs, resnet152, "ResNet152", training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir)
+train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size)
 
 print("\nTraining and Validating Vision Transformer Large 16")
-train_and_validate(num_epochs, vit_l_16, "ViTL16", training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir)
+train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size)
 
 
 
