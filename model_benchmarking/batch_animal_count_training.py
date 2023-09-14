@@ -61,6 +61,21 @@ def get_labels(targets):
         labels.append(label)
     return labels
     
+    
+def get_predictions(bounding_boxes):
+    predictions = []
+    for boxes in bounding_boxes:
+        num_animals = 0
+        for score_index, score in enumerate(boxes["scores"]):
+            if score > 0.5 and boxes["labels"][score_index] == 1:
+                num_animals += 1
+        predictions.append(num_animals)
+    return predictions
+    
+    
+def get_num_equal_list_elements(labels, predictions):
+    return sum(label == prediction for label, prediction in zip(labels, predictions))
+    
 
 def train(model, training_data_set, criterion, optimizer, device, batch_size):
     model.train()
@@ -86,8 +101,63 @@ def train(model, training_data_set, criterion, optimizer, device, batch_size):
     loss = running_loss/len(training_data_set)
     accuracy = num_correct/len(training_data_set)
     return loss, accuracy
+    
 
-def validation(model, validation_data_set, criterion, print_incorrect_images, data_dir, device, batch_size):
+def train_object_detection(model, training_data_set, optimizer, device, batch_size):
+    running_loss = 0.0
+    num_correct = 0
+    for index in range(0, len(training_data_set), batch_size):
+        batch = training_data_set[index:index + batch_size]
+        data, targets = get_info_from_batch(batch)
+        
+        model.eval()
+        bounding_boxes = model(data)
+        
+        labels = get_labels(targets)
+        predictions = get_predictions(bounding_boxes)
+        num_correct += get_num_equal_list_elements(labels, predictions)
+        
+        model.train()
+        optimizer.zero_grad()
+        losses_dict = model(data, targets)
+        
+        sum_losses = sum(loss for loss in losses_dict.values())
+        running_loss += sum_losses.item()
+        sum_losses.backward()
+        optimizer.step()
+
+    loss = running_loss/len(training_data_set)
+    accuracy = num_correct/len(training_data_set)
+    return loss, accuracy
+    
+    
+def validation_object_detection(model, validation_data_set, device, batch_size):
+    running_loss = 0.0
+    num_correct = 0
+
+    for index in range(0, len(validation_data_set), batch_size):
+        batch = validation_data_set[index:index + batch_size]
+        data, targets = get_info_from_batch(batch)
+        
+        model.train()
+        losses_dict = model(data, targets)
+        sum_losses = sum(loss for loss in losses_dict.values())
+        running_loss += sum_losses.item()
+        
+        model.eval()
+        bounding_boxes = model(data)
+        
+        labels = get_labels(targets)
+        predictions = get_predictions(bounding_boxes)
+        num_correct += get_num_equal_list_elements(labels, predictions)
+
+    loss = running_loss/len(validation_data_set)
+    accuracy = num_correct/len(validation_data_set)
+    return loss, accuracy
+
+
+
+def validation(model, validation_data_set, criterion, device, batch_size):
     model.eval()
     running_loss = 0.0
     num_correct = 0
@@ -109,7 +179,7 @@ def validation(model, validation_data_set, criterion, print_incorrect_images, da
     accuracy = num_correct/len(validation_data_set)
     return loss, accuracy
 
-def batch_validation(model, batch_validation_data_set, criterion, print_incorrect_images, data_dir, device, batch_size):
+def batch_validation(model, batch_validation_data_set, criterion, print_incorrect_images, data_dir, device):
     model.eval()
     num_correct = 0
     running_loss = 0.0
@@ -142,8 +212,46 @@ def batch_validation(model, batch_validation_data_set, criterion, print_incorrec
     loss = running_loss/len(batch_validation_data_set)
     accuracy = num_correct/len(batch_validation_data_set)
     return loss, accuracy, all_labels, all_predictions
+    
+def batch_validation_object_detection(model, batch_validation_data_set, criterion, print_incorrect_images, saving_dir, device):
+    model.eval()
+    num_correct = 0
+    running_loss = 0.0
+    all_labels, all_predictions = [], []
+    count = 0
 
-def train_and_validate(num_epochs, model, model_name, training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size):
+    for batch in batch_validation_data_set:
+        data, targets = batch['data'], batch['label']
+
+        # This is to prevent cuda memory issues for large batches
+        max_prediction = 0
+        max_label = 0
+        for image in data:
+            image = torch.unsqueeze(image, dim=0).to(device)
+            bounding_boxes = model(image)
+            
+            labels = get_labels(targets)
+            predictions = get_predictions(bounding_boxes)
+            
+            if print_incorrect_images and labels[0] != predictions[0]:
+                utilities.print_image(torch.squeeze(image), predictions[0], saving_dir + "incorrect_images/", count, bounding_boxes)
+            
+            max_prediction = max(max_prediction, predictions[0])
+            max_label = max(max_label, labels[0])
+            count += 1
+            
+        running_loss += criterion(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
+        if max_prediction == max_label:
+            num_correct += 1
+
+        all_predictions.append(max_prediction)
+        all_labels.append(max_label)
+
+    loss = running_loss/len(batch_validation_data_set)
+    accuracy = num_correct/len(batch_validation_data_set)
+    return loss, accuracy, all_labels, all_predictions
+
+def train_and_validate(num_epochs, model, model_name, training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, is_object_detection):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     criterion = nn.MSELoss()
@@ -153,25 +261,37 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
     for epoch in range(num_epochs):
         print("Epoch: " + str(epoch))
 
-        training_loss, training_accuracy = train(model, training_data_set, criterion, optimizer, device, batch_size)
+        if is_object_detection:
+            training_loss, training_accuracy = train_object_detection(model, training_data_set, optimizer, device, batch_size)
+        else:
+            training_loss, training_accuracy = train(model, training_data_set, criterion, optimizer, device, batch_size)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
 
-        validation_loss, validation_accuracy = validation(model, validation_data_set, criterion, False, data_dir, device, batch_size)
+        if is_object_detection:
+            validation_loss, validation_accuracy = validation_object_detection(model, validation_data_set, device, batch_size)
+        else:
+            validation_loss, validation_accuracy = validation(model, validation_data_set, criterion, device, batch_size)
         print("validation loss: " + str(validation_loss) + " and validation accuracy: " + str(validation_accuracy))
-
-        batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation(model, batch_validation_data_set, criterion, False, data_dir, device, batch_size)
+        
+        if is_object_detection:
+            batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation_object_detection(model, batch_validation_data_set, criterion, False, saving_dir, device)
+        else:
+            batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation(model, batch_validation_data_set, criterion, False, saving_dir, device)
         print("batch validation loss (MSE): " + str(batch_validation_loss) + " and batch validation accuracy: "+ str(batch_validation_accuracy))
 
         if highest_batch_validation_accuracy < batch_validation_accuracy:
             print("Highest batch validation accuracy achieved, saving weights")
             highest_batch_validation_accuracy = batch_validation_accuracy
-            torch.save(model.module.state_dict(), saving_dir + model_name + ".pt")
+            if is_object_detection:
+                torch.save(model.state_dict(), saving_dir + model_name + ".pt")
+            else:
+                torch.save(model.module.state_dict(), saving_dir + model_name + ".pt")
             print_validation_analysis(batch_labels, batch_predictions, model_name, data_dir, saving_dir)
 
 
 # Declaring Constants
-num_epochs = 5
-batch_size = 10
+num_epochs = 3
+batch_size = 5
 json_file_name = "animal_count_key.json"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/2022_Cottonwood_Eastface_bounding_boxes/"
 saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/"
@@ -213,14 +333,23 @@ if torch.cuda.device_count() > 1:
     vit_l_16 = nn.DataParallel(vit_l_16)
 
 # Training
+print("\nTraining and Validating Faster R-CNN")
+train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True)
+
+print("\nTraining and Validating SSD")
+train_and_validate(num_epochs, ssd, "SSD", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True)
+
+print("\nTraining and Validating RetinaNet")
+train_and_validate(num_epochs, retina_net, "RetinaNet", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True)
+
 print("\nTraining and Validating ResNet50")
-train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size)
+train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False)
 
 print("\nTraining and Validating ResNet152")
-train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size)
+train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False)
 
 print("\nTraining and Validating Vision Transformer Large 16")
-train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size)
+train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False)
 
 
 
