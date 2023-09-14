@@ -176,11 +176,11 @@ ngilchrist_eastface_json_file_name = "2022_NGilchrist_Eastface_055_07.12_07.20_k
 idaho_json_file_name = "Idaho_loc_0099_key.json"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/testing_animal_count/"
 
-resnet_50_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet50/"
-resnet_152_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet152/"
-faster_rcnn_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_FasterR-CNN/"
-ssd_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_SSD/"
-retina_net_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_RetinaNet/"
+resnet_50_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_ResNet50/"
+resnet_152_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_ResNet152/"
+faster_rcnn_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_FasterR-CNN/"
+ssd_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_SSD/"
+retina_net_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_RetinaNet/"
 
 resnet50_weights_path = resnet_50_saving_dir + "ResNet50.pt"
 resnet152_weights_path = resnet_152_saving_dir + "ResNet152.pt"
