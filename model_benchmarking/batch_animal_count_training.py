@@ -13,6 +13,7 @@ from PIL import Image
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
+from custom_models.aggregating_model import AggregatingModel
 
 
 def print_validation_analysis(all_labels, all_predictions, title, data_dir, saving_dir):
@@ -75,6 +76,34 @@ def get_predictions(bounding_boxes):
     
 def get_num_equal_list_elements(labels, predictions):
     return sum(label == prediction for label, prediction in zip(labels, predictions))
+    
+    
+def train_aggregating_model(model, training_data_set, criterion, optimizer, device):
+    model.train()
+    running_loss = 0.0
+    num_correct = 0
+    
+    for batch in training_data_set:
+        data, targets = batch['data'].to(device), batch['label']
+        labels = get_labels(targets)
+        labels = torch.FloatTensor(labels).to(device)
+        
+        optimizer.zero_grad()
+        output = model(data)
+
+        print("data.shape: ", data.shape)
+        print("output.shape: ", output.shape)
+        print("labels.shape: ", labels.shape)
+        
+        loss = criterion(output, labels)
+        running_loss += loss.item()
+        num_correct += (output.round() == labels).sum().item()
+        loss.backward()
+        optimizer.step()
+
+    loss = running_loss/len(training_data_set)
+    accuracy = num_correct/len(training_data_set)
+    return loss, accuracy
     
 
 def train(model, training_data_set, criterion, optimizer, device, batch_size):
@@ -178,6 +207,28 @@ def validation(model, validation_data_set, criterion, device, batch_size):
     loss = running_loss/len(validation_data_set)
     accuracy = num_correct/len(validation_data_set)
     return loss, accuracy
+    
+    
+def validation_aggregating_model(model, validation_data_set, criterion, optimizer, device):
+    model.eval()
+    running_loss = 0.0
+    num_correct = 0
+    
+    for batch in validation_data_set:
+        data, targets = batch['data'].to(device), batch['label']
+        labels = get_labels(targets)
+        labels = torch.FloatTensor(labels).to(device)
+        
+        output = model(data)
+        
+        loss = criterion(output, labels)
+        running_loss += loss.item()
+        num_correct += (output.round() == labels).sum().item()
+
+    loss = running_loss/len(training_data_set)
+    accuracy = num_correct/len(training_data_set)
+    return loss, accuracy
+
 
 def batch_validation(model, batch_validation_data_set, criterion, print_incorrect_images, data_dir, device):
     model.eval()
@@ -251,7 +302,7 @@ def batch_validation_object_detection(model, batch_validation_data_set, criterio
     accuracy = num_correct/len(batch_validation_data_set)
     return loss, accuracy, all_labels, all_predictions
 
-def train_and_validate(num_epochs, model, model_name, training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, is_object_detection):
+def train_and_validate(num_epochs, model, model_name, training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, is_object_detection, is_aggregating_model):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     criterion = nn.MSELoss()
@@ -261,14 +312,19 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
     for epoch in range(num_epochs):
         print("Epoch: " + str(epoch))
 
+        #TODO: Use OOP here
         if is_object_detection:
             training_loss, training_accuracy = train_object_detection(model, training_data_set, optimizer, device, batch_size)
+        elif is_aggregating_model:
+            training_loss, training_accuracy = train_aggregating_model(model, batch_training_data_set, criterion, optimizer, device)
         else:
             training_loss, training_accuracy = train(model, training_data_set, criterion, optimizer, device, batch_size)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
 
         if is_object_detection:
             validation_loss, validation_accuracy = validation_object_detection(model, validation_data_set, device, batch_size)
+        elif is_aggregating_model:
+            training_loss, training_accuracy = validation_aggregating_model(model, batch_training_data_set, criterion, optimizer, device)
         else:
             validation_loss, validation_accuracy = validation(model, validation_data_set, criterion, device, batch_size)
         print("validation loss: " + str(validation_loss) + " and validation accuracy: " + str(validation_accuracy))
@@ -302,9 +358,10 @@ print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 
-training_data, validation_data, training_labels, validation_labels, batch_validation_data, batch_validation_labels = utilities.fetch_data(data_dir, json_file_name, False, True, True)
+training_data, validation_data, training_labels, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels = utilities.fetch_data(data_dir, json_file_name, False, True, True)
 training_data_set = utilities.image_data_set(training_data, training_labels)
 validation_data_set = utilities.image_data_set(validation_data, validation_labels)
+batch_training_data_set = utilities.image_data_set(batch_validation_data, batch_validation_labels)
 batch_validation_data_set = utilities.image_data_set(batch_validation_data, batch_validation_labels)
 
 # Declaring Models
@@ -326,30 +383,37 @@ ssd = models.detection.ssd300_vgg16(weights=models.detection.SSD300_VGG16_Weight
 
 retina_net = models.detection.retinanet_resnet50_fpn_v2(weights=models.detection.RetinaNet_ResNet50_FPN_V2_Weights.DEFAULT)
 
+max_batch_size = 100
+aggregating_model = AggregatingModel(max_batch_size)
+
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
     resnet50 = nn.DataParallel(resnet50)
     resnet152 = nn.DataParallel(resnet152)
     vit_l_16 = nn.DataParallel(vit_l_16)
+    aggregating_model = nn.DataParallel(aggregating_model)
 
 # Training
+print("\nTraining and Validating Aggregating Model")
+train_and_validate(num_epochs, aggregating_model, "Aggregating Model", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False, True)
+
 print("\nTraining and Validating Faster R-CNN")
-train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True)
+train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True, False)
 
 print("\nTraining and Validating SSD")
-train_and_validate(num_epochs, ssd, "SSD", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True)
+train_and_validate(num_epochs, ssd, "SSD", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True, False)
 
 print("\nTraining and Validating RetinaNet")
-train_and_validate(num_epochs, retina_net, "RetinaNet", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True)
+train_and_validate(num_epochs, retina_net, "RetinaNet", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True, False)
 
 print("\nTraining and Validating ResNet50")
-train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False)
+train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False, False)
 
 print("\nTraining and Validating ResNet152")
-train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False)
+train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False, False)
 
 print("\nTraining and Validating Vision Transformer Large 16")
-train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False)
+train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False, False)
 
 
 

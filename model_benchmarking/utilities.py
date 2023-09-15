@@ -169,7 +169,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
         print("Number of validation photos: ", len(validation_data))
         print("Number of batches for validation: ", len(batch_validation_data))
 
-        return training_data, validation_data, training_labels, validation_labels, batch_validation_data, batch_validation_labels
+        return training_data, validation_data, training_labels, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels
     else:
         individual_data = flatten_list(data)
         individual_labels = flatten_list(labels)

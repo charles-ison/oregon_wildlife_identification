@@ -16,6 +16,19 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 
 
+def set_device_for_list_of_dicts(some_list, device):
+    for some_dict in some_list:
+        some_dict["boxes"] = some_dict["boxes"].to(device)
+        some_dict["labels"] = some_dict["labels"].to(device)
+        
+
+def get_info_from_batch(batch):
+    data, targets = batch['data'], batch['label']
+    utilities.set_device_for_list_of_tensors(data, device)
+    set_device_for_list_of_dicts(targets, device)
+    return data, targets
+
+
 def print_validation_analysis(all_labels, all_predictions, title, data_dir, saving_dir):
     subplot = plt.subplot()
 
@@ -144,9 +157,9 @@ def train_and_validate(num_epochs, model, model_name, training_loader, validatio
 
 # Declaring Constants
 num_epochs = 5
-batch_size = 10
+batch_size = 5
 json_file_name = "animal_count_key.json"
-data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/2022_Cottonwood_Eastface_and_Repelcam/"
+data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/2022_Cottonwood_Eastface_bounding_boxes/"
 saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/"
 
 print(torch.__version__)
@@ -156,7 +169,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 criterion = nn.MSELoss()
 
-training_data, validation_data, training_labels, validation_labels, batch_validation_data, batch_validation_labels = utilities.fetch_data(data_dir, json_file_name, False, False, True)
+training_data, validation_data, training_labels, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels = utilities.fetch_data(data_dir, json_file_name, False, True, True)
 training_data_set = utilities.image_data_set(training_data, training_labels)
 validation_data_set = utilities.image_data_set(validation_data, validation_labels)
 batch_validation_data_set = utilities.image_data_set(batch_validation_data, batch_validation_labels)
@@ -191,15 +204,14 @@ max_batch_size = 100
 custom_model = CustomModel(max_batch_size)
 custom_model.to(device)
 
-for batch in batch_validation_loader:
-    data, labels = batch['data'].to(device), batch['label'].to(device)
-    data = torch.squeeze(data, dim=0)
+for batch in batch_validation_data_set:
+    data, targets = batch['data'].to(device), batch['label']
     output = custom_model(data)
 
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
     custom_model = nn.DataParallel(custom_model)
 
-#print("\nTraining and Validating Custom Model")
-#train_and_validate(num_epochs, custom_model, "CustomModel", training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir)
+print("\nTraining and Validating Custom Model")
+train_and_validate(num_epochs, custom_model, "CustomModel", training_loader, validation_loader, batch_validation_loader, device, criterion, data_dir, saving_dir)
 
