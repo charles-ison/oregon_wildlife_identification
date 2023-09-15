@@ -222,10 +222,10 @@ def batch_validation_aggregating_cnn(model, batch_validation_data_set, criterion
         
         loss = criterion(output, label)
         running_loss += loss.item()
-        num_correct += (output.round() == label).item()
+        num_correct += (output == label).item()
         
-        all_labels.append(label.cpu())
-        all_predictions.append(output.cpu())
+        all_labels.append(label.item())
+        all_predictions.append(output.item())
 
     loss = running_loss/len(batch_validation_data_set)
     accuracy = num_correct/len(batch_validation_data_set)
@@ -259,8 +259,8 @@ def batch_validation(model, batch_validation_data_set, criterion, print_incorrec
         if max_prediction == max_label:
             num_correct += 1
 
-        all_predictions.append(max_prediction.cpu())
-        all_labels.append(max_label.cpu())
+        all_predictions.append(max_prediction.item())
+        all_labels.append(max_label.item())
 
     loss = running_loss/len(batch_validation_data_set)
     accuracy = num_correct/len(batch_validation_data_set)
@@ -387,7 +387,7 @@ ssd = models.detection.ssd300_vgg16(weights=models.detection.SSD300_VGG16_Weight
 
 retina_net = models.detection.retinanet_resnet50_fpn_v2(weights=models.detection.RetinaNet_ResNet50_FPN_V2_Weights.DEFAULT)
 
-max_batch_size = 50
+max_batch_size = 100
 aggregating_cnn = AggregatingCNN(max_batch_size)
 
 if torch.cuda.device_count() > 1:

@@ -15,7 +15,7 @@ class AggregatingCNN(nn.Module):
         embeddings = []
         
         if x.shape[0] > self.max_batch_size:
-            raise Exception("Number of images in batch: " + str(x.shape[0]) + " is greater than max_batch_size: " + str(max_batch_size.max_batch_size))
+            raise Exception("Number of images in batch: " + str(x.shape[0]) + " is greater than max_batch_size: " + str(self.max_batch_size))
         
         for index, image in enumerate(x):
             image = torch.unsqueeze(image, dim=0)
@@ -28,4 +28,5 @@ class AggregatingCNN(nn.Module):
         x = self.fc1(embeddings)
         x = torch.squeeze(x, dim=1)
         x = self.fc2(x)
-        return torch.squeeze(x, dim=0)
+        x = torch.squeeze(x, dim=0)
+        return x.round()
