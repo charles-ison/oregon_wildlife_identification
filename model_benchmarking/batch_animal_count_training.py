@@ -13,7 +13,7 @@ from PIL import Image
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
-from custom_models.aggregating_model import AggregatingModel
+from custom_models.aggregating_cnn import AggregatingCNN
 
 
 def print_validation_analysis(all_labels, all_predictions, title, data_dir, saving_dir):
@@ -78,7 +78,7 @@ def get_num_equal_list_elements(labels, predictions):
     return sum(label == prediction for label, prediction in zip(labels, predictions))
     
     
-def train_aggregating_model(model, training_data_set, criterion, optimizer, device):
+def train_aggregating_cnn(model, training_data_set, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
     num_correct = 0
@@ -87,17 +87,14 @@ def train_aggregating_model(model, training_data_set, criterion, optimizer, devi
         data, targets = batch['data'].to(device), batch['label']
         labels = get_labels(targets)
         labels = torch.FloatTensor(labels).to(device)
+        label = torch.max(labels)
         
         optimizer.zero_grad()
         output = model(data)
-
-        print("data.shape: ", data.shape)
-        print("output.shape: ", output.shape)
-        print("labels.shape: ", labels.shape)
         
-        loss = criterion(output, labels)
+        loss = criterion(output, label)
         running_loss += loss.item()
-        num_correct += (output.round() == labels).sum().item()
+        num_correct += (output.round() == label).item()
         loss.backward()
         optimizer.step()
 
@@ -209,25 +206,30 @@ def validation(model, validation_data_set, criterion, device, batch_size):
     return loss, accuracy
     
     
-def validation_aggregating_model(model, validation_data_set, criterion, optimizer, device):
+def batch_validation_aggregating_cnn(model, batch_validation_data_set, criterion, optimizer, device):
     model.eval()
     running_loss = 0.0
     num_correct = 0
+    all_labels, all_predictions = [], []
     
-    for batch in validation_data_set:
+    for batch in batch_validation_data_set:
         data, targets = batch['data'].to(device), batch['label']
         labels = get_labels(targets)
         labels = torch.FloatTensor(labels).to(device)
+        label = torch.max(labels)
         
         output = model(data)
         
-        loss = criterion(output, labels)
+        loss = criterion(output, label)
         running_loss += loss.item()
-        num_correct += (output.round() == labels).sum().item()
+        num_correct += (output.round() == label).item()
+        
+        all_labels.append(label.cpu())
+        all_predictions.append(output.cpu())
 
-    loss = running_loss/len(training_data_set)
-    accuracy = num_correct/len(training_data_set)
-    return loss, accuracy
+    loss = running_loss/len(batch_validation_data_set)
+    accuracy = num_correct/len(batch_validation_data_set)
+    return loss, accuracy, all_labels, all_predictions
 
 
 def batch_validation(model, batch_validation_data_set, criterion, print_incorrect_images, data_dir, device):
@@ -263,6 +265,7 @@ def batch_validation(model, batch_validation_data_set, criterion, print_incorrec
     loss = running_loss/len(batch_validation_data_set)
     accuracy = num_correct/len(batch_validation_data_set)
     return loss, accuracy, all_labels, all_predictions
+    
     
 def batch_validation_object_detection(model, batch_validation_data_set, criterion, print_incorrect_images, saving_dir, device):
     model.eval()
@@ -302,7 +305,7 @@ def batch_validation_object_detection(model, batch_validation_data_set, criterio
     accuracy = num_correct/len(batch_validation_data_set)
     return loss, accuracy, all_labels, all_predictions
 
-def train_and_validate(num_epochs, model, model_name, training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, is_object_detection, is_aggregating_model):
+def train_and_validate(num_epochs, model, model_name, training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, is_object_detection, is_aggregating_cnn):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     criterion = nn.MSELoss()
@@ -315,22 +318,23 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
         #TODO: Use OOP here
         if is_object_detection:
             training_loss, training_accuracy = train_object_detection(model, training_data_set, optimizer, device, batch_size)
-        elif is_aggregating_model:
-            training_loss, training_accuracy = train_aggregating_model(model, batch_training_data_set, criterion, optimizer, device)
+        elif is_aggregating_cnn:
+            training_loss, training_accuracy = train_aggregating_cnn(model, batch_training_data_set, criterion, optimizer, device)
         else:
             training_loss, training_accuracy = train(model, training_data_set, criterion, optimizer, device, batch_size)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
 
-        if is_object_detection:
-            validation_loss, validation_accuracy = validation_object_detection(model, validation_data_set, device, batch_size)
-        elif is_aggregating_model:
-            training_loss, training_accuracy = validation_aggregating_model(model, batch_training_data_set, criterion, optimizer, device)
-        else:
-            validation_loss, validation_accuracy = validation(model, validation_data_set, criterion, device, batch_size)
-        print("validation loss: " + str(validation_loss) + " and validation accuracy: " + str(validation_accuracy))
+        if not is_aggregating_cnn:
+            if is_object_detection:
+                validation_loss, validation_accuracy = validation_object_detection(model, validation_data_set, device, batch_size)
+            else:
+                validation_loss, validation_accuracy = validation(model, validation_data_set, criterion, device, batch_size)
+            print("validation loss: " + str(validation_loss) + " and validation accuracy: " + str(validation_accuracy))
         
         if is_object_detection:
             batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation_object_detection(model, batch_validation_data_set, criterion, False, saving_dir, device)
+        elif is_aggregating_cnn:
+            batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation_aggregating_cnn(model, batch_validation_data_set, criterion, optimizer, device)
         else:
             batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation(model, batch_validation_data_set, criterion, False, saving_dir, device)
         print("batch validation loss (MSE): " + str(batch_validation_loss) + " and batch validation accuracy: "+ str(batch_validation_accuracy))
@@ -338,7 +342,7 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
         if highest_batch_validation_accuracy < batch_validation_accuracy:
             print("Highest batch validation accuracy achieved, saving weights")
             highest_batch_validation_accuracy = batch_validation_accuracy
-            if is_object_detection:
+            if is_object_detection or is_aggregating_cnn:
                 torch.save(model.state_dict(), saving_dir + model_name + ".pt")
             else:
                 torch.save(model.module.state_dict(), saving_dir + model_name + ".pt")
@@ -383,19 +387,18 @@ ssd = models.detection.ssd300_vgg16(weights=models.detection.SSD300_VGG16_Weight
 
 retina_net = models.detection.retinanet_resnet50_fpn_v2(weights=models.detection.RetinaNet_ResNet50_FPN_V2_Weights.DEFAULT)
 
-max_batch_size = 100
-aggregating_model = AggregatingModel(max_batch_size)
+max_batch_size = 50
+aggregating_cnn = AggregatingCNN(max_batch_size)
 
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
     resnet50 = nn.DataParallel(resnet50)
     resnet152 = nn.DataParallel(resnet152)
     vit_l_16 = nn.DataParallel(vit_l_16)
-    aggregating_model = nn.DataParallel(aggregating_model)
 
 # Training
-#print("\nTraining and Validating Aggregating Model")
-#train_and_validate(num_epochs, aggregating_model, "Aggregating Model", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False, True)
+print("\nTraining and Validating Aggregating CNN")
+train_and_validate(num_epochs, aggregating_cnn, "AggregatingCNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False, True)
 
 print("\nTraining and Validating Faster R-CNN")
 train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True, False)
