@@ -109,6 +109,7 @@ def test_individual_object_detection(model, individual_data_set, batch_size, cri
         batch = individual_data_set[index:index + batch_size]
         data, labels = batch['data'], batch['label']
         utilities.set_device_for_list_of_tensors(data, device)
+        
         bounding_boxes = model(data)
         predictions = get_predictions(bounding_boxes)
         labels_tensor = torch.FloatTensor(labels)
@@ -132,13 +133,14 @@ def test_batch_object_detection(model, batch_data_set, criterion, saving_dir, de
         # This is to prevent cuda memory issues for large batches
         max_prediction = 0
         max_label = 0
-        for image in data:
+        for index, image in enumerate(data):
             image = torch.unsqueeze(image, dim=0).to(device)
             bounding_boxes = model(image)
-            predictions = get_predictions(bounding_boxes)
+            prediction = get_predictions(bounding_boxes)[0]
+            label = labels[index]
             
-            max_prediction = max(max_prediction, predictions[0])
-            max_label = max(max_label, labels[0])
+            max_prediction = max(max_prediction, prediction)
+            max_label = max(max_label, label)
             
         running_loss += criterion(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
         if max_prediction == max_label:

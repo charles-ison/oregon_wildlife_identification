@@ -273,22 +273,22 @@ def batch_validation_object_detection(model, batch_validation_data_set, criterio
 
     for batch in batch_validation_data_set:
         data, targets = batch['data'], batch['label']
+        labels = get_labels(targets)
 
         # This is to prevent cuda memory issues for large batches
         max_prediction = 0
         max_label = 0
-        for image in data:
+        for index, image in enumerate(data):
             image = torch.unsqueeze(image, dim=0).to(device)
             bounding_boxes = model(image)
+            prediction = get_predictions(bounding_boxes)[0]
+            label = labels[index]
             
-            labels = get_labels(targets)
-            predictions = get_predictions(bounding_boxes)
+            if print_incorrect_images and label != prediction:
+                utilities.print_image(torch.squeeze(image), prediction, saving_dir + "incorrect_images/", count, bounding_boxes)
             
-            if print_incorrect_images and labels[0] != predictions[0]:
-                utilities.print_image(torch.squeeze(image), predictions[0], saving_dir + "incorrect_images/", count, bounding_boxes)
-            
-            max_prediction = max(max_prediction, predictions[0])
-            max_label = max(max_label, labels[0])
+            max_prediction = max(max_prediction, prediction)
+            max_label = max(max_label, label)
             count += 1
             
         running_loss += criterion(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
@@ -394,8 +394,8 @@ if torch.cuda.device_count() > 1:
     aggregating_model = nn.DataParallel(aggregating_model)
 
 # Training
-print("\nTraining and Validating Aggregating Model")
-train_and_validate(num_epochs, aggregating_model, "Aggregating Model", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False, True)
+#print("\nTraining and Validating Aggregating Model")
+#train_and_validate(num_epochs, aggregating_model, "Aggregating Model", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False, True)
 
 print("\nTraining and Validating Faster R-CNN")
 train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True, False)
