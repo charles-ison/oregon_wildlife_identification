@@ -3,21 +3,11 @@ import torch
 import torchvision
 import torchvision.models as models
 import torch.nn as nn
-import torch.optim as optim
-import torchvision.transforms as transforms
-import seaborn as sns
-import numpy as np
-import matplotlib.pyplot as plt
 import utilities
 from PIL import Image
 from torch.utils.data import DataLoader
-from sklearn.metrics import precision_recall_fscore_support
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
-from operator import itemgetter
-from datetime import datetime
-from pycocotools.coco import COCO
 from pytorch_grad_cam import FullGrad
+from custom_models.aggregating_cnn import AggregatingCNN
 
 
 def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, saving_dir, device):
@@ -149,6 +139,27 @@ def test_batch_object_detection(model, batch_data_set, criterion, saving_dir, de
     loss = running_loss/len(batch_data_set)
     accuracy = num_correct/len(batch_data_set)
     return loss, accuracy
+    
+    
+def test_aggregating_cnn(model, batch_loader, device, criterion, saving_dir):
+    model.to(device)
+    model.eval()
+    running_loss = 0.0
+    num_correct = 0
+    
+    for batch in batch_loader:
+        data, labels = torch.squeeze(batch['data'], dim=0).to(device), batch['label'].to(device)
+        label = torch.max(labels)
+        
+        output = model(data)
+
+        loss = criterion(output, label)
+        running_loss += loss.item()
+        num_correct += (output == label).item()
+
+    loss = running_loss/len(batch_loader.dataset)
+    accuracy = num_correct/len(batch_loader.dataset)
+    print("batch testing loss (MSE): " + str(loss) + " and batch testing accuracy: "+ str(accuracy))
 
     
 def test_object_detection(model, batch_data_set, individual_data_set, batch_size, device, criterion, saving_dir):
@@ -183,12 +194,14 @@ resnet_152_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wil
 faster_rcnn_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_FasterR-CNN/"
 ssd_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_SSD/"
 retina_net_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_RetinaNet/"
+aggregating_cnn_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_AggregatingCNN/"
 
 resnet50_weights_path = resnet_50_saving_dir + "ResNet50.pt"
 resnet152_weights_path = resnet_152_saving_dir + "ResNet152.pt"
 faster_rcnn_weights_path = faster_rcnn_saving_dir + "FasterR-CNN.pt"
 ssd_weights_path = ssd_saving_dir + "SSD.pt"
 retina_net_weights_path = retina_net_saving_dir + "RetinaNet.pt"
+aggregating_cnn_weights_path = aggregating_cnn_saving_dir + "AggregatingCNN.pt"
 
 resnet_50_grad_cam_path = resnet_50_saving_dir + "grad_cam/"
 resnet_152_grad_cam_path = resnet_152_saving_dir + "grad_cam/"
@@ -226,6 +239,9 @@ faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2()
 ssd = models.detection.ssd300_vgg16()
 retina_net = models.detection.retinanet_resnet50_fpn_v2()
 
+max_batch_size = 100
+aggregating_cnn = AggregatingCNN(max_batch_size)
+
 #Layer 4 is just recommended by GradCam documentation for ResNet
 resnet50_cam = FullGrad(model=resnet50, target_layers=[], use_cuda=torch.cuda.is_available())
 resnet152_cam = FullGrad(model=resnet152, target_layers=[], use_cuda=torch.cuda.is_available())
@@ -236,6 +252,7 @@ resnet152.load_state_dict(torch.load(resnet152_weights_path))
 faster_rcnn.load_state_dict(torch.load(faster_rcnn_weights_path))
 ssd.load_state_dict(torch.load(ssd_weights_path))
 retina_net.load_state_dict(torch.load(retina_net_weights_path))
+aggregating_cnn.load_state_dict(torch.load(aggregating_cnn_weights_path))
 
 # Object Detection models cannot be used with data parallel
 if torch.cuda.device_count() > 1:
@@ -244,6 +261,15 @@ if torch.cuda.device_count() > 1:
     resnet152 = nn.DataParallel(resnet152)
 
 # Testing
+print("\nTesting Aggregating CNN on Cottonwood Eastface")
+test_aggregating_cnn(aggregating_cnn, cottonwood_ef_batch_loader, device, criterion, aggregating_cnn_saving_dir)
+print("\nTesting Aggregating CNN on Cottonwood Westface")
+test_aggregating_cnn(aggregating_cnn, cottonwood_wf_batch_loader, device, criterion, aggregating_cnn_saving_dir)
+print("\nTesting Aggregating CNN on NGilchrist Eastface")
+test_aggregating_cnn(aggregating_cnn, ngilchrist_ef_batch_loader, device, criterion, aggregating_cnn_saving_dir)
+print("\nTesting Aggregating CNN on Idaho")
+test_aggregating_cnn(aggregating_cnn, idaho_batch_loader, device, criterion, aggregating_cnn_saving_dir)
+
 print("\nTesting ResNet50 on Cottonwood Eastface")
 test(resnet50, resnet50_cam, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_eastface/")
 print("\nTesting ResNet50 on Cottonwood Westface")

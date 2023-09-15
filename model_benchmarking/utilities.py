@@ -167,6 +167,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
 
         print("\nNumber of training photos: ", len(training_data))
         print("Number of validation photos: ", len(validation_data))
+        print("Number of batches for training: ", len(batch_training_data))
         print("Number of batches for validation: ", len(batch_validation_data))
 
         return training_data, validation_data, training_labels, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels

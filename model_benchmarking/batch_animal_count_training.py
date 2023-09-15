@@ -206,7 +206,7 @@ def validation(model, validation_data_set, criterion, device, batch_size):
     return loss, accuracy
     
     
-def batch_validation_aggregating_cnn(model, batch_validation_data_set, criterion, optimizer, device):
+def batch_validation_aggregating_cnn(model, batch_validation_data_set, criterion, device):
     model.eval()
     running_loss = 0.0
     num_correct = 0
@@ -334,7 +334,7 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
         if is_object_detection:
             batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation_object_detection(model, batch_validation_data_set, criterion, False, saving_dir, device)
         elif is_aggregating_cnn:
-            batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation_aggregating_cnn(model, batch_validation_data_set, criterion, optimizer, device)
+            batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation_aggregating_cnn(model, batch_validation_data_set, criterion, device)
         else:
             batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation(model, batch_validation_data_set, criterion, False, saving_dir, device)
         print("batch validation loss (MSE): " + str(batch_validation_loss) + " and batch validation accuracy: "+ str(batch_validation_accuracy))
