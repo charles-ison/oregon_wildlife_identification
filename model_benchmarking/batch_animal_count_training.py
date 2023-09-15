@@ -14,32 +14,6 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from custom_models.aggregating_cnn import AggregatingCNN
-
-
-def print_validation_analysis(all_labels, all_predictions, title, data_dir, saving_dir):
-    subplot = plt.subplot()
-
-    cf_matrix = confusion_matrix(all_labels, all_predictions, labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-    cf_matrix = np.flip(cf_matrix, axis=0)
-    sns.heatmap(cf_matrix, annot=True, fmt='g', cmap='Blues')
-
-    subplot.set_xlabel('Predictions')
-    subplot.set_ylabel('Labels')
-    subplot.set_title(title + ' Validation Confusion Matrix')
-    subplot.xaxis.set_ticklabels([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-    subplot.yaxis.set_ticklabels([9, 8, 7, 6, 5, 4, 3, 2, 1, 0])
-
-    plot_file_name = saving_dir + title + "_Confusion_Matrix.png"
-    plt.savefig(plot_file_name)
-    plt.show()
-
-    accuracy = accuracy_score(all_labels, all_predictions)
-    print(title + " Accuracy: " + str(accuracy))
-
-    precision, recall, f_score, support = precision_recall_fscore_support(all_labels, all_predictions, average='weighted')
-    print(title + " Precision: " + str(precision))
-    print(title + " Recall: " + str(recall))
-    print(title + " F-Score: " + str(f_score))
     
 
 def set_device_for_list_of_dicts(some_list, device):
@@ -232,7 +206,7 @@ def batch_validation_aggregating_cnn(model, batch_validation_data_set, criterion
     return loss, accuracy, all_labels, all_predictions
 
 
-def batch_validation(model, batch_validation_data_set, criterion, print_incorrect_images, data_dir, device):
+def batch_validation(model, batch_validation_data_set, criterion, print_incorrect_images, device):
     model.eval()
     num_correct = 0
     running_loss = 0.0
@@ -305,7 +279,7 @@ def batch_validation_object_detection(model, batch_validation_data_set, criterio
     accuracy = num_correct/len(batch_validation_data_set)
     return loss, accuracy, all_labels, all_predictions
 
-def train_and_validate(num_epochs, model, model_name, training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, is_object_detection, is_aggregating_cnn):
+def train_and_validate(num_epochs, model, model_name, training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, is_object_detection, is_aggregating_cnn):
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     criterion = nn.MSELoss()
@@ -336,7 +310,7 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
         elif is_aggregating_cnn:
             batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation_aggregating_cnn(model, batch_validation_data_set, criterion, device)
         else:
-            batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation(model, batch_validation_data_set, criterion, False, saving_dir, device)
+            batch_validation_loss, batch_validation_accuracy, batch_labels, batch_predictions = batch_validation(model, batch_validation_data_set, criterion, False, device)
         print("batch validation loss (MSE): " + str(batch_validation_loss) + " and batch validation accuracy: "+ str(batch_validation_accuracy))
 
         if highest_batch_validation_accuracy < batch_validation_accuracy:
@@ -346,7 +320,7 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
                 torch.save(model.state_dict(), saving_dir + model_name + ".pt")
             else:
                 torch.save(model.module.state_dict(), saving_dir + model_name + ".pt")
-            print_validation_analysis(batch_labels, batch_predictions, model_name, data_dir, saving_dir)
+            utilities.print_analysis(batch_labels, batch_predictions, model_name + "_Validation", saving_dir)
 
 
 # Declaring Constants
@@ -398,25 +372,25 @@ if torch.cuda.device_count() > 1:
 
 # Training
 print("\nTraining and Validating Aggregating CNN")
-train_and_validate(num_epochs, aggregating_cnn, "AggregatingCNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False, True)
+train_and_validate(num_epochs, aggregating_cnn, "AggregatingCNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, True)
 
 print("\nTraining and Validating Faster R-CNN")
-train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True, False)
+train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, True, False)
 
 print("\nTraining and Validating SSD")
-train_and_validate(num_epochs, ssd, "SSD", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True, False)
+train_and_validate(num_epochs, ssd, "SSD", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, True, False)
 
 print("\nTraining and Validating RetinaNet")
-train_and_validate(num_epochs, retina_net, "RetinaNet", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, True, False)
+train_and_validate(num_epochs, retina_net, "RetinaNet", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, True, False)
 
 print("\nTraining and Validating ResNet50")
-train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False, False)
+train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, False)
 
 print("\nTraining and Validating ResNet152")
-train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False, False)
+train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, False)
 
 print("\nTraining and Validating Vision Transformer Large 16")
-train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, data_dir, saving_dir, batch_size, False, False)
+train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, False)
 
 
 

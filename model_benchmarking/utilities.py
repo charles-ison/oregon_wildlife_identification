@@ -22,6 +22,32 @@ from datetime import datetime
 from pycocotools.coco import COCO
 
 
+def print_analysis(all_labels, all_predictions, title, saving_dir):
+    subplot = plt.subplot()
+
+    cf_matrix = confusion_matrix(all_labels, all_predictions, labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    cf_matrix = np.flip(cf_matrix, axis=0)
+    sns.heatmap(cf_matrix, annot=True, fmt='g', cmap='Blues')
+
+    subplot.set_xlabel('Predictions')
+    subplot.set_ylabel('Labels')
+    subplot.set_title(title + ' Confusion Matrix')
+    subplot.xaxis.set_ticklabels([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    subplot.yaxis.set_ticklabels([9, 8, 7, 6, 5, 4, 3, 2, 1, 0])
+
+    plot_file_name = saving_dir + title + "_Confusion_Matrix.png"
+    plt.savefig(plot_file_name)
+    plt.show()
+
+    accuracy = accuracy_score(all_labels, all_predictions)
+    print(title + " Accuracy: " + str(accuracy))
+
+    precision, recall, f_score, support = precision_recall_fscore_support(all_labels, all_predictions, average='weighted', zero_division=0.0)
+    print(title + " Precision: " + str(precision))
+    print(title + " Recall: " + str(recall))
+    print(title + " F-Score: " + str(f_score))
+
+
 class image_data_set(torch.utils.data.Dataset):
     def __init__(self, data, labels):
         self.data = data

@@ -10,10 +10,11 @@ from pytorch_grad_cam import FullGrad
 from custom_models.aggregating_cnn import AggregatingCNN
 
 
-def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, saving_dir, device):
+def test_batch(model, model_name, batch_testing_loader, criterion, print_incorrect_images, saving_dir, device):
     model.eval()
     num_correct = 0
     running_loss = 0.0
+    all_labels, all_predictions = [], []
 
     for batch in batch_testing_loader:
         data, labels = torch.squeeze(batch['data'], dim=0).to(device), batch['label'].to(device)
@@ -33,9 +34,13 @@ def test_batch(model, batch_testing_loader, criterion, print_incorrect_images, s
 
         if max_prediction == max_label:
             num_correct += 1
+            
+        all_labels.append(max_label.item())
+        all_predictions.append(max_prediction.item())
 
     loss = running_loss/len(batch_testing_loader.dataset)
     accuracy = num_correct/len(batch_testing_loader.dataset)
+    utilities.print_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
     return loss, accuracy
     
     
@@ -59,7 +64,7 @@ def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_
                 utilities.print_image(data[index], prediction, saving_dir, i)
             
             # Just looking at every 5 samples
-            if print_heat_map and grad_cam_identifier % 10 == 0:
+            if print_heat_map and grad_cam_identifier % 10 == 0 and grad_cam != None:
                 utilities.create_heat_map(grad_cam, data[index], prediction, labels[index], saving_dir, grad_cam_identifier)
             grad_cam_identifier += 1
 
@@ -68,13 +73,13 @@ def test_individual(model, grad_cam, testing_loader, criterion, print_incorrect_
     return loss, accuracy
 
 
-def test(model, grad_cam, batch_loader, individual_loader, device, criterion, saving_dir):
+def test(model, model_name, grad_cam, batch_loader, individual_loader, device, criterion, saving_dir):
     model.to(device)
     
-    individual_loss, individual_accuracy = test_individual(model, grad_cam, individual_loader, criterion, False, True, saving_dir, device)
+    individual_loss, individual_accuracy = test_individual(model, grad_cam, individual_loader, criterion, False, False, saving_dir, device)
     print("individual testing loss (MSE): " + str(individual_loss) + " and individual testing accuracy: "+ str(individual_accuracy))
 
-    batch_loss, batch_accuracy = test_batch(model, batch_loader, criterion, False, saving_dir, device)
+    batch_loss, batch_accuracy = test_batch(model, model_name, batch_loader, criterion, False, saving_dir, device)
     print("batch testing loss (MSE): " + str(batch_loss) + " and batch testing accuracy: "+ str(batch_accuracy))
     
     
@@ -112,10 +117,11 @@ def test_individual_object_detection(model, individual_data_set, batch_size, cri
     return loss, accuracy
     
 
-def test_batch_object_detection(model, batch_data_set, criterion, saving_dir, device):
+def test_batch_object_detection(model, model_name, batch_data_set, criterion, saving_dir, device):
     model.eval()
     num_correct = 0
     running_loss = 0.0
+    all_labels, all_predictions = [], []
 
     for batch in batch_data_set:
         data, labels = batch['data'], batch['label']
@@ -135,17 +141,22 @@ def test_batch_object_detection(model, batch_data_set, criterion, saving_dir, de
         running_loss += criterion(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
         if max_prediction == max_label:
             num_correct += 1
+            
+        all_labels.append(max_label)
+        all_predictions.append(max_predictions)
 
     loss = running_loss/len(batch_data_set)
     accuracy = num_correct/len(batch_data_set)
+    utilities.print_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
     return loss, accuracy
     
     
-def test_aggregating_cnn(model, batch_loader, device, criterion, saving_dir):
+def test_aggregating_cnn(model, model_name, batch_loader, device, criterion, saving_dir):
     model.to(device)
     model.eval()
     running_loss = 0.0
     num_correct = 0
+    all_labels, all_predictions = [], []
     
     for batch in batch_loader:
         data, labels = torch.squeeze(batch['data'], dim=0).to(device), batch['label'].to(device)
@@ -156,19 +167,23 @@ def test_aggregating_cnn(model, batch_loader, device, criterion, saving_dir):
         loss = criterion(output, label)
         running_loss += loss.item()
         num_correct += (output == label).item()
+        
+        all_labels.append(label.item())
+        all_predictions.append(output.item())
 
     loss = running_loss/len(batch_loader.dataset)
     accuracy = num_correct/len(batch_loader.dataset)
+    utilities.print_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
     print("batch testing loss (MSE): " + str(loss) + " and batch testing accuracy: "+ str(accuracy))
 
     
-def test_object_detection(model, batch_data_set, individual_data_set, batch_size, device, criterion, saving_dir):
+def test_object_detection(model, model_name, batch_data_set, individual_data_set, batch_size, device, criterion, saving_dir):
     model.to(device)
     
     individual_loss, individual_accuracy = test_individual_object_detection(model, individual_data_set, batch_size, criterion, saving_dir, device)
     print("individual testing loss (MSE): " + str(individual_loss) + " and individual testing accuracy: "+ str(individual_accuracy))
 
-    batch_loss, batch_accuracy = test_batch_object_detection(model, batch_data_set, criterion, saving_dir, device)
+    batch_loss, batch_accuracy = test_batch_object_detection(model, model_name, batch_data_set, criterion, saving_dir, device)
     print("batch testing loss (MSE): " + str(batch_loss) + " and batch testing accuracy: "+ str(batch_accuracy))
 
     
@@ -195,6 +210,7 @@ faster_rcnn_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wi
 ssd_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_SSD/"
 retina_net_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_RetinaNet/"
 aggregating_cnn_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_AggregatingCNN/"
+vit_l_16_saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/batch_count_ViTL16/"
 
 resnet50_weights_path = resnet_50_saving_dir + "ResNet50.pt"
 resnet152_weights_path = resnet_152_saving_dir + "ResNet152.pt"
@@ -202,6 +218,7 @@ faster_rcnn_weights_path = faster_rcnn_saving_dir + "FasterR-CNN.pt"
 ssd_weights_path = ssd_saving_dir + "SSD.pt"
 retina_net_weights_path = retina_net_saving_dir + "RetinaNet.pt"
 aggregating_cnn_weights_path = aggregating_cnn_saving_dir + "AggregatingCNN.pt"
+vit_l_16_weights_path = vit_l_16_saving_dir + "ViTL16.pt"
 
 resnet_50_grad_cam_path = resnet_50_saving_dir + "grad_cam/"
 resnet_152_grad_cam_path = resnet_152_saving_dir + "grad_cam/"
@@ -235,6 +252,10 @@ resnet152 = models.resnet152()
 in_features = resnet152.fc.in_features
 resnet152.fc = nn.Linear(in_features, 1)
 
+vit_l_16 = models.vit_l_16()
+in_features = vit_l_16.heads[0].in_features
+vit_l_16.heads[0] = nn.Linear(in_features, 1)
+
 faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2()
 ssd = models.detection.ssd300_vgg16()
 retina_net = models.detection.retinanet_resnet50_fpn_v2()
@@ -253,6 +274,7 @@ faster_rcnn.load_state_dict(torch.load(faster_rcnn_weights_path))
 ssd.load_state_dict(torch.load(ssd_weights_path))
 retina_net.load_state_dict(torch.load(retina_net_weights_path))
 aggregating_cnn.load_state_dict(torch.load(aggregating_cnn_weights_path))
+vit_l_16.load_state_dict(torch.load(vit_l_16_weights_path))
 
 # Object Detection models cannot be used with data parallel
 if torch.cuda.device_count() > 1:
@@ -261,58 +283,74 @@ if torch.cuda.device_count() > 1:
     resnet152 = nn.DataParallel(resnet152)
 
 # Testing
+model_name = "AggregatingCNN"
 print("\nTesting Aggregating CNN on Cottonwood Eastface")
-test_aggregating_cnn(aggregating_cnn, cottonwood_ef_batch_loader, device, criterion, aggregating_cnn_saving_dir)
+test_aggregating_cnn(aggregating_cnn, model_name + "_Cottonwood_EF", cottonwood_ef_batch_loader, device, criterion, aggregating_cnn_saving_dir)
 print("\nTesting Aggregating CNN on Cottonwood Westface")
-test_aggregating_cnn(aggregating_cnn, cottonwood_wf_batch_loader, device, criterion, aggregating_cnn_saving_dir)
+test_aggregating_cnn(aggregating_cnn, model_name + "_Cottonwood_WF", cottonwood_wf_batch_loader, device, criterion, aggregating_cnn_saving_dir)
 print("\nTesting Aggregating CNN on NGilchrist Eastface")
-test_aggregating_cnn(aggregating_cnn, ngilchrist_ef_batch_loader, device, criterion, aggregating_cnn_saving_dir)
+test_aggregating_cnn(aggregating_cnn, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_loader, device, criterion, aggregating_cnn_saving_dir)
 print("\nTesting Aggregating CNN on Idaho")
-test_aggregating_cnn(aggregating_cnn, idaho_batch_loader, device, criterion, aggregating_cnn_saving_dir)
+test_aggregating_cnn(aggregating_cnn, model_name + "_Idaho", idaho_batch_loader, device, criterion, aggregating_cnn_saving_dir)
 
 print("\nTesting ResNet50 on Cottonwood Eastface")
-test(resnet50, resnet50_cam, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_eastface/")
+model_name = "ResNet50"
+test(resnet50, model_name + "_Cottonwood_EF", resnet50_cam, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, criterion, resnet_50_saving_dir)
 print("\nTesting ResNet50 on Cottonwood Westface")
-test(resnet50, resnet50_cam, cottonwood_wf_batch_loader, cottonwood_wf_individual_loader, device, criterion, resnet_50_grad_cam_path + "cottonwood_westface/")
+test(resnet50, model_name + "_Cottonwood_WF", resnet50_cam, cottonwood_wf_batch_loader, cottonwood_wf_individual_loader, device, criterion, resnet_50_saving_dir)
 print("\nTesting ResNet50 on NGilchrist Eastface")
-test(resnet50, resnet50_cam, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, criterion, resnet_50_grad_cam_path + "ngilchrist_eastface/")
+test(resnet50, model_name + "_NGilchrist_EF", resnet50_cam, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, criterion, resnet_50_saving_dir)
 print("\nTesting ResNet50 on Idaho")
-test(resnet50, resnet50_cam, idaho_batch_loader, idaho_individual_loader, device, criterion, resnet_50_grad_cam_path + "idaho/")
+test(resnet50, model_name + "_Idaho", resnet50_cam, idaho_batch_loader, idaho_individual_loader, device, criterion, resnet_50_saving_dir)
 
 print("\nTesting ResNet152 on Cottonwood Eastface")
-test(resnet152, resnet152_cam, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, criterion, resnet_152_grad_cam_path + "cottonwood_eastface/")
+model_name = "ResNet152"
+test(resnet152, model_name + "_Cottonwood_EF", resnet152_cam, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, criterion, resnet_152_saving_dir)
 print("\nTesting ResNet152 on Cottonwood Westface")
-test(resnet152, resnet152_cam, cottonwood_wf_batch_loader, cottonwood_wf_individual_loader, device, criterion, resnet_152_grad_cam_path + "cottonwood_westface/")
+test(resnet152, model_name + "_Cottonwood_WF", resnet152_cam, cottonwood_wf_batch_loader, cottonwood_wf_individual_loader, device, criterion, resnet_152_saving_dir)
 print("\nTesting ResNet152 on NGilchrist Eastface")
-test(resnet152, resnet152_cam, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, criterion, resnet_152_grad_cam_path + "ngilchrist_eastface/")
+test(resnet152, model_name + "_NGilchrist_EF", resnet152_cam, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, criterion, resnet_152_saving_dir)
 print("\nTesting ResNet152 on Idaho")
-test(resnet152, resnet152_cam, idaho_batch_loader, idaho_individual_loader, device, criterion, resnet_152_grad_cam_path + "idaho/")
+test(resnet152, model_name + "_Idaho", resnet152_cam, idaho_batch_loader, idaho_individual_loader, device, criterion, resnet_152_saving_dir)
+
+print("\nTesting Vision Transformer Large 16 on Cottonwood Eastface")
+model_name = "ViTL16"
+test(vit_l_16, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, criterion, vit_l_16_saving_dir)
+print("\nTesting Vision Transformer Large 16 on Cottonwood Westface")
+test(vit_l_16, model_name + "_Cottonwood_WF", None, cottonwood_wf_batch_loader, cottonwood_wf_individual_loader, device, criterion, vit_l_16_saving_dir)
+print("\nTesting Vision Transformer Large 16 on NGilchrist Eastface")
+test(vit_l_16, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, criterion, vit_l_16_saving_dir)
+print("\nTesting Vision Transformer Large 16 on Idaho")
+test(vit_l_16, model_name + "_Idaho", None, idaho_batch_loader, idaho_individual_loader, device, criterion, vit_l_16_saving_dir)
 
 print("\nTesting Faster R-CNN on Cottonwood Eastface")
-test_object_detection(faster_rcnn, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
+model_name = "FasterR-CNN"
+test_object_detection(faster_rcnn, model_name + "_Cottonwood_EF", cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
 print("\nTesting Faster R-CNN on Cottonwood Westface")
-test_object_detection(faster_rcnn, cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
+test_object_detection(faster_rcnn,  model_name + "_Cottonwood_WF", cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
 print("\nTesting Faster R-CNN on NGilchrist Eastface")
-test_object_detection(faster_rcnn, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
+test_object_detection(faster_rcnn, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
 print("\nTesting Faster R-CNN on Idaho")
-test_object_detection(faster_rcnn, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
+test_object_detection(faster_rcnn,  model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
 
 print("\nTesting SSD on Cottonwood Eastface")
-test_object_detection(ssd, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
+model_name = "SSD"
+test_object_detection(ssd, model_name + "_Cottonwood_EF", cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
 print("\nTesting SSD on Cottonwood Westface")
-test_object_detection(ssd, cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
+test_object_detection(ssd, model_name + "_Cottonwood_WF", cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
 print("\nTesting SSD on NGilchrist Eastface")
-test_object_detection(ssd, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
+test_object_detection(ssd, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
 print("\nTesting SSD on Idaho")
-test_object_detection(ssd, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
+test_object_detection(ssd, model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
 
 print("\nTesting RetinaNet on Cottonwood Eastface")
-test_object_detection(retina_net, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
+model_name = "RetinaNet"
+test_object_detection(retina_net, model_name + "_Cottonwood_EF", cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
 print("\nTesting RetinaNet on Cottonwood Westface")
-test_object_detection(retina_net, cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
+test_object_detection(retina_net, model_name + "_Cottonwood_WF", cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
 print("\nTesting RetinaNet on NGilchrist Eastface")
-test_object_detection(retina_net, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
+test_object_detection(retina_net, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
 print("\nTesting RetinaNet on Idaho")
-test_object_detection(retina_net, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
+test_object_detection(retina_net, model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
 
 
