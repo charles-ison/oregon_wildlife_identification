@@ -8,6 +8,7 @@ from PIL import Image
 from torch.utils.data import DataLoader
 from pytorch_grad_cam import FullGrad
 from custom_models.aggregating_cnn import AggregatingCNN
+from custom_data_sets.image_data_set import ImageDataSet
 
 
 def test_batch(model, model_name, batch_testing_loader, criterion, print_incorrect_images, saving_dir, device):
@@ -189,8 +190,8 @@ def test_object_detection(model, model_name, batch_data_set, individual_data_set
     
 def get_data(batch_size, data_dir, json_file_name):
     batch_testing_data, batch_testing_labels, individual_data, individual_labels = utilities.fetch_data(data_dir, json_file_name, False, False, False)
-    batch_data_set = utilities.image_data_set(batch_testing_data, batch_testing_labels)
-    individual_data_set = utilities.image_data_set(individual_data, individual_labels)
+    batch_data_set = ImageDataSet(batch_testing_data, batch_testing_labels)
+    individual_data_set = ImageDataSet(individual_data, individual_labels)
     batch_data_loader = DataLoader(dataset = batch_data_set, batch_size = 1, shuffle = True)
     individual_data_loader = DataLoader(dataset = individual_data_set, batch_size = batch_size, shuffle = True)
     return batch_data_loader, individual_data_loader, batch_data_set, individual_data_set
@@ -283,16 +284,6 @@ if torch.cuda.device_count() > 1:
     resnet152 = nn.DataParallel(resnet152)
 
 # Testing
-model_name = "AggregatingCNN"
-print("\nTesting Aggregating CNN on Cottonwood Eastface")
-test_aggregating_cnn(aggregating_cnn, model_name + "_Cottonwood_EF", cottonwood_ef_batch_loader, device, criterion, aggregating_cnn_saving_dir)
-print("\nTesting Aggregating CNN on Cottonwood Westface")
-test_aggregating_cnn(aggregating_cnn, model_name + "_Cottonwood_WF", cottonwood_wf_batch_loader, device, criterion, aggregating_cnn_saving_dir)
-print("\nTesting Aggregating CNN on NGilchrist Eastface")
-test_aggregating_cnn(aggregating_cnn, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_loader, device, criterion, aggregating_cnn_saving_dir)
-print("\nTesting Aggregating CNN on Idaho")
-test_aggregating_cnn(aggregating_cnn, model_name + "_Idaho", idaho_batch_loader, device, criterion, aggregating_cnn_saving_dir)
-
 print("\nTesting ResNet50 on Cottonwood Eastface")
 model_name = "ResNet50"
 test(resnet50, model_name + "_Cottonwood_EF", resnet50_cam, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, criterion, resnet_50_saving_dir)
@@ -322,6 +313,16 @@ print("\nTesting Vision Transformer Large 16 on NGilchrist Eastface")
 test(vit_l_16, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, criterion, vit_l_16_saving_dir)
 print("\nTesting Vision Transformer Large 16 on Idaho")
 test(vit_l_16, model_name + "_Idaho", None, idaho_batch_loader, idaho_individual_loader, device, criterion, vit_l_16_saving_dir)
+
+model_name = "AggregatingCNN"
+print("\nTesting Aggregating CNN on Cottonwood Eastface")
+test_aggregating_cnn(aggregating_cnn, model_name + "_Cottonwood_EF", cottonwood_ef_batch_loader, device, criterion, aggregating_cnn_saving_dir)
+print("\nTesting Aggregating CNN on Cottonwood Westface")
+test_aggregating_cnn(aggregating_cnn, model_name + "_Cottonwood_WF", cottonwood_wf_batch_loader, device, criterion, aggregating_cnn_saving_dir)
+print("\nTesting Aggregating CNN on NGilchrist Eastface")
+test_aggregating_cnn(aggregating_cnn, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_loader, device, criterion, aggregating_cnn_saving_dir)
+print("\nTesting Aggregating CNN on Idaho")
+test_aggregating_cnn(aggregating_cnn, model_name + "_Idaho", idaho_batch_loader, device, criterion, aggregating_cnn_saving_dir)
 
 print("\nTesting Faster R-CNN on Cottonwood Eastface")
 model_name = "FasterR-CNN"

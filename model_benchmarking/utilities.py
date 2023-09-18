@@ -12,11 +12,11 @@ import matplotlib.patches as patches
 import json
 from pytorch_grad_cam.utils.image import show_cam_on_image
 from PIL import Image
-from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
+from collections import Counter
 from operator import itemgetter
 from datetime import datetime
 from pycocotools.coco import COCO
@@ -46,18 +46,6 @@ def print_analysis(all_labels, all_predictions, title, saving_dir):
     print(title + " Precision: " + str(precision))
     print(title + " Recall: " + str(recall))
     print(title + " F-Score: " + str(f_score))
-
-
-class image_data_set(torch.utils.data.Dataset):
-    def __init__(self, data, labels):
-        self.data = data
-        self.labels = labels
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, index):
-        return {'data': self.data[index], 'label': self.labels[index]}
         
 
 def set_device_for_list_of_tensors(some_list, device):
@@ -138,6 +126,29 @@ def append_batch_labels(labels, batch_labels, is_classification, is_object_detec
         labels.append(batch_labels)
     else:
         labels.append(torch.FloatTensor(batch_labels))
+        
+def get_loss_weights(labels):
+    label_counts = get_label_counts(labels)
+    num_samples = sum(label_counts)
+    
+    loss_weights = []
+    for label_count in label_counts:
+        if label_count > 0:
+            loss_weight = num_samples / label_count
+            loss_weights.append(loss_weight)
+        else:
+            loss_weights.append(0)
+    return loss_weights
+        
+def get_label_counts(labels):
+    num_labels = 10
+    label_counts = [0] * num_labels
+    for label in labels:
+        label = label["labels"].size(dim=0)
+        if label > num_labels:
+            raise Exception("More animals labeled in single image maximum allocation of: ", num_labels)
+        label_counts[label] += 1
+    return label_counts
     
 
 #TODO: Code smell here passing around these flags, should probably be refactored into separate classes
