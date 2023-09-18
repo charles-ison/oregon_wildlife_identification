@@ -292,6 +292,7 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
     for epoch in range(num_epochs):
         print("Epoch: " + str(epoch))
         training_data_set.shuffle()
+        batch_training_data_set.shuffle()
 
         #TODO: Use OOP here
         if is_object_detection:
@@ -377,6 +378,9 @@ if torch.cuda.device_count() > 1:
     vit_l_16 = nn.DataParallel(vit_l_16)
 
 # Training
+print("\nTraining and Validating Aggregating CNN")
+train_and_validate(num_epochs, aggregating_cnn, "AggregatingCNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, loss_weights, False, True)
+
 print("\nTraining and Validating ResNet50")
 train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, loss_weights, False, False)
 
@@ -385,9 +389,6 @@ train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, valida
 
 print("\nTraining and Validating Vision Transformer Large 16")
 train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, loss_weights, False, False)
-
-print("\nTraining and Validating Aggregating CNN")
-train_and_validate(num_epochs, aggregating_cnn, "AggregatingCNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, loss_weights, False, True)
 
 print("\nTraining and Validating Faster R-CNN")
 train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, loss_weights, True, False)
