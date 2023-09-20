@@ -135,40 +135,6 @@ def get_labels_from_targets(targets):
         labels.append(label)
     return labels
     
-    
-def get_batch_loss_weights(batch_labels, num_labels):
-    max_in_batch_labels = []
-    for targets in batch_labels:
-        labels = get_labels_from_targets(targets)
-        max_label = max(labels)
-        max_in_batch_labels.append(max_label)
-    return get_loss_weights(max_in_batch_labels, num_labels, False)
-    
-    
-def get_loss_weights(labels, num_labels, get_label_from_target):
-    if get_label_from_target:
-        labels = get_labels_from_targets(labels)
-    label_counts = get_label_counts(labels, num_labels)
-    num_samples = sum(label_counts)
-    
-    loss_weights = []
-    for label_count in label_counts:
-        if label_count > 0:
-            loss_weight = num_samples / label_count
-            loss_weights.append(loss_weight)
-        else:
-            loss_weights.append(0)
-    return loss_weights
-        
-        
-def get_label_counts(labels, num_labels):
-    label_counts = [0] * num_labels
-    for label in labels:
-        if label > num_labels:
-            raise Exception("More animals labeled in single image maximum allocation of: ", num_labels)
-        label_counts[label] += 1
-    return label_counts
-    
 
 #TODO: Code smell here passing around these flags, should probably be refactored into separate classes
 def fetch_data(data_dir, json_file_name, is_classification, is_object_detection, is_training):
