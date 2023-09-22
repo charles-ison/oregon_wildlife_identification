@@ -1,0 +1,308 @@
+2.0.1+cu117
+0.15.2+cu117
+torch.cuda.is_available(): True
+loading annotations into memory...
+Done (t=0.02s)
+creating index...
+index created!
+Problematic image or label encountered, leaving out of training and validation
+Problematic image or label encountered, leaving out of training and validation
+
+Number of training photos:  2745
+Number of validation photos:  734
+Number of batches for training:  476
+Number of batches for validation:  120
+Multiple GPUs available, using: 2
+
+Training and Validating ResNet34
+Epoch: 0
+training loss: 0.001809691599755122 and training accuracy: 0.84408014571949
+validation loss (MSE): 0.0010190190673153594 and validation accuracy: 0.94141689373297
+batch validation loss (MSE): 0.041666666666666664 and batch validation accuracy: 0.9583333333333334
+Highest batch validation accuracy achieved, saving weights
+ResNet34_Validation Accuracy: 0.9583333333333334
+ResNet34_Validation Precision: 0.9619047619047619
+ResNet34_Validation Recall: 0.9583333333333334
+ResNet34_Validation F-Score: 0.9591025641025641
+Epoch: 1
+training loss: 0.0007399775644251992 and training accuracy: 0.9285974499089253
+validation loss (MSE): 0.0010574749259821237 and validation accuracy: 0.9564032697547684
+batch validation loss (MSE): 0.025 and batch validation accuracy: 0.975
+Highest batch validation accuracy achieved, saving weights
+ResNet34_Validation Accuracy: 0.975
+ResNet34_Validation Precision: 0.9736283185840707
+ResNet34_Validation Recall: 0.975
+ResNet34_Validation F-Score: 0.9731047077922078
+Epoch: 2
+training loss: 0.0006083717813990155 and training accuracy: 0.9468123861566484
+validation loss (MSE): 0.0016994819715010047 and validation accuracy: 0.9427792915531336
+batch validation loss (MSE): 0.03333333333333333 and batch validation accuracy: 0.9666666666666667
+Epoch: 3
+training loss: 0.00037634963787182865 and training accuracy: 0.9686703096539162
+validation loss (MSE): 0.0008349947641509755 and validation accuracy: 0.9495912806539509
+batch validation loss (MSE): 0.041666666666666664 and batch validation accuracy: 0.9583333333333334
+Epoch: 4
+training loss: 0.0003558588248146579 and training accuracy: 0.9683060109289617
+validation loss (MSE): 0.0007630737394675592 and validation accuracy: 0.9673024523160763
+batch validation loss (MSE): 0.03333333333333333 and batch validation accuracy: 0.9666666666666667
+
+Training and Validating Aggregating CNN
+Epoch: 0
+training loss: 0.0017402551602572203 and training accuracy: 0.925
+batch validation loss (MSE): 0.15 and batch validation accuracy: 0.925
+Highest batch validation accuracy achieved, saving weights
+AggregatingCNN_Validation Accuracy: 0.925
+AggregatingCNN_Validation Precision: 0.8556250000000001
+AggregatingCNN_Validation Recall: 0.925
+AggregatingCNN_Validation F-Score: 0.888961038961039
+Epoch: 1
+training loss: 0.0013598725975801547 and training accuracy: 0.925
+batch validation loss (MSE): 0.15 and batch validation accuracy: 0.925
+Epoch: 2
+training loss: 0.0015938709334780772 and training accuracy: 0.925
+batch validation loss (MSE): 0.15 and batch validation accuracy: 0.925
+Epoch: 3
+training loss: 0.0015946886812647184 and training accuracy: 0.925
+batch validation loss (MSE): 0.15 and batch validation accuracy: 0.925
+Epoch: 4
+training loss: 0.0017057919253905614 and training accuracy: 0.925
+batch validation loss (MSE): 0.15 and batch validation accuracy: 0.925
+
+Training and Validating CNN Wrapper
+Epoch: 0
+training loss: 0.0016131465436928043 and training accuracy: 0.8593806921675774
+validation loss (MSE): 0.0017014043094788244 and validation accuracy: 0.9237057220708447
+batch validation loss (MSE): 0.08333333333333333 and batch validation accuracy: 0.9166666666666666
+Highest batch validation accuracy achieved, saving weights
+CNNWrapper_Validation Accuracy: 0.9166666666666666
+CNNWrapper_Validation Precision: 0.9331018518518518
+CNNWrapper_Validation Recall: 0.9166666666666666
+CNNWrapper_Validation F-Score: 0.9238812785388129
+Epoch: 1
+training loss: 0.0009490840883420031 and training accuracy: 0.91183970856102
+validation loss (MSE): 0.0011752528782073683 and validation accuracy: 0.9400544959128065
+batch validation loss (MSE): 0.03333333333333333 and batch validation accuracy: 0.9666666666666667
+Highest batch validation accuracy achieved, saving weights
+CNNWrapper_Validation Accuracy: 0.9666666666666667
+CNNWrapper_Validation Precision: 0.9669616519174041
+CNNWrapper_Validation Recall: 0.9666666666666667
+CNNWrapper_Validation F-Score: 0.9625744047619047
+Epoch: 2
+training loss: 0.0005219020167423348 and training accuracy: 0.9446265938069217
+validation loss (MSE): 0.0006615616601945107 and validation accuracy: 0.9591280653950953
+batch validation loss (MSE): 0.05 and batch validation accuracy: 0.95
+Epoch: 3
+training loss: 0.0004331464217619492 and training accuracy: 0.9555555555555556
+validation loss (MSE): 0.0005467899488818093 and validation accuracy: 0.9659400544959128
+batch validation loss (MSE): 0.025 and batch validation accuracy: 0.975
+Highest batch validation accuracy achieved, saving weights
+CNNWrapper_Validation Accuracy: 0.975
+CNNWrapper_Validation Precision: 0.9773809523809525
+CNNWrapper_Validation Recall: 0.975
+CNNWrapper_Validation F-Score: 0.9751282051282052
+Epoch: 4
+training loss: 0.0003373531629339892 and training accuracy: 0.9632058287795993
+validation loss (MSE): 0.0006336765401877401 and validation accuracy: 0.9673024523160763
+batch validation loss (MSE): 0.025 and batch validation accuracy: 0.975
+
+Training and Validating ResNet50
+Epoch: 0
+training loss: 0.0013026369263999884 and training accuracy: 0.8892531876138433
+validation loss (MSE): 0.0008939580543966563 and validation accuracy: 0.9482288828337875
+batch validation loss (MSE): 0.016666666666666666 and batch validation accuracy: 0.9833333333333333
+Highest batch validation accuracy achieved, saving weights
+ResNet50_Validation Accuracy: 0.9833333333333333
+ResNet50_Validation Precision: 0.9833333333333333
+ResNet50_Validation Recall: 0.9833333333333333
+ResNet50_Validation F-Score: 0.9833333333333333
+Epoch: 1
+training loss: 0.0005539611579073366 and training accuracy: 0.9413479052823315
+validation loss (MSE): 0.0007602388919641998 and validation accuracy: 0.9591280653950953
+batch validation loss (MSE): 0.016666666666666666 and batch validation accuracy: 0.9833333333333333
+Epoch: 2
+training loss: 0.00040490346076899975 and training accuracy: 0.9599271402550091
+validation loss (MSE): 0.000839310994483429 and validation accuracy: 0.9632152588555858
+batch validation loss (MSE): 0.025 and batch validation accuracy: 0.975
+Epoch: 3
+training loss: 0.00027433715248395617 and training accuracy: 0.9719489981785063
+validation loss (MSE): 0.0008587464136680542 and validation accuracy: 0.9591280653950953
+batch validation loss (MSE): 0.016666666666666666 and batch validation accuracy: 0.9833333333333333
+Epoch: 4
+training loss: 0.0001744600423426793 and training accuracy: 0.9828779599271402
+validation loss (MSE): 0.0007859368499131158 and validation accuracy: 0.9536784741144414
+batch validation loss (MSE): 0.016666666666666666 and batch validation accuracy: 0.9833333333333333
+
+Training and Validating ResNet152
+Epoch: 0
+training loss: 0.001235850239834173 and training accuracy: 0.8958105646630237
+validation loss (MSE): 0.0007352456268067763 and validation accuracy: 0.9659400544959128
+batch validation loss (MSE): 0.025 and batch validation accuracy: 0.975
+Highest batch validation accuracy achieved, saving weights
+ResNet152_Validation Accuracy: 0.975
+ResNet152_Validation Precision: 0.9774553571428571
+ResNet152_Validation Recall: 0.975
+ResNet152_Validation F-Score: 0.9718135563987581
+Epoch: 1
+training loss: 0.0006517858090106472 and training accuracy: 0.9413479052823315
+validation loss (MSE): 0.0013007532433436662 and validation accuracy: 0.9318801089918256
+batch validation loss (MSE): 0.03333333333333333 and batch validation accuracy: 0.9666666666666667
+Epoch: 2
+training loss: 0.0004174286978003757 and training accuracy: 0.9544626593806922
+validation loss (MSE): 0.000762362619804863 and validation accuracy: 0.9577656675749319
+batch validation loss (MSE): 0.016666666666666666 and batch validation accuracy: 0.9833333333333333
+Highest batch validation accuracy achieved, saving weights
+ResNet152_Validation Accuracy: 0.9833333333333333
+ResNet152_Validation Precision: 0.9875
+ResNet152_Validation Recall: 0.9833333333333333
+ResNet152_Validation F-Score: 0.9836716224951518
+Epoch: 3
+training loss: 0.0002441710023165346 and training accuracy: 0.9752276867030966
+validation loss (MSE): 0.0008111970918824039 and validation accuracy: 0.9564032697547684
+batch validation loss (MSE): 0.025 and batch validation accuracy: 0.975
+Epoch: 4
+training loss: 0.0001952006021015794 and training accuracy: 0.9828779599271402
+validation loss (MSE): 0.0006825609116152701 and validation accuracy: 0.9604904632152589
+batch validation loss (MSE): 0.016666666666666666 and batch validation accuracy: 0.9833333333333333
+
+Training and Validating Vision Transformer Large 16
+Epoch: 0
+training loss: 0.003854698366833298 and training accuracy: 0.8189435336976321
+validation loss (MSE): 0.0011379348541729214 and validation accuracy: 0.9318801089918256
+batch validation loss (MSE): 0.05 and batch validation accuracy: 0.95
+Highest batch validation accuracy achieved, saving weights
+ViTL16_Validation Accuracy: 0.95
+ViTL16_Validation Precision: 0.9581818181818182
+ViTL16_Validation Recall: 0.95
+ViTL16_Validation F-Score: 0.952643826761474
+Epoch: 1
+training loss: 0.0009697118584059844 and training accuracy: 0.9074681238615665
+validation loss (MSE): 0.0011811330609977732 and validation accuracy: 0.9237057220708447
+batch validation loss (MSE): 0.05 and batch validation accuracy: 0.95
+Epoch: 2
+training loss: 0.0005921600237217323 and training accuracy: 0.9420765027322404
+validation loss (MSE): 0.0012055194066908485 and validation accuracy: 0.9482288828337875
+batch validation loss (MSE): 0.025 and batch validation accuracy: 0.975
+Highest batch validation accuracy achieved, saving weights
+ViTL16_Validation Accuracy: 0.975
+ViTL16_Validation Precision: 0.9833333333333333
+ViTL16_Validation Recall: 0.975
+ViTL16_Validation F-Score: 0.9791478129713423
+Epoch: 3
+training loss: 0.0004382925150485095 and training accuracy: 0.9599271402550091
+validation loss (MSE): 0.000819368705366629 and validation accuracy: 0.952316076294278
+batch validation loss (MSE): 0.016666666666666666 and batch validation accuracy: 0.9833333333333333
+Highest batch validation accuracy achieved, saving weights
+ViTL16_Validation Accuracy: 0.9833333333333333
+ViTL16_Validation Precision: 0.9833333333333333
+ViTL16_Validation Recall: 0.9833333333333333
+ViTL16_Validation F-Score: 0.9833333333333333
+Epoch: 4
+training loss: 0.0002309213184627733 and training accuracy: 0.9788706739526412
+validation loss (MSE): 0.0008506877666620959 and validation accuracy: 0.9482288828337875
+batch validation loss (MSE): 0.016666666666666666 and batch validation accuracy: 0.9833333333333333
+
+Training and Validating Faster R-CNN
+Epoch: 0
+training loss: 0.01021793688446426 and training accuracy: 0.7948998178506376
+validation loss (MSE): 0.03228882852464671 and validation accuracy: 0.9155313351498637
+batch validation loss (MSE): 0.2916666666666667 and batch validation accuracy: 0.8916666666666667
+Highest batch validation accuracy achieved, saving weights
+FasterR-CNN_Validation Accuracy: 0.8916666666666667
+FasterR-CNN_Validation Precision: 0.925
+FasterR-CNN_Validation Recall: 0.8916666666666667
+FasterR-CNN_Validation F-Score: 0.9080275229357799
+Epoch: 1
+training loss: 0.008142388739116012 and training accuracy: 0.8663023679417122
+validation loss (MSE): 0.01839237073461756 and validation accuracy: 0.9359673024523161
+batch validation loss (MSE): 0.18333333333333332 and batch validation accuracy: 0.9166666666666666
+Highest batch validation accuracy achieved, saving weights
+FasterR-CNN_Validation Accuracy: 0.9166666666666666
+FasterR-CNN_Validation Precision: 0.9458333333333333
+FasterR-CNN_Validation Recall: 0.9166666666666666
+FasterR-CNN_Validation F-Score: 0.930662100456621
+Epoch: 2
+training loss: 0.007032038892308871 and training accuracy: 0.8990892531876138
+validation loss (MSE): 0.005517711269108411 and validation accuracy: 0.9727520435967303
+batch validation loss (MSE): 0.05 and batch validation accuracy: 0.95
+Highest batch validation accuracy achieved, saving weights
+FasterR-CNN_Validation Accuracy: 0.95
+FasterR-CNN_Validation Precision: 0.975
+FasterR-CNN_Validation Recall: 0.95
+FasterR-CNN_Validation F-Score: 0.9576388888888889
+Epoch: 3
+training loss: 0.00612853910392674 and training accuracy: 0.9107468123861566
+validation loss (MSE): 0.028201634962649696 and validation accuracy: 0.9141689373297003
+batch validation loss (MSE): 0.31666666666666665 and batch validation accuracy: 0.8666666666666667
+Epoch: 4
+training loss: 0.005747822239317875 and training accuracy: 0.9278688524590164
+validation loss (MSE): 0.012806539659766475 and validation accuracy: 0.952316076294278
+batch validation loss (MSE): 0.15 and batch validation accuracy: 0.9
+
+Training and Validating SSD
+Epoch: 0
+training loss: 0.7102684393606551 and training accuracy: 0.780327868852459
+validation loss (MSE): 0.03569482307505543 and validation accuracy: 0.8746594005449592
+batch validation loss (MSE): 0.15 and batch validation accuracy: 0.925
+Highest batch validation accuracy achieved, saving weights
+SSD_Validation Accuracy: 0.925
+SSD_Validation Precision: 0.8556250000000001
+SSD_Validation Recall: 0.925
+SSD_Validation F-Score: 0.888961038961039
+Epoch: 1
+training loss: 0.6118687694841395 and training accuracy: 0.7992714025500911
+validation loss (MSE): 0.03160762961456497 and validation accuracy: 0.8950953678474114
+batch validation loss (MSE): 0.041666666666666664 and batch validation accuracy: 0.9583333333333334
+Highest batch validation accuracy achieved, saving weights
+SSD_Validation Accuracy: 0.9583333333333334
+SSD_Validation Precision: 0.9371997471554994
+SSD_Validation Recall: 0.9583333333333334
+SSD_Validation F-Score: 0.9475103021978022
+Epoch: 2
+training loss: 0.5279764013863653 and training accuracy: 0.8306010928961749
+validation loss (MSE): 0.03133515016827986 and validation accuracy: 0.9005449591280654
+batch validation loss (MSE): 0.08333333333333333 and batch validation accuracy: 0.9416666666666667
+Epoch: 3
+training loss: 0.47406466063688796 and training accuracy: 0.8546448087431694
+validation loss (MSE): 0.02765667613098342 and validation accuracy: 0.8910081743869209
+batch validation loss (MSE): 0.11666666666666667 and batch validation accuracy: 0.8833333333333333
+Epoch: 4
+training loss: 0.4215864623613479 and training accuracy: 0.853551912568306
+validation loss (MSE): 0.029700272719119486 and validation accuracy: 0.9005449591280654
+batch validation loss (MSE): 0.075 and batch validation accuracy: 0.925
+
+Training and Validating RetinaNet
+Epoch: 0
+training loss: 0.04210689567802106 and training accuracy: 0.8265938069216757
+validation loss (MSE): 0.021798365488039376 and validation accuracy: 0.9196185286103542
+batch validation loss (MSE): 0.03333333333333333 and batch validation accuracy: 0.9666666666666667
+Highest batch validation accuracy achieved, saving weights
+RetinaNet_Validation Accuracy: 0.9666666666666667
+RetinaNet_Validation Precision: 0.96875
+RetinaNet_Validation Recall: 0.9666666666666667
+RetinaNet_Validation F-Score: 0.9665287653522948
+Epoch: 1
+training loss: 0.023251327242324822 and training accuracy: 0.9114754098360656
+validation loss (MSE): 0.011716621387394637 and validation accuracy: 0.9577656675749319
+batch validation loss (MSE): 0.016666666666666666 and batch validation accuracy: 0.9833333333333333
+Highest batch validation accuracy achieved, saving weights
+RetinaNet_Validation Accuracy: 0.9833333333333333
+RetinaNet_Validation Precision: 0.9916666666666667
+RetinaNet_Validation Recall: 0.9833333333333333
+RetinaNet_Validation F-Score: 0.9871212121212121
+Epoch: 2
+training loss: 0.021267000067828768 and training accuracy: 0.9132969034608379
+validation loss (MSE): 0.010626703216529348 and validation accuracy: 0.9632152588555858
+batch validation loss (MSE): 0.008333333333333333 and batch validation accuracy: 0.9916666666666667
+Highest batch validation accuracy achieved, saving weights
+RetinaNet_Validation Accuracy: 0.9916666666666667
+RetinaNet_Validation Precision: 0.9917410714285714
+RetinaNet_Validation Recall: 0.9916666666666667
+RetinaNet_Validation F-Score: 0.9913065633917651
+Epoch: 3
+training loss: 0.017413745301517913 and training accuracy: 0.9391621129326048
+validation loss (MSE): 0.010899182723718379 and validation accuracy: 0.9618528610354223
+batch validation loss (MSE): 0.041666666666666664 and batch validation accuracy: 0.9833333333333333
+Epoch: 4
+training loss: 0.015321969528034147 and training accuracy: 0.9479052823315118
+validation loss (MSE): 0.0068119891820226765 and validation accuracy: 0.9741144414168937
+batch validation loss (MSE): 0.016666666666666666 and batch validation accuracy: 0.9833333333333333
