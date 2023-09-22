@@ -328,10 +328,8 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
 
 
 # Declaring Constants
-num_epochs = 3
-cnn_batch_size = 100
-aggregating_cnn_batch_size = 20
-vit_batch_size = 50
+num_epochs = 5
+batch_size = 50
 object_detection_batch_size = 5
 json_file_name = "animal_count_key.json"
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/2022_Cottonwood_Eastface_bounding_boxes/"
@@ -385,26 +383,26 @@ if torch.cuda.device_count() > 1:
 
 # Training
 print("\nTraining and Validating ResNet34")
-train_and_validate(num_epochs, resnet34, "ResNet34", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, cnn_batch_size, False, False)
+train_and_validate(num_epochs, resnet34, "ResNet34", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, False)
 
 max_batch_size = 100
 embedding_size = 512
 aggregating_cnn = AggregatingCNN(max_batch_size, embedding_size, resnet34)
 
 print("\nTraining and Validating Aggregating CNN")
-train_and_validate(num_epochs, aggregating_cnn, "AggregatingCNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, aggregating_cnn_batch_size, False, True)
+train_and_validate(num_epochs, aggregating_cnn, "AggregatingCNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, True)
 
 print("\nTraining and Validating CNN Wrapper")
-train_and_validate(num_epochs, cnn_wrapper, "CNNWrapper", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, cnn_batch_size, False, False)
+train_and_validate(num_epochs, cnn_wrapper, "CNNWrapper", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, False)
 
 print("\nTraining and Validating ResNet50")
-train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, cnn_batch_size, False, False)
+train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, False)
 
 print("\nTraining and Validating ResNet152")
-train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, cnn_batch_size, False, False)
+train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, False)
 
 print("\nTraining and Validating Vision Transformer Large 16")
-train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, vit_batch_size, False, False)
+train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, False)
 
 print("\nTraining and Validating Faster R-CNN")
 train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, object_detection_batch_size, True, False)
