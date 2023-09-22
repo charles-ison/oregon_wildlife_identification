@@ -45,23 +45,31 @@ def get_num_equal_list_elements(labels, predictions):
     return sum(label == prediction for label, prediction in zip(labels, predictions))
     
     
-def train_aggregating_cnn(model, training_data_set, criterion, optimizer, device):
+def train_aggregating_cnn(model, training_data_set, criterion, optimizer, device, batch_size):
     model.train()
     running_loss = 0.0
     num_correct = 0
     
-    for batch in training_data_set:
-        data, targets = batch['data'].to(device), batch['label']
-        labels = utilities.get_labels_from_targets(targets)
-        labels = torch.FloatTensor(labels).to(device)
-        label = torch.max(labels)
+    for index in range(0, len(training_data_set), batch_size):
+        batch = training_data_set[index:index + batch_size]
+    
+        batch_labels = []
+        for index, (data, targets) in enumerate(zip(batch["data"], batch["label"])):
+            batch["data"][index] = data.to(device)
+            labels = utilities.get_labels_from_targets(targets)
+            labels = torch.FloatTensor(labels).to(device)
+            label = torch.max(labels)
+            batch_labels.append(label)
+    
+        data = batch["data"]
+        labels = torch.stack(batch_labels)
         
         optimizer.zero_grad()
         output = model(data)
         
-        loss = criterion(output, label)
+        loss = criterion(output, labels)
         running_loss += loss.item()
-        num_correct += (output.round() == label).item()
+        num_correct += (output.round() == labels).sum().item()
         loss.backward()
         optimizer.step()
 
@@ -177,11 +185,13 @@ def batch_validation_aggregating_cnn(model, batch_validation_data_set, criterion
     
     for batch in batch_validation_data_set:
         data, targets = batch['data'].to(device), batch['label']
+        data = torch.unsqueeze(data, dim=0)
         labels = utilities.get_labels_from_targets(targets)
         labels = torch.FloatTensor(labels).to(device)
         label = torch.max(labels)
+        label = torch.unsqueeze(label, dim=0)
         
-        output = model(data)
+        output = model(data).round()
         
         loss = criterion(output, label)
         running_loss += loss.item()
@@ -286,7 +296,7 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
         if is_object_detection:
             training_loss, training_accuracy = train_object_detection(model, training_data_set, optimizer, device, batch_size)
         elif is_aggregating_cnn:
-            training_loss, training_accuracy = train_aggregating_cnn(model, batch_training_data_set, huber_loss, optimizer, device)
+            training_loss, training_accuracy = train_aggregating_cnn(model, batch_training_data_set, huber_loss, optimizer, device, batch_size)
         else:
             training_loss, training_accuracy = train(model, training_data_set, huber_loss, optimizer, device, batch_size)
         print("training loss: " + str(training_loss) + " and training accuracy: " + str(training_accuracy))
@@ -319,6 +329,7 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
 # Declaring Constants
 num_epochs = 3
 cnn_batch_size = 100
+aggregating_cnn_batch_size = 20
 vit_batch_size = 50
 object_detection_batch_size = 5
 json_file_name = "animal_count_key.json"
@@ -338,6 +349,10 @@ batch_training_data_set = ImageDataSet(batch_validation_data, batch_validation_l
 batch_validation_data_set = ImageDataSet(batch_validation_data, batch_validation_labels)
 
 # Declaring Models
+resnet34 = models.resnet34(weights = models.ResNet34_Weights.DEFAULT)
+in_features = resnet34.fc.in_features
+resnet34.fc = nn.Linear(in_features, 1)
+
 resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
 in_features = resnet50.fc.in_features
 resnet50.fc = nn.Linear(in_features, 1)
@@ -356,18 +371,23 @@ ssd = models.detection.ssd300_vgg16(weights=models.detection.SSD300_VGG16_Weight
 
 retina_net = models.detection.retinanet_resnet50_fpn_v2(weights=models.detection.RetinaNet_ResNet50_FPN_V2_Weights.DEFAULT)
 
-max_batch_size = 100
-aggregating_cnn = AggregatingCNN(max_batch_size)
-
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
+    resnet34 = nn.DataParallel(resnet34)
     resnet50 = nn.DataParallel(resnet50)
     resnet152 = nn.DataParallel(resnet152)
     vit_l_16 = nn.DataParallel(vit_l_16)
 
 # Training
+print("\nTraining and Validating ResNet34")
+train_and_validate(num_epochs, resnet34, "ResNet34", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, cnn_batch_size, False, False)
+
+max_batch_size = 100
+embedding_size = 512
+aggregating_cnn = AggregatingCNN(max_batch_size, embedding_size, resnet34)
+
 print("\nTraining and Validating Aggregating CNN")
-train_and_validate(num_epochs, aggregating_cnn, "AggregatingCNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, cnn_batch_size, False, True)
+train_and_validate(num_epochs, aggregating_cnn, "AggregatingCNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, aggregating_cnn_batch_size, False, True)
 
 print("\nTraining and Validating ResNet50")
 train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, cnn_batch_size, False, False)

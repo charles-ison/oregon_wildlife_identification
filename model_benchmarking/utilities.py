@@ -51,6 +51,7 @@ def print_analysis(all_labels, all_predictions, title, saving_dir):
 def set_device_for_list_of_tensors(some_list, device):
     for index, tensor in enumerate(some_list):
         some_list[index] = tensor.to(device)
+    return some_list
     
 
 def get_image_tensor(file_path, new_image_height_and_width):
