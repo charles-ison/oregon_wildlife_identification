@@ -4,7 +4,7 @@
 #SBATCH -p dgx
 #SBATCH -t 7-00:00:00   
 #SBATCH --gres=gpu:1      
-#SBATCH --mem=50G  
+#SBATCH --mem=120G  
 
 #SBATCH -o model_benchmarking/run_logs/logs.out
 #SBATCH -e model_benchmarking/run_logs/logs.err

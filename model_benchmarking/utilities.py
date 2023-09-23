@@ -16,6 +16,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import r2_score
 from collections import Counter
 from operator import itemgetter
 from datetime import datetime
@@ -46,6 +47,10 @@ def print_analysis(all_labels, all_predictions, title, saving_dir):
     print(title + " Precision: " + str(precision))
     print(title + " Recall: " + str(recall))
     print(title + " F-Score: " + str(f_score))
+    
+    #TODO: This should probably be looking at unrounded results
+    r2 = r2_score(all_labels, all_predictions)
+    print(title + " R^2: " + str(r2))
         
 
 def set_device_for_list_of_tensors(some_list, device):

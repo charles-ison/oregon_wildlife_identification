@@ -111,6 +111,7 @@ def test_individual_object_detection(model, individual_data_set, batch_size, cri
         predictions = get_predictions(bounding_boxes)
         labels_tensor = torch.FloatTensor(labels)
         predictions_tensor = torch.FloatTensor(predictions)
+        
         running_loss += criterion(labels_tensor, predictions_tensor).item()
         num_correct += (labels_tensor == predictions_tensor).sum().item()
 
@@ -139,13 +140,13 @@ def test_batch_object_detection(model, model_name, batch_data_set, criterion, sa
             
             max_prediction = max(max_prediction, prediction)
             max_label = max(max_label, label)
-            
+        
         running_loss += criterion(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
         if max_prediction == max_label:
             num_correct += 1
             
         all_labels.append(max_label)
-        all_predictions.append(max_predictions)
+        all_predictions.append(max_prediction)
 
     loss = running_loss/len(batch_data_set)
     accuracy = num_correct/len(batch_data_set)
@@ -161,10 +162,11 @@ def test_aggregating_cnn(model, model_name, batch_loader, device, criterion, sav
     all_labels, all_predictions = [], []
     
     for batch in batch_loader:
-        data, labels = torch.squeeze(batch['data'], dim=0).to(device), batch['label'].to(device)
+        data, labels = batch['data'].to(device), batch['label'].to(device)
         label = torch.max(labels)
+        label = torch.unsqueeze(label, dim=0)
         
-        output = model(data)
+        output = model(data).round()
 
         loss = criterion(output, label)
         running_loss += loss.item()
@@ -312,6 +314,9 @@ test(resnet34, model_name + "_NGilchrist_EF", resnet34_cam, ngilchrist_ef_batch_
 print("\nTesting ResNet34 on Idaho")
 test(resnet34, model_name + "_Idaho", resnet34_cam, idaho_batch_loader, idaho_individual_loader, device, criterion, resnet_34_saving_dir)
 
+del resnet34
+del resnet34_cam
+
 model_name = "ResNet50"
 print("\nTesting ResNet50 on Cottonwood Eastface")
 test(resnet50, model_name + "_Cottonwood_EF", resnet50_cam, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, criterion, resnet_50_saving_dir)
@@ -321,6 +326,9 @@ print("\nTesting ResNet50 on NGilchrist Eastface")
 test(resnet50, model_name + "_NGilchrist_EF", resnet50_cam, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, criterion, resnet_50_saving_dir)
 print("\nTesting ResNet50 on Idaho")
 test(resnet50, model_name + "_Idaho", resnet50_cam, idaho_batch_loader, idaho_individual_loader, device, criterion, resnet_50_saving_dir)
+
+del resnet50
+del resnet50_cam
 
 model_name = "ResNet152"
 print("\nTesting ResNet152 on Cottonwood Eastface")
@@ -332,6 +340,9 @@ test(resnet152, model_name + "_NGilchrist_EF", resnet152_cam, ngilchrist_ef_batc
 print("\nTesting ResNet152 on Idaho")
 test(resnet152, model_name + "_Idaho", resnet152_cam, idaho_batch_loader, idaho_individual_loader, device, criterion, resnet_152_saving_dir)
 
+del resnet152
+del resnet152_cam
+
 model_name = "CNNWrapper"
 print("\nTesting CNNWrapper on Cottonwood Eastface")
 test(cnn_wrapper, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, criterion, cnn_wrapper_saving_dir)
@@ -341,6 +352,8 @@ print("\nTesting CNNWrapper on NGilchrist Eastface")
 test(cnn_wrapper, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, criterion, cnn_wrapper_saving_dir)
 print("\nTesting CNNWrapper on Idaho")
 test(cnn_wrapper, model_name + "_Idaho", None, idaho_batch_loader, idaho_individual_loader, device, criterion, cnn_wrapper_saving_dir)
+
+del cnn_wrapper
 
 model_name = "AggregatingCNN"
 print("\nTesting Aggregating CNN on Cottonwood Eastface")
@@ -352,6 +365,8 @@ test_aggregating_cnn(aggregating_cnn, model_name + "_NGilchrist_EF", ngilchrist_
 print("\nTesting Aggregating CNN on Idaho")
 test_aggregating_cnn(aggregating_cnn, model_name + "_Idaho", idaho_batch_loader, device, criterion, aggregating_cnn_saving_dir)
 
+del aggregating_cnn
+
 model_name = "ViTL16"
 print("\nTesting Vision Transformer Large 16 on Cottonwood Eastface")
 test(vit_l_16, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, criterion, vit_l_16_saving_dir)
@@ -361,6 +376,8 @@ print("\nTesting Vision Transformer Large 16 on NGilchrist Eastface")
 test(vit_l_16, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, criterion, vit_l_16_saving_dir)
 print("\nTesting Vision Transformer Large 16 on Idaho")
 test(vit_l_16, model_name + "_Idaho", None, idaho_batch_loader, idaho_individual_loader, device, criterion, vit_l_16_saving_dir)
+
+del vit_l_16
 
 model_name = "FasterR-CNN"
 print("\nTesting Faster R-CNN on Cottonwood Eastface")
@@ -372,6 +389,8 @@ test_object_detection(faster_rcnn, model_name + "_NGilchrist_EF", ngilchrist_ef_
 print("\nTesting Faster R-CNN on Idaho")
 test_object_detection(faster_rcnn,  model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, criterion, faster_rcnn_saving_dir)
 
+del faster_rcnn
+
 model_name = "SSD"
 print("\nTesting SSD on Cottonwood Eastface")
 test_object_detection(ssd, model_name + "_Cottonwood_EF", cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
@@ -382,6 +401,8 @@ test_object_detection(ssd, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_da
 print("\nTesting SSD on Idaho")
 test_object_detection(ssd, model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, criterion, ssd_saving_dir)
 
+del ssd
+
 model_name = "RetinaNet"
 print("\nTesting RetinaNet on Cottonwood Eastface")
 test_object_detection(retina_net, model_name + "_Cottonwood_EF", cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
@@ -391,5 +412,7 @@ print("\nTesting RetinaNet on NGilchrist Eastface")
 test_object_detection(retina_net, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
 print("\nTesting RetinaNet on Idaho")
 test_object_detection(retina_net, model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, criterion, retina_net_saving_dir)
+
+del retina_net
 
 
