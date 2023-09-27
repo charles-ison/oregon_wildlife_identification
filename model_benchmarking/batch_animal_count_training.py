@@ -45,6 +45,34 @@ def get_predictions(bounding_boxes):
 def get_num_equal_list_elements(labels, predictions):
     return sum(label == prediction for label, prediction in zip(labels, predictions))
     
+
+def fetch_training_data(data_dir):
+    json_file_name = "animal_count_key.json"
+    training_data, training_labels, validation_data, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels = [], [], [], [], [], [], [], []
+    
+    for directory in os.scandir(data_dir):
+        if directory.is_dir():
+            directory_path = directory.path + "/"
+            print("\nFeting data from directory: ", directory_path)
+            temp_train_data, temp_train_lab, temp_val_data, temp_valid_lab, temp_batch_train_data, temp_batch_train_lab, temp_batch_val_data, temp_batch_val_lab = utilities.fetch_data(directory_path, json_file_name, False, True, True)
+            training_data.extend(temp_train_data)
+            training_labels.extend(temp_train_lab)
+            validation_data.extend(temp_val_data)
+            validation_labels.extend(temp_valid_lab)
+            batch_training_data.extend(temp_batch_train_data)
+            batch_training_labels.extend(temp_batch_train_lab)
+            batch_validation_data.extend(temp_batch_val_data)
+            batch_validation_labels.extend(temp_batch_val_lab)
+            print("Number of images found: ", len(training_data) + len(validation_data))
+            print("Number of batches found: ", len(batch_training_data) + len(batch_validation_data))
+    
+    print("\nNumber of training images: ", len(training_data))
+    print("Number of validation images: ", len(validation_data))
+    print("Number of batches for training: ", len(batch_training_data))
+    print("Number of batches for validation: ", len(batch_validation_data))
+    
+    return training_data, training_labels, validation_data, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels
+    
     
 def train_aggregating_cnn(model, training_data_set, criterion, optimizer, device, batch_size):
     model.train()
@@ -331,8 +359,7 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
 num_epochs = 5
 batch_size = 50
 object_detection_batch_size = 5
-json_file_name = "animal_count_key.json"
-data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/2022_Cottonwood_Eastface_bounding_boxes/"
+data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/training_animal_count/"
 saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/"
 
 print(torch.__version__)
@@ -341,7 +368,7 @@ print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.cuda.empty_cache()
 
-training_data, validation_data, training_labels, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels = utilities.fetch_data(data_dir, json_file_name, False, True, True)
+training_data, training_labels, validation_data, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels = fetch_training_data(data_dir)
 training_data_set = ImageDataSet(training_data, training_labels)
 validation_data_set = ImageDataSet(validation_data, validation_labels)
 batch_training_data_set = ImageDataSet(batch_validation_data, batch_validation_labels)
