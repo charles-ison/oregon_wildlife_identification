@@ -55,6 +55,8 @@ def fetch_training_data(data_dir):
             directory_path = directory.path + "/"
             print("\nFeting data from directory: ", directory_path)
             temp_train_data, temp_train_lab, temp_val_data, temp_valid_lab, temp_batch_train_data, temp_batch_train_lab, temp_batch_val_data, temp_batch_val_lab = utilities.fetch_data(directory_path, json_file_name, False, True, True)
+            print("Number of images found: ", len(temp_train_data) + len(temp_val_data))
+            print("Number of batches found: ", len(temp_batch_train_data) + len(temp_batch_val_data))
             training_data.extend(temp_train_data)
             training_labels.extend(temp_train_lab)
             validation_data.extend(temp_val_data)
@@ -63,8 +65,6 @@ def fetch_training_data(data_dir):
             batch_training_labels.extend(temp_batch_train_lab)
             batch_validation_data.extend(temp_batch_val_data)
             batch_validation_labels.extend(temp_batch_val_lab)
-            print("Number of images found: ", len(training_data) + len(validation_data))
-            print("Number of batches found: ", len(batch_training_data) + len(batch_validation_data))
     
     print("\nNumber of training images: ", len(training_data))
     print("Number of validation images: ", len(validation_data))
