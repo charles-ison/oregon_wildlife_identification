@@ -14,7 +14,6 @@ from custom_models.cnn_wrapper import CNNWrapper
 
 def test_batch(model, model_name, batch_testing_loader, mse_criterion, mae_criterion, print_incorrect_images, saving_dir, device):
     model.eval()
-    num_correct = 0
     running_mse = 0.0
     running_mae = 0.0
     all_labels, all_predictions = [], []
@@ -27,32 +26,27 @@ def test_batch(model, model_name, batch_testing_loader, mse_criterion, mae_crite
         for image in data:
             image = torch.unsqueeze(image, dim=0)
             output = model(image).flatten()
-            max_prediction = max(max_prediction, output.round().item())
+            max_prediction = max(max_prediction, output.item())
 
         max_prediction = torch.tensor(max_prediction).to(device)
         max_label = torch.max(labels)
         
         running_mse += mse_criterion(max_prediction, max_label).item()
         running_mae += mae_criterion(max_prediction, max_label).item()
-
-        if max_prediction == max_label:
-            num_correct += 1
             
         all_labels.append(max_label.item())
         all_predictions.append(max_prediction.item())
 
     mse = running_mse/len(batch_testing_loader.dataset)
     mae = running_mae/len(batch_testing_loader.dataset)
-    accuracy = num_correct/len(batch_testing_loader.dataset)
-    utilities.print_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
-    return mse, mae, accuracy
+    print("batch testing MSE: " + str(mse) + " and MAE: " + str(mae))
+    utilities.print_regression_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
     
     
 def test_individual(model, grad_cam, testing_loader, mse_criterion, mae_criterion, print_incorrect_images, print_heat_map, saving_dir, device):
     model.eval()
     running_mse = 0.0
     running_mae = 0.0
-    num_correct = 0
     grad_cam_identifier = 0
 
     for i, batch in enumerate(testing_loader):
@@ -61,12 +55,8 @@ def test_individual(model, grad_cam, testing_loader, mse_criterion, mae_criterio
 
         running_mse += mse_criterion(output, labels).item()
         running_mae += mae_criterion(output, labels).item()
-        for index, prediction in enumerate(output.round()):
+        for index, prediction in enumerate(output):
             prediction = prediction.cpu().item()
-            if prediction == labels[index]:
-                num_correct += 1
-            elif print_incorrect_images:
-                utilities.print_image(data[index], prediction, saving_dir, i)
             
             # Just looking at every 5 samples
             if print_heat_map and grad_cam_identifier % 10 == 0 and grad_cam != None:
@@ -75,22 +65,16 @@ def test_individual(model, grad_cam, testing_loader, mse_criterion, mae_criterio
 
     mse = running_mse/len(testing_loader.dataset)
     mae = running_mae/len(testing_loader.dataset)
-    accuracy = num_correct/len(testing_loader.dataset)
-    return mse, mae, accuracy
+    print("individual testing MSE: " + str(mse) + " and MAE: " + str(mae))
 
 
 def test(model, model_name, grad_cam, batch_loader, individual_loader, device, mse_criterion, mae_criterion, saving_dir):
     model.to(device)
-    
-    mse, mae, accuracy = test_individual(model, grad_cam, individual_loader, mse_criterion, mae_criterion, False, False, saving_dir, device)
-    print("individual testing MSE: " + str(mse) + ", MAE: " + str(mae) + ", and accuracy: "+ str(accuracy))
-
-    batch_mse, batch_mae, batch_accuracy = test_batch(model, model_name, batch_loader, mse_criterion, mae_criterion, False, saving_dir, device)
-    print("batch testing MSE: " + str(batch_mse) + ", MAE: " + str(batch_mae) + ", and accuracy: "+ str(batch_accuracy))
+    test_individual(model, grad_cam, individual_loader, mse_criterion, mae_criterion, False, False, saving_dir, device)
+    test_batch(model, model_name, batch_loader, mse_criterion, mae_criterion, False, saving_dir, device)
     
     
 def get_predictions(bounding_boxes):
-    num_correct = 0
     labels, predictions = [], []
     for box_index, boxes in enumerate(bounding_boxes):
         num_animals = 0
@@ -105,7 +89,6 @@ def test_individual_object_detection(model, individual_data_set, batch_size, mse
     model.eval()
     running_mse = 0.0
     running_mae = 0.0
-    num_correct = 0
 
     for index in range(0, len(individual_data_set), batch_size):
         batch = individual_data_set[index:index + batch_size]
@@ -119,17 +102,14 @@ def test_individual_object_detection(model, individual_data_set, batch_size, mse
         
         running_mse += mse_criterion(labels_tensor, predictions_tensor).item()
         running_mae += mae_criterion(labels_tensor, predictions_tensor).item()
-        num_correct += (labels_tensor == predictions_tensor).sum().item()
 
     mse = running_mse/len(individual_data_set)
     mae = running_mae/len(individual_data_set)
-    accuracy = num_correct/len(individual_data_set)
-    return mse, mae, accuracy
+    print("individual testing MSE: " + str(mse) + " and MAE: " + str(mae))
     
 
 def test_batch_object_detection(model, model_name, batch_data_set, mse_criterion, mae_criterion, saving_dir, device):
     model.eval()
-    num_correct = 0
     running_mse = 0.0
     running_mae = 0.0
     all_labels, all_predictions = [], []
@@ -151,17 +131,14 @@ def test_batch_object_detection(model, model_name, batch_data_set, mse_criterion
         
         running_mse += mse_criterion(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
         running_mae += mae_criterion(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
-        if max_prediction == max_label:
-            num_correct += 1
             
         all_labels.append(max_label)
         all_predictions.append(max_prediction)
 
     mse = running_mse/len(batch_data_set)
     mae = running_mae/len(batch_data_set)
-    accuracy = num_correct/len(batch_data_set)
-    utilities.print_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
-    return mse, mae, accuracy
+    print("batch testing MSE: " + str(mse) + " and MAE: " + str(mae))
+    utilities.print_regression_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
     
     
 def test_aggregating_cnn(model, model_name, batch_loader, device, mse_criterion, mae_criterion, saving_dir):
@@ -169,7 +146,6 @@ def test_aggregating_cnn(model, model_name, batch_loader, device, mse_criterion,
     model.eval()
     running_mse = 0.0
     running_mae = 0.0
-    num_correct = 0
     all_labels, all_predictions = [], []
     
     for batch in batch_loader:
@@ -177,30 +153,24 @@ def test_aggregating_cnn(model, model_name, batch_loader, device, mse_criterion,
         label = torch.max(labels)
         label = torch.unsqueeze(label, dim=0)
         
-        output = model(data).round()
+        output = model(data)
 
         running_mse += mse_criterion(output, label).item()
         running_mae += mae_criterion(output, label).item()
-        num_correct += (output == label).item()
         
         all_labels.append(label.item())
         all_predictions.append(output.item())
 
     mse = running_mse/len(batch_loader.dataset)
     mae = running_mae/len(batch_loader.dataset)
-    accuracy = num_correct/len(batch_loader.dataset)
-    utilities.print_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
-    print("batch testing MSE: " + str(mse) + ", MAE: " + str(mae) + ", and accuracy: "+ str(accuracy))
+    print("batch testing MSE: " + str(mse) + " and MAE: " + str(mae))
+    utilities.print_regression_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
 
     
 def test_object_detection(model, model_name, batch_data_set, individual_data_set, batch_size, device, mse_criterion, mae_criterion, saving_dir):
     model.to(device)
-    
-    mse, mae, accuracy = test_individual_object_detection(model, individual_data_set, batch_size, mse_criterion, mae_criterion, saving_dir, device)
-    print("individual testing MSE: " + str(mse) + ", MAE: " + str(mae) + ", and accuracy: "+ str(accuracy))
-
-    batch_mse, batch_mae, batch_accuracy = test_batch_object_detection(model, model_name, batch_data_set, mse_criterion, mae_criterion, saving_dir, device)
-    print("batch testing MSE: " + str(batch_mse) + ", MAE: " + str(batch_mae) + ", and accuracy: "+ str(batch_accuracy))
+    test_individual_object_detection(model, individual_data_set, batch_size, mse_criterion, mae_criterion, saving_dir, device)
+    test_batch_object_detection(model, model_name, batch_data_set, mse_criterion, mae_criterion, saving_dir, device)
 
     
 def get_data(batch_size, data_dir, json_file_name):

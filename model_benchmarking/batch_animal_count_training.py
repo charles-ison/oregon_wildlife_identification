@@ -10,9 +10,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import utilities
 from PIL import Image
-from sklearn.metrics import precision_recall_fscore_support
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
 from custom_models.aggregating_cnn import AggregatingCNN
 from custom_models.cnn_wrapper import CNNWrapper
 from custom_data_sets.image_data_set import ImageDataSet
@@ -40,10 +37,6 @@ def get_predictions(bounding_boxes):
                 num_animals += 1
         predictions.append(num_animals)
     return predictions
-    
-    
-def get_num_equal_list_elements(labels, predictions):
-    return sum(label == prediction for label, prediction in zip(labels, predictions))
     
 
 def fetch_training_data(data_dir):
@@ -77,8 +70,7 @@ def fetch_training_data(data_dir):
 def train_aggregating_cnn(model, training_data_set, criterion, optimizer, device, batch_size):
     model.train()
     running_loss = 0.0
-    num_correct = 0
-    
+
     for index in range(0, len(training_data_set), batch_size):
         batch = training_data_set[index:index + batch_size]
     
@@ -98,19 +90,16 @@ def train_aggregating_cnn(model, training_data_set, criterion, optimizer, device
         
         loss = criterion(output, labels)
         running_loss += loss.item()
-        num_correct += (output.round() == labels).sum().item()
         loss.backward()
         optimizer.step()
 
     loss = running_loss/len(training_data_set)
-    accuracy = num_correct/len(training_data_set)
-    return loss, accuracy
+    return loss
     
 
 def train(model, training_data_set, criterion, optimizer, device, batch_size):
     model.train()
     running_loss = 0.0
-    num_correct = 0
     
     for index in range(0, len(training_data_set), batch_size):
         batch = training_data_set[index:index + batch_size]
@@ -124,30 +113,20 @@ def train(model, training_data_set, criterion, optimizer, device, batch_size):
 
         loss = criterion(output, labels)
         running_loss += loss.item()
-        num_correct += (output.round() == labels).sum().item()
         loss.backward()
         optimizer.step()
 
     loss = running_loss/len(training_data_set)
-    accuracy = num_correct/len(training_data_set)
-    return loss, accuracy
+    return loss
     
 
 def train_object_detection(model, training_data_set, optimizer, device, batch_size):
+    model.train()
     running_loss = 0.0
-    num_correct = 0
     for index in range(0, len(training_data_set), batch_size):
         batch = training_data_set[index:index + batch_size]
         data, targets = get_info_from_batch(batch)
         
-        model.eval()
-        bounding_boxes = model(data)
-        
-        labels = utilities.get_labels_from_targets(targets)
-        predictions = get_predictions(bounding_boxes)
-        num_correct += get_num_equal_list_elements(labels, predictions)
-        
-        model.train()
         optimizer.zero_grad()
         losses_dict = model(data, targets)
         
@@ -157,14 +136,12 @@ def train_object_detection(model, training_data_set, optimizer, device, batch_si
         optimizer.step()
 
     loss = running_loss/len(training_data_set)
-    accuracy = num_correct/len(training_data_set)
-    return loss, accuracy
+    return loss
     
     
 def validation_object_detection(model, validation_data_set, mse_criterion, mae_criterion, device, batch_size):
     running_mse = 0.0
     running_mae = 0.0
-    num_correct = 0
 
     for index in range(0, len(validation_data_set), batch_size):
         batch = validation_data_set[index:index + batch_size]
@@ -178,12 +155,10 @@ def validation_object_detection(model, validation_data_set, mse_criterion, mae_c
         
         running_mse += mse_criterion(torch.FloatTensor(predictions), torch.FloatTensor(labels)).item()
         running_mae += mae_criterion(torch.FloatTensor(predictions), torch.FloatTensor(labels)).item()
-        num_correct += get_num_equal_list_elements(labels, predictions)
 
     mse = running_mse/len(validation_data_set)
     mae = running_mae/len(validation_data_set)
-    accuracy = num_correct/len(validation_data_set)
-    return mse, mae, accuracy
+    return mse, mae
 
 
 
@@ -191,7 +166,6 @@ def validation(model, validation_data_set, mse_criterion, mae_criterion, device,
     model.eval()
     running_mse = 0.0
     running_mae = 0.0
-    num_correct = 0
 
     for index in range(0, len(validation_data_set), batch_size):
         batch = validation_data_set[index:index + batch_size]
@@ -204,19 +178,16 @@ def validation(model, validation_data_set, mse_criterion, mae_criterion, device,
 
         running_mse += mse_criterion(output, labels).item()
         running_mae += mae_criterion(output, labels).item()
-        num_correct += (output.round() == labels).sum().item()
 
     mse = running_mse/len(validation_data_set)
     mae = running_mae/len(validation_data_set)
-    accuracy = num_correct/len(validation_data_set)
-    return mse, mae, accuracy
+    return mse, mae
     
     
 def batch_validation_aggregating_cnn(model, batch_validation_data_set, mse_criterion, mae_criterion, device):
     model.eval()
     running_mse = 0.0
     running_mae = 0.0
-    num_correct = 0
     all_labels, all_predictions = [], []
     
     for batch in batch_validation_data_set:
@@ -227,24 +198,21 @@ def batch_validation_aggregating_cnn(model, batch_validation_data_set, mse_crite
         label = torch.max(labels)
         label = torch.unsqueeze(label, dim=0)
         
-        output = model(data).round()
+        output = model(data)
         
         running_mse += mse_criterion(output, label).item()
         running_mae += mae_criterion(output, label).item()
-        num_correct += (output == label).item()
         
         all_labels.append(label.item())
         all_predictions.append(output.item())
 
     mse = running_mse/len(batch_validation_data_set)
     mae = running_mae/len(batch_validation_data_set)
-    accuracy = num_correct/len(batch_validation_data_set)
-    return mse, mae, accuracy, all_labels, all_predictions
+    return mse, mae, all_labels, all_predictions
 
 
 def batch_validation(model, batch_validation_data_set, mse_criterion, mae_criterion, device):
     model.eval()
-    num_correct = 0
     running_mse = 0.0
     running_mae = 0.0
     all_labels, all_predictions = [], []
@@ -259,7 +227,7 @@ def batch_validation(model, batch_validation_data_set, mse_criterion, mae_criter
         for image in data:
             image = torch.unsqueeze(image, dim=0).to(device)
             output = model(image).flatten()
-            max_prediction = max(max_prediction, output.round().item())
+            max_prediction = max(max_prediction, output.item())
 
         max_prediction = torch.tensor(max_prediction).to(device)
         max_label = torch.max(labels)
@@ -267,21 +235,16 @@ def batch_validation(model, batch_validation_data_set, mse_criterion, mae_criter
         running_mse += mse_criterion(max_prediction, max_label).item()
         running_mae += mae_criterion(max_prediction, max_label).item()
 
-        if max_prediction == max_label:
-            num_correct += 1
-
         all_predictions.append(max_prediction.item())
         all_labels.append(max_label.item())
 
     mse = running_mse/len(batch_validation_data_set)
     mae = running_mae/len(batch_validation_data_set)
-    accuracy = num_correct/len(batch_validation_data_set)
-    return mse, mae, accuracy, all_labels, all_predictions
+    return mse, mae, all_labels, all_predictions
     
     
 def batch_validation_object_detection(model, batch_validation_data_set, mse_criterion, mae_criterion, print_incorrect_images, saving_dir, device):
     model.eval()
-    num_correct = 0
     running_mse = 0.0
     running_mae = 0.0
     all_labels, all_predictions = [], []
@@ -309,16 +272,13 @@ def batch_validation_object_detection(model, batch_validation_data_set, mse_crit
             
         running_mse += mse_criterion(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
         running_mae += mae_criterion(torch.FloatTensor([max_label]), torch.FloatTensor([max_prediction])).item()
-        if max_prediction == max_label:
-            num_correct += 1
 
         all_predictions.append(max_prediction)
         all_labels.append(max_label)
 
     mse = running_mse/len(batch_validation_data_set)
     mae = running_mae/len(batch_validation_data_set)
-    accuracy = num_correct/len(batch_validation_data_set)
-    return mse, mae, accuracy, all_labels, all_predictions
+    return mse, mae, all_labels, all_predictions
 
 def train_and_validate(num_epochs, model, model_name, training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, is_object_detection, is_aggregating_cnn):
     model.to(device)
@@ -337,27 +297,27 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
 
         #TODO: Use OOP here
         if is_object_detection:
-            training_loss, training_accuracy = train_object_detection(model, training_data_set, optimizer, device, batch_size)
+            training_loss = train_object_detection(model, training_data_set, optimizer, device, batch_size)
         elif is_aggregating_cnn:
-            training_loss, training_accuracy = train_aggregating_cnn(model, batch_training_data_set, huber_loss, optimizer, device, batch_size)
+            training_loss = train_aggregating_cnn(model, batch_training_data_set, huber_loss, optimizer, device, batch_size)
         else:
-            training_loss, training_accuracy = train(model, training_data_set, huber_loss, optimizer, device, batch_size)
-        print("training loss: " + str(training_loss) + " and accuracy: " + str(training_accuracy))
+            training_loss = train(model, training_data_set, huber_loss, optimizer, device, batch_size)
+        print("training loss: " + str(training_loss))
 
         if not is_aggregating_cnn:
             if is_object_detection:
-                val_mse, val_mae, val_accuracy = validation_object_detection(model, validation_data_set, mse, mae, device, batch_size)
+                val_mse, val_mae = validation_object_detection(model, validation_data_set, mse, mae, device, batch_size)
             else:
-                val_mse, val_mae, val_accuracy = validation(model, validation_data_set, mse, mae, device, batch_size)
-            print("validation MSE: " + str(val_mse) + ", MAE: " + str(val_mae) + ", and accuracy: " + str(val_accuracy))
+                val_mse, val_mae = validation(model, validation_data_set, mse, mae, device, batch_size)
+            print("validation MSE: " + str(val_mse) + " and MAE: " + str(val_mae))
         
         if is_object_detection:
-            batch_val_mse, batch_val_mae, batch_val_accuracy, batch_labels, batch_predictions = batch_validation_object_detection(model, batch_validation_data_set, mse, mae, False, saving_dir, device)
+            batch_val_mse, batch_val_mae, batch_labels, batch_predictions = batch_validation_object_detection(model, batch_validation_data_set, mse, mae, False, saving_dir, device)
         elif is_aggregating_cnn:
-            batch_val_mse, batch_val_mae, batch_val_accuracy, batch_labels, batch_predictions = batch_validation_aggregating_cnn(model, batch_validation_data_set, mse, mae, device)
+            batch_val_mse, batch_val_mae, batch_labels, batch_predictions = batch_validation_aggregating_cnn(model, batch_validation_data_set, mse, mae, device)
         else:
-            batch_val_mse, batch_val_mae, batch_val_accuracy, batch_labels, batch_predictions = batch_validation(model, batch_validation_data_set, mse, mae, device)
-        print("batch validation MSE: " + str(batch_val_mse) + ", MAE: " + str(batch_val_mae) + ", and accuracy: "+ str(batch_val_accuracy))
+            batch_val_mse, batch_val_mae, batch_labels, batch_predictions = batch_validation(model, batch_validation_data_set, mse, mae, device)
+        print("batch validation MSE: " + str(batch_val_mse) + " and MAE: " + str(batch_val_mae))
 
         if lowest_batch_val_mae is None or batch_val_mae < lowest_batch_val_mae:
             print("Lowest batch validation MAE achieved, saving weights")
@@ -366,7 +326,7 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
                 torch.save(model.state_dict(), saving_dir + model_name + ".pt")
             else:
                 torch.save(model.module.state_dict(), saving_dir + model_name + ".pt")
-            utilities.print_analysis(batch_labels, batch_predictions, model_name + "_Validation", saving_dir)
+            utilities.print_regression_analysis(batch_labels, batch_predictions, model_name + "_Batch_Validation", saving_dir)
 
 
 # Declaring Constants

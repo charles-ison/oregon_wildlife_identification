@@ -23,10 +23,10 @@ from datetime import datetime
 from pycocotools.coco import COCO
 
 
-def print_analysis(all_labels, all_predictions, title, saving_dir):
+def print_classification_analysis(labels, predictions, title, saving_dir):
     subplot = plt.subplot()
 
-    cf_matrix = confusion_matrix(all_labels, all_predictions, labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    cf_matrix = confusion_matrix(labels, predictions, labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     cf_matrix = np.flip(cf_matrix, axis=0)
     sns.heatmap(cf_matrix, annot=True, fmt='g', cmap='Blues')
 
@@ -40,17 +40,39 @@ def print_analysis(all_labels, all_predictions, title, saving_dir):
     plt.savefig(plot_file_name)
     plt.show()
 
-    accuracy = accuracy_score(all_labels, all_predictions)
+    accuracy = accuracy_score(labels, predictions)
     print(title + " Accuracy: " + str(accuracy))
 
-    precision, recall, f_score, support = precision_recall_fscore_support(all_labels, all_predictions, average='weighted', zero_division=0.0)
+    precision, recall, f_score, support = precision_recall_fscore_support(labels, predictions, average='weighted', zero_division=0.0)
     print(title + " Precision: " + str(precision))
     print(title + " Recall: " + str(recall))
     print(title + " F-Score: " + str(f_score))
     
-    #TODO: This should probably be looking at unrounded results
-    r2 = r2_score(all_labels, all_predictions)
+    r2 = r2_score(labels, predictions)
     print(title + " R^2: " + str(r2))
+
+
+def jitter(some_list):
+    return some_list + 0.1 * np.random.randn(len(some_list))
+
+
+def print_regression_analysis(labels, predictions, title, saving_dir):
+    subplot = plt.subplot()
+    
+    subplot.scatter(predictions, jitter(labels), marker='o', s=50, alpha=0.2, c='blue')
+    max_value = max(max(labels), max(predictions)) + 1
+    subplot.plot([0, max_value], [0, max_value], color="red")
+    
+    subplot.set_xlabel('Predictions')
+    subplot.set_ylabel('Labels')
+    subplot.set_title(title + "_Predicted_Vs_Actual")
+
+    plot_file_name = saving_dir + title + "_Predicted_Vs_Actual.png"
+    plt.savefig(plot_file_name)
+    plt.show()
+    
+    r2 = r2_score(labels, predictions)
+    print("batch testing R^2: ", r2)
         
 
 def set_device_for_list_of_tensors(some_list, device):
