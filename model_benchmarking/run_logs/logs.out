@@ -1,0 +1,67 @@
+2.0.1+cu117
+0.15.2+cu117
+torch.cuda.is_available(): True
+
+Feting data from directory:  /nfs/stak/users/isonc/hpc-share/saved_data/training_animal_count/cottonwood_eastface_2022/
+loading annotations into memory...
+Done (t=0.02s)
+creating index...
+index created!
+Problematic image or label encountered, leaving out of training and validation
+Problematic image or label encountered, leaving out of training and validation
+Number of images found:  3479
+Number of batches found:  596
+
+Feting data from directory:  /nfs/stak/users/isonc/hpc-share/saved_data/training_animal_count/crawford_westface_2022_MP150_ODOT006/
+loading annotations into memory...
+Done (t=0.01s)
+creating index...
+index created!
+Number of images found:  3468
+Number of batches found:  508
+
+Number of training images:  5479
+Number of validation images:  1468
+Number of batches for training:  882
+Number of batches for validation:  222
+Multiple GPUs available, using: 2
+
+Training and Validating ResNet34
+Epoch: 0
+training loss: 0.0012558403192555454
+validation MSE: 0.0026318944447574887 and MAE: 0.0036807561633291296
+batch validation MSE: 0.08621193628779353 and MAE: 0.15379004219026715
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.5853952902025454
+Epoch: 1
+training loss: 0.0005193355520954313
+validation MSE: 0.0020954719971743607 and MAE: 0.0043692341789968656
+batch validation MSE: 0.07238006849503428 and MAE: 0.20661821551956572
+Epoch: 2
+training loss: 0.0003603970501327122
+validation MSE: 0.0020192331255081157 and MAE: 0.004469265283290957
+batch validation MSE: 0.07956678261545168 and MAE: 0.22348202780090473
+Epoch: 3
+training loss: 0.0002485874512163658
+validation MSE: 0.0016984472442063065 and MAE: 0.0036273987136517297
+batch validation MSE: 0.03916595575116582 and MAE: 0.06402616165913977
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8116456944192865
+Epoch: 4
+training loss: 0.00016017272585853702
+validation MSE: 0.0015678480392821864 and MAE: 0.002699347739475868
+batch validation MSE: 0.04268201717402032 and MAE: 0.09538248983455135
+
+Training and Validating Aggregating CNN
+Epoch: 0
+training loss: 0.0019938091974000672
+batch validation MSE: 0.21220038705379576 and MAE: 0.23372579439803287
+Lowest batch validation MAE achieved, saving weights
+R^2:  -0.02049994926068832
+Epoch: 1
+training loss: 0.001879310352845235
+batch validation MSE: 0.21215846371073444 and MAE: 0.23396351755605088
+Epoch: 2
+training loss: 0.0019252975513269236
+batch validation MSE: 0.21211583843152668 and MAE: 0.23420646380599555
+Epoch: 3

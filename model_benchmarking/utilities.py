@@ -53,7 +53,7 @@ def print_classification_analysis(labels, predictions, title, saving_dir):
 
 
 def jitter(some_list):
-    return some_list + 0.1 * np.random.randn(len(some_list))
+    return some_list + 0.02 * np.random.randn(len(some_list))
 
 
 def print_regression_analysis(labels, predictions, title, saving_dir):
@@ -72,7 +72,7 @@ def print_regression_analysis(labels, predictions, title, saving_dir):
     plt.show()
     
     r2 = r2_score(labels, predictions)
-    print("batch testing R^2: ", r2)
+    print("R^2: ", r2)
         
 
 def set_device_for_list_of_tensors(some_list, device):
