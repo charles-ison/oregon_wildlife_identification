@@ -20,48 +20,55 @@ index created!
 Number of images found:  3468
 Number of batches found:  508
 
-Number of training images:  5479
-Number of validation images:  1468
+Number of training images:  5691
+Number of validation images:  1256
 Number of batches for training:  882
 Number of batches for validation:  222
 Multiple GPUs available, using: 2
 
 Training and Validating ResNet34
 Epoch: 0
-training loss: 0.0012558403192555454
-validation MSE: 0.0026318944447574887 and MAE: 0.0036807561633291296
-batch validation MSE: 0.08621193628779353 and MAE: 0.15379004219026715
+training loss: 0.0011457381049962167
+validation MSE: 0.001515029375678652 and MAE: 0.0034612631484581408
+batch validation MSE: 0.060445826750853346 and MAE: 0.1435543598590402
 Lowest batch validation MAE achieved, saving weights
-R^2:  0.5853952902025454
+R^2:  0.5664999825166731
 Epoch: 1
-training loss: 0.0005193355520954313
-validation MSE: 0.0020954719971743607 and MAE: 0.0043692341789968656
-batch validation MSE: 0.07238006849503428 and MAE: 0.20661821551956572
-Epoch: 2
-training loss: 0.0003603970501327122
-validation MSE: 0.0020192331255081157 and MAE: 0.004469265283290957
-batch validation MSE: 0.07956678261545168 and MAE: 0.22348202780090473
-Epoch: 3
-training loss: 0.0002485874512163658
-validation MSE: 0.0016984472442063065 and MAE: 0.0036273987136517297
-batch validation MSE: 0.03916595575116582 and MAE: 0.06402616165913977
+training loss: 0.00047528549305148103
+validation MSE: 0.0013141775621282187 and MAE: 0.0027969114135381334
+batch validation MSE: 0.046667987825270235 and MAE: 0.08002884031550304
 Lowest batch validation MAE achieved, saving weights
-R^2:  0.8116456944192865
+R^2:  0.6653106658872505
+Epoch: 2
+training loss: 0.0003174416277543865
+validation MSE: 0.0012018205341716166 and MAE: 0.002910803588237732
+batch validation MSE: 0.04767678752765961 and MAE: 0.1331259932889192
+Epoch: 3
+training loss: 0.00023540677460202788
+validation MSE: 0.001137439073856837 and MAE: 0.0025110950094357036
+batch validation MSE: 0.044016457155800076 and MAE: 0.1173876134326329
 Epoch: 4
-training loss: 0.00016017272585853702
-validation MSE: 0.0015678480392821864 and MAE: 0.002699347739475868
-batch validation MSE: 0.04268201717402032 and MAE: 0.09538248983455135
+training loss: 0.00017353285045859355
+validation MSE: 0.0010532417966187843 and MAE: 0.0024135996317668895
+batch validation MSE: 0.03944139468705685 and MAE: 0.07255986946223823
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.717137702820408
 
 Training and Validating Aggregating CNN
 Epoch: 0
-training loss: 0.0019938091974000672
-batch validation MSE: 0.21220038705379576 and MAE: 0.23372579439803287
+training loss: 0.0015229308644208956
+batch validation MSE: 0.17140919246882838 and MAE: 0.1793138402438647
 Lowest batch validation MAE achieved, saving weights
-R^2:  -0.02049994926068832
+R^2:  -0.2292972273525875
 Epoch: 1
-training loss: 0.001879310352845235
-batch validation MSE: 0.21215846371073444 and MAE: 0.23396351755605088
+training loss: 0.0016326940710748637
+batch validation MSE: 0.17228057505856562 and MAE: 0.1814400148116522
 Epoch: 2
-training loss: 0.0019252975513269236
-batch validation MSE: 0.21211583843152668 and MAE: 0.23420646380599555
+training loss: 0.0016693580677514678
+batch validation MSE: 0.16944135678617434 and MAE: 0.1769066975024101
+Lowest batch validation MAE achieved, saving weights
+R^2:  -0.21518447911370275
 Epoch: 3
+training loss: 0.001317942548576776
+batch validation MSE: 0.17374800718162353 and MAE: 0.18853738957697208
+Epoch: 4

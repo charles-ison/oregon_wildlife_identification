@@ -39,6 +39,7 @@ def print_classification_analysis(labels, predictions, title, saving_dir):
     plot_file_name = saving_dir + title + "_Confusion_Matrix.png"
     plt.savefig(plot_file_name)
     plt.show()
+    plt.close()
 
     accuracy = accuracy_score(labels, predictions)
     print(title + " Accuracy: " + str(accuracy))
@@ -59,8 +60,8 @@ def jitter(some_list):
 def print_regression_analysis(labels, predictions, title, saving_dir):
     subplot = plt.subplot()
     
-    subplot.scatter(predictions, jitter(labels), marker='o', s=50, alpha=0.2, c='blue')
-    max_value = max(max(labels), max(predictions)) + 1
+    subplot.scatter(predictions, jitter(labels), marker='o', s=15, alpha=0.1, c='blue')
+    max_value = max(max(labels), max(predictions)) + 0.5
     subplot.plot([0, max_value], [0, max_value], color="red")
     
     subplot.set_xlabel('Predictions')
@@ -70,6 +71,7 @@ def print_regression_analysis(labels, predictions, title, saving_dir):
     plot_file_name = saving_dir + title + "_Predicted_Vs_Actual.png"
     plt.savefig(plot_file_name)
     plt.show()
+    plt.close()
     
     r2 = r2_score(labels, predictions)
     print("R^2: ", r2)
