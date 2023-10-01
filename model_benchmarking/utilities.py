@@ -17,7 +17,6 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score
-from collections import Counter
 from operator import itemgetter
 from datetime import datetime
 from pycocotools.coco import COCO
@@ -32,11 +31,12 @@ def print_classification_analysis(labels, predictions, title, saving_dir):
 
     subplot.set_xlabel('Predictions')
     subplot.set_ylabel('Labels')
-    subplot.set_title(title + ' Confusion Matrix')
+    title = title + "_Confusion_Matrix"
+    subplot.set_title(title)
     subplot.xaxis.set_ticklabels([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     subplot.yaxis.set_ticklabels([9, 8, 7, 6, 5, 4, 3, 2, 1, 0])
 
-    plot_file_name = saving_dir + title + "_Confusion_Matrix.png"
+    plot_file_name = saving_dir + title + ".png"
     plt.savefig(plot_file_name)
     plt.show()
     plt.close()
@@ -66,9 +66,9 @@ def print_regression_analysis(labels, predictions, title, saving_dir):
     
     subplot.set_xlabel('Predictions')
     subplot.set_ylabel('Labels')
-    subplot.set_title(title + "_Predicted_Vs_Actual")
-
-    plot_file_name = saving_dir + title + "_Predicted_Vs_Actual.png"
+    title = title + "_Predicted_Vs_Actual"
+    subplot.set_title(title)
+    plot_file_name = saving_dir + title + ".png"
     plt.savefig(plot_file_name)
     plt.show()
     plt.close()
@@ -166,6 +166,26 @@ def get_labels_from_targets(targets):
     return labels
     
 
+def plot_histogram(training_labels, data_dir):
+    labels = get_labels_from_targets(training_labels)
+    max_label = max(labels)
+    bins = np.arange(max_label)
+    subplot = plt.subplot()
+    subplot.set_xlim(0, max_label)
+    #subplot.xaxis.set_ticklabels(bins)
+    subplot.hist(labels, bins = bins, align = "mid")
+    #subplot.hist(labels, bins = bins, align = "mid")
+    subplot.set_xlabel('Labels')
+    subplot.set_ylabel('Counts')
+    
+    title = "Training_Labels_Histogram"
+    subplot.set_title(title)
+    plot_file_name = data_dir + title + ".png"
+    plt.savefig(plot_file_name)
+    plt.show()
+    plt.close()
+    
+
 #TODO: Code smell here passing around these flags, should probably be refactored into separate classes
 def fetch_data(data_dir, json_file_name, is_classification, is_object_detection, is_training):
     coco = COCO(data_dir + json_file_name)
@@ -216,7 +236,6 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
         validation_data = flatten_list(batch_validation_data)
         training_labels = flatten_list(batch_training_labels)
         validation_labels = flatten_list(batch_validation_labels)
-
         return training_data, training_labels, validation_data, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels
     else:
         individual_data = flatten_list(data)
@@ -225,7 +244,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
         print("Number of batches for verification: ", len(data))
         print("Number of individual images for verification: ", len(individual_data))
         return data, labels, individual_data, individual_labels
-
+    
 
 def print_image(image_tensor, prediction, saving_dir, index, bounding_boxes = None):
     fig, ax = plt.subplots()

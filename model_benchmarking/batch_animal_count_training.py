@@ -63,6 +63,7 @@ def fetch_training_data(data_dir):
     print("Number of validation images: ", len(validation_data))
     print("Number of batches for training: ", len(batch_training_data))
     print("Number of batches for validation: ", len(batch_validation_data))
+    utilities.plot_histogram(training_labels, data_dir)
     
     return training_data, training_labels, validation_data, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels
     
