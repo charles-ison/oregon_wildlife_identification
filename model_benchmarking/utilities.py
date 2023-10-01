@@ -172,9 +172,7 @@ def plot_histogram(training_labels, data_dir):
     bins = np.arange(max_label)
     subplot = plt.subplot()
     subplot.set_xlim(0, max_label)
-    #subplot.xaxis.set_ticklabels(bins)
     subplot.hist(labels, bins = bins, align = "mid")
-    #subplot.hist(labels, bins = bins, align = "mid")
     subplot.set_xlabel('Labels')
     subplot.set_ylabel('Counts')
     
