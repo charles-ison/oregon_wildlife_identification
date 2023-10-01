@@ -66,15 +66,16 @@ def print_regression_analysis(labels, predictions, title, saving_dir):
     
     subplot.set_xlabel('Predictions')
     subplot.set_ylabel('Labels')
+    r2 = r2_score(labels, predictions)
+    print("R^2: ", r2)
+    r2_text = "R-Squared: " + str(r2)
+    subplot.text(0, max_value, r2_text)
     title = title + "_Predicted_Vs_Actual"
     subplot.set_title(title)
     plot_file_name = saving_dir + title + ".png"
     plt.savefig(plot_file_name)
     plt.show()
     plt.close()
-    
-    r2 = r2_score(labels, predictions)
-    print("R^2: ", r2)
         
 
 def set_device_for_list_of_tensors(some_list, device):
