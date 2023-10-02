@@ -331,7 +331,7 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
 
 
 # Declaring Constants
-num_epochs = 5
+num_epochs = 10
 batch_size = 50
 object_detection_batch_size = 5
 data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/training_animal_count/"

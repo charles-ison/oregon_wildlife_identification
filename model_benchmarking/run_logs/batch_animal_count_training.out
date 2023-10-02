@@ -20,327 +20,450 @@ index created!
 Number of images found:  3468
 Number of batches found:  508
 
-Number of training images:  5384
-Number of validation images:  1563
+Number of training images:  5509
+Number of validation images:  1438
 Number of batches for training:  882
 Number of batches for validation:  222
 Multiple GPUs available, using: 2
 
 Training and Validating ResNet34
 Epoch: 0
-training loss: 0.0011970365340759172 and training accuracy: 0.8946879643387816
-validation loss (MSE): 0.0023093859379680892 and validation accuracy: 0.909149072296865
-batch validation loss (MSE): 0.06756756756756757 and batch validation accuracy: 0.9459459459459459
-Highest batch validation accuracy achieved, saving weights
-ResNet34_Validation Accuracy: 0.9459459459459459
-ResNet34_Validation Precision: 0.9459227268505619
-ResNet34_Validation Recall: 0.9459459459459459
-ResNet34_Validation F-Score: 0.9451778256405508
-ResNet34_Validation R^2: 0.8111495491408155
+training loss: 0.0013254943011637272
+validation MSE: 0.0027077753635664807 and MAE: 0.00530879727470195
+batch validation MSE: 0.05529513260466341 and MAE: 0.07133597588619671
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7860937767488363
 Epoch: 1
-training loss: 0.00042082012894274155 and training accuracy: 0.9570950965824666
-validation loss (MSE): 0.002356717376406671 and validation accuracy: 0.909149072296865
-batch validation loss (MSE): 0.05855855855855856 and batch validation accuracy: 0.9414414414414415
+training loss: 0.00046290521244360394
+validation MSE: 0.0033708308708124764 and MAE: 0.004954744285809314
+batch validation MSE: 0.06506932085723567 and MAE: 0.07964165693333557
 Epoch: 2
-training loss: 0.00029784743328140095 and training accuracy: 0.9723254086181278
-validation loss (MSE): 0.0025048057452396575 and validation accuracy: 0.8976327575175944
-batch validation loss (MSE): 0.07657657657657657 and batch validation accuracy: 0.9504504504504504
-Highest batch validation accuracy achieved, saving weights
-ResNet34_Validation Accuracy: 0.9504504504504504
-ResNet34_Validation Precision: 0.939150885579457
-ResNet34_Validation Recall: 0.9504504504504504
-ResNet34_Validation F-Score: 0.944623395774291
-ResNet34_Validation R^2: 0.7859694890262575
+training loss: 0.00030041932456166954
+validation MSE: 0.002228228037970293 and MAE: 0.0033290187241470696
+batch validation MSE: 0.0594767831788259 and MAE: 0.11332579837222626
 Epoch: 3
-training loss: 0.00020531979427544227 and training accuracy: 0.9827265973254086
-validation loss (MSE): 0.001979334743023729 and validation accuracy: 0.9097888675623801
-batch validation loss (MSE): 0.05855855855855856 and batch validation accuracy: 0.9414414414414415
+training loss: 0.00019358349164393706
+validation MSE: 0.0022507734826321666 and MAE: 0.003519055914128606
+batch validation MSE: 0.06075106887720872 and MAE: 0.11981784411378808
 Epoch: 4
-training loss: 0.00017010162094605182 and training accuracy: 0.9860698365527489
-validation loss (MSE): 0.002389910271282827 and validation accuracy: 0.9097888675623801
-batch validation loss (MSE): 0.05855855855855856 and batch validation accuracy: 0.954954954954955
-Highest batch validation accuracy achieved, saving weights
-ResNet34_Validation Accuracy: 0.954954954954955
-ResNet34_Validation Precision: 0.9535571654128354
-ResNet34_Validation Recall: 0.954954954954955
-ResNet34_Validation F-Score: 0.9535284542996626
-ResNet34_Validation R^2: 0.8363296092553734
+training loss: 0.0001328284898062806
+validation MSE: 0.0019908209622129074 and MAE: 0.0030021095617320673
+batch validation MSE: 0.062336166817611394 and MAE: 0.09216352818986855
+Epoch: 5
+training loss: 0.00011105337046432675
+validation MSE: 0.0020385401148409928 and MAE: 0.0035896264871527984
+batch validation MSE: 0.062099326191917104 and MAE: 0.14958407847328228
+Epoch: 6
+training loss: 9.617824238003312e-05
+validation MSE: 0.0019243155224462492 and MAE: 0.0030566424608064794
+batch validation MSE: 0.05223338202700035 and MAE: 0.11441607840426334
+Epoch: 7
+training loss: 8.028730105604983e-05
+validation MSE: 0.0020851084058366 and MAE: 0.0034783497110776013
+batch validation MSE: 0.0475589742451993 and MAE: 0.06839220647003737
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8160206840780229
+Epoch: 8
+training loss: 5.818140797991894e-05
+validation MSE: 0.002446246204264439 and MAE: 0.003135975140052354
+batch validation MSE: 0.058163308876113116 and MAE: 0.1049475502726194
+Epoch: 9
+training loss: 4.2690317539257644e-05
+validation MSE: 0.0019656465638504053 and MAE: 0.003243443775036073
+batch validation MSE: 0.05611416498766892 and MAE: 0.12459018037797094
 
 Training and Validating Aggregating CNN
 Epoch: 0
-training loss: 0.002780086839118519 and training accuracy: 0.8783783783783784
-batch validation loss (MSE): 0.3918918918918919 and batch validation accuracy: 0.8783783783783784
-Highest batch validation accuracy achieved, saving weights
-AggregatingCNN_Validation Accuracy: 0.8783783783783784
-AggregatingCNN_Validation Precision: 0.8204397057608067
-AggregatingCNN_Validation Recall: 0.8783783783783784
-AggregatingCNN_Validation F-Score: 0.8358385757059302
-AggregatingCNN_Validation R^2: -0.09533261498327028
+training loss: 0.002359678264002542
+batch validation MSE: 0.2883182490330508 and MAE: 0.1726839189325367
+Lowest batch validation MAE achieved, saving weights
+R^2:  -0.11534357095858794
 Epoch: 1
-training loss: 0.0018793861675369848 and training accuracy: 0.8918918918918919
-batch validation loss (MSE): 0.38738738738738737 and batch validation accuracy: 0.8378378378378378
+training loss: 0.0022333517737753755
+batch validation MSE: 0.28742187797156926 and MAE: 0.16999030510081095
+Lowest batch validation MAE achieved, saving weights
+R^2:  -0.11187596505934239
 Epoch: 2
-training loss: 0.0010915977444063436 and training accuracy: 0.9279279279279279
-batch validation loss (MSE): 0.36936936936936937 and batch validation accuracy: 0.8468468468468469
+training loss: 0.002401664248994879
+batch validation MSE: 0.2862121870965164 and MAE: 0.16624727950909654
+Lowest batch validation MAE achieved, saving weights
+R^2:  -0.1071963406647145
 Epoch: 3
-training loss: 0.0004442811037438947 and training accuracy: 0.9504504504504504
-batch validation loss (MSE): 0.42792792792792794 and batch validation accuracy: 0.8468468468468469
+training loss: 0.0020410598398328903
+batch validation MSE: 0.28470283079553377 and MAE: 0.1613811870600592
+Lowest batch validation MAE achieved, saving weights
+R^2:  -0.10135744585599471
 Epoch: 4
-training loss: 0.0005994126376872127 and training accuracy: 0.963963963963964
-batch validation loss (MSE): 0.44144144144144143 and batch validation accuracy: 0.8558558558558559
+training loss: 0.002379924495209445
+batch validation MSE: 0.28297464959125856 and MAE: 0.1552953342487616
+Lowest batch validation MAE achieved, saving weights
+R^2:  -0.09467209259812992
+Epoch: 5
+training loss: 0.002076982302373057
+batch validation MSE: 0.2809040054316723 and MAE: 0.14868729553177013
+Lowest batch validation MAE achieved, saving weights
+R^2:  -0.08666191101902654
+Epoch: 6
+training loss: 0.002058330038142902
+batch validation MSE: 0.2786666891427826 and MAE: 0.15149330196751132
+Epoch: 7
+training loss: 0.0019325608245872154
+batch validation MSE: 0.2762932210357924 and MAE: 0.15773218113358492
+Epoch: 8
+training loss: 0.0019748432746341635
+batch validation MSE: 0.2740072523596003 and MAE: 0.16571795603109374
+Epoch: 9
+training loss: 0.002067428451400619
+batch validation MSE: 0.2718391047238985 and MAE: 0.17466638629064635
 
 Training and Validating CNN Wrapper
 Epoch: 0
-training loss: 0.0009176853254027831 and training accuracy: 0.9141901931649331
-validation loss (MSE): 0.0022733016650151325 and validation accuracy: 0.9008317338451696
-batch validation loss (MSE): 0.05855855855855856 and batch validation accuracy: 0.9414414414414415
-Highest batch validation accuracy achieved, saving weights
-CNNWrapper_Validation Accuracy: 0.9414414414414415
-CNNWrapper_Validation Precision: 0.9413950032506734
-CNNWrapper_Validation Recall: 0.9414414414414415
-CNNWrapper_Validation F-Score: 0.9406617414329498
-CNNWrapper_Validation R^2: 0.8363296092553734
+training loss: 0.000966367030785571
+validation MSE: 0.0026839886414716865 and MAE: 0.002788471853569725
+batch validation MSE: 0.055762250476143416 and MAE: 0.06555690334455387
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7842867535070167
 Epoch: 1
-training loss: 0.0005003332930086332 and training accuracy: 0.9517087667161961
-validation loss (MSE): 0.0020135019762803946 and validation accuracy: 0.9142674344209852
-batch validation loss (MSE): 0.07207207207207207 and batch validation accuracy: 0.9279279279279279
+training loss: 0.0004532955016181438
+validation MSE: 0.0020067712012532663 and MAE: 0.0025100805116648967
+batch validation MSE: 0.051418392313329654 and MAE: 0.06419730834193058
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.801090733426217
 Epoch: 2
-training loss: 0.0003492146644787223 and training accuracy: 0.9613670133729569
-validation loss (MSE): 0.001834841909320551 and validation accuracy: 0.9181062060140754
-batch validation loss (MSE): 0.05855855855855856 and batch validation accuracy: 0.9414414414414415
+training loss: 0.00028606514122232627
+validation MSE: 0.0026919298642735946 and MAE: 0.0026949014115083825
+batch validation MSE: 0.062330583799963396 and MAE: 0.0703688834433083
 Epoch: 3
-training loss: 0.00027607760949902385 and training accuracy: 0.9674962852897474
-validation loss (MSE): 0.0025727922316761166 and validation accuracy: 0.9033909149072297
-batch validation loss (MSE): 0.07207207207207207 and batch validation accuracy: 0.9414414414414415
+training loss: 0.0002268933858807821
+validation MSE: 0.0018453815275674002 and MAE: 0.002318829604763258
+batch validation MSE: 0.04579740294846832 and MAE: 0.05802533433244035
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8228352293048423
 Epoch: 4
-training loss: 0.00020749376501265655 and training accuracy: 0.9784546805349182
-validation loss (MSE): 0.001999380175017642 and validation accuracy: 0.9213051823416507
-batch validation loss (MSE): 0.05405405405405406 and batch validation accuracy: 0.9459459459459459
-Highest batch validation accuracy achieved, saving weights
-CNNWrapper_Validation Accuracy: 0.9459459459459459
-CNNWrapper_Validation Precision: 0.9399269828203839
-CNNWrapper_Validation Recall: 0.9459459459459459
-CNNWrapper_Validation F-Score: 0.9428130557474187
-CNNWrapper_Validation R^2: 0.8489196393126524
+training loss: 0.00021862430982303534
+validation MSE: 0.0018580180189024362 and MAE: 0.002295921076094325
+batch validation MSE: 0.052214172213620555 and MAE: 0.06551410915615323
+Epoch: 5
+training loss: 0.00017496836161563661
+validation MSE: 0.002115426091122686 and MAE: 0.002225333526510336
+batch validation MSE: 0.05575119418495593 and MAE: 0.06528764140901265
+Epoch: 6
+training loss: 0.00016677725076109495
+validation MSE: 0.0019230059618081956 and MAE: 0.002151122449729488
+batch validation MSE: 0.04150368371049374 and MAE: 0.054686707838832796
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8394452498970679
+Epoch: 7
+training loss: 0.000117257860324179
+validation MSE: 0.0016242955680860476 and MAE: 0.0019937139511256065
+batch validation MSE: 0.05030874718454675 and MAE: 0.0627638096207971
+Epoch: 8
+training loss: 0.0002410084013639917
+validation MSE: 0.0017093969210276382 and MAE: 0.0021747644444712554
+batch validation MSE: 0.05105646902974276 and MAE: 0.06780469967975272
+Epoch: 9
+training loss: 9.05300485482543e-05
+validation MSE: 0.0020731365716509698 and MAE: 0.002418901731800262
+batch validation MSE: 0.05935852992889022 and MAE: 0.0700396492674544
 
 Training and Validating ResNet50
 Epoch: 0
-training loss: 0.0007428962708434248 and training accuracy: 0.9327637444279346
-validation loss (MSE): 0.00214802513746795 and validation accuracy: 0.9232245681381958
-batch validation loss (MSE): 0.04504504504504504 and batch validation accuracy: 0.954954954954955
-Highest batch validation accuracy achieved, saving weights
-ResNet50_Validation Accuracy: 0.954954954954955
-ResNet50_Validation Precision: 0.947493411779126
-ResNet50_Validation Recall: 0.954954954954955
-ResNet50_Validation F-Score: 0.9509181816087185
-ResNet50_Validation R^2: 0.8740996994272103
+training loss: 0.0007402539432601945
+validation MSE: 0.0026901006328313767 and MAE: 0.0036649644097652653
+batch validation MSE: 0.09264867477822511 and MAE: 0.13202017435787228
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.6415936182009713
 Epoch: 1
-training loss: 0.0003015715690270166 and training accuracy: 0.9725111441307578
-validation loss (MSE): 0.0021713538818872906 and validation accuracy: 0.9213051823416507
-batch validation loss (MSE): 0.06756756756756757 and batch validation accuracy: 0.9459459459459459
+training loss: 0.00031298945500180843
+validation MSE: 0.0025128752815453607 and MAE: 0.0034420099161223345
+batch validation MSE: 0.07966534966165272 and MAE: 0.11852789838034827
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.6918189127053782
 Epoch: 2
-training loss: 0.0001905428746850631 and training accuracy: 0.9808692421991084
-validation loss (MSE): 0.002265609370738057 and validation accuracy: 0.9232245681381958
-batch validation loss (MSE): 0.05855855855855856 and batch validation accuracy: 0.954954954954955
+training loss: 0.00019374208288019758
+validation MSE: 0.0024686995757710038 and MAE: 0.003506278841962237
+batch validation MSE: 0.06002639753217434 and MAE: 0.0876779309851495
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7677911326418102
 Epoch: 3
-training loss: 0.00011790965790443473 and training accuracy: 0.9884843982169391
-validation loss (MSE): 0.0020349814145361332 and validation accuracy: 0.9264235444657709
-batch validation loss (MSE): 0.06756756756756757 and batch validation accuracy: 0.9459459459459459
+training loss: 0.00011506708614669508
+validation MSE: 0.0026061943882700026 and MAE: 0.0033198713593091686
+batch validation MSE: 0.07597211439756106 and MAE: 0.11401835306304263
 Epoch: 4
-training loss: 9.062334341036826e-05 and training accuracy: 0.9933135215453195
-validation loss (MSE): 0.00229129509542135 and validation accuracy: 0.9232245681381958
-batch validation loss (MSE): 0.04504504504504504 and batch validation accuracy: 0.954954954954955
+training loss: 0.00010373363629239236
+validation MSE: 0.002108063296057408 and MAE: 0.0028968300483861787
+batch validation MSE: 0.04963072133213177 and MAE: 0.08815669926168683
+Epoch: 5
+training loss: 8.985024165087574e-05
+validation MSE: 0.0022874780472689235 and MAE: 0.003289524824598154
+batch validation MSE: 0.084672552232615 and MAE: 0.11858333852813319
+Epoch: 6
+training loss: 6.846685014622187e-05
+validation MSE: 0.0018561919268689562 and MAE: 0.0027937392143322793
+batch validation MSE: 0.05530238018745074 and MAE: 0.0929960003458299
+Epoch: 7
+training loss: 6.763161957609833e-05
+validation MSE: 0.002242054965407607 and MAE: 0.0029458626094423183
+batch validation MSE: 0.04568858696407616 and MAE: 0.07927507206562671
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8232561757191804
+Epoch: 8
+training loss: 6.011494941033834e-05
+validation MSE: 0.0017384221034625776 and MAE: 0.0028361140534033033
+batch validation MSE: 0.0487554549693483 and MAE: 0.08335770977040131
+Epoch: 9
+training loss: 5.813069272480221e-05
+validation MSE: 0.00228835393311825 and MAE: 0.002972486255345905
+batch validation MSE: 0.048890296481447 and MAE: 0.08738265753732072
 
 Training and Validating ResNet152
 Epoch: 0
-training loss: 0.0007461974246636376 and training accuracy: 0.9312778603268945
-validation loss (MSE): 0.0035193054158117213 and validation accuracy: 0.9078694817658349
-batch validation loss (MSE): 0.09009009009009009 and batch validation accuracy: 0.9459459459459459
-Highest batch validation accuracy achieved, saving weights
-ResNet152_Validation Accuracy: 0.9459459459459459
-ResNet152_Validation Precision: 0.9375804375804375
-ResNet152_Validation Recall: 0.9459459459459459
-ResNet152_Validation F-Score: 0.9414414414414415
-ResNet152_Validation R^2: 0.7481993988544207
+training loss: 0.0006634812524995617
+validation MSE: 0.00259422583658357 and MAE: 0.0034928760894150663
+batch validation MSE: 0.06272675564426552 and MAE: 0.11833704495802522
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7573449423531053
 Epoch: 1
-training loss: 0.0003474079234038451 and training accuracy: 0.9632243684992571
-validation loss (MSE): 0.0026539286191668184 and validation accuracy: 0.909149072296865
-batch validation loss (MSE): 0.0990990990990991 and batch validation accuracy: 0.9414414414414415
+training loss: 0.00032739346886412416
+validation MSE: 0.002280000520410905 and MAE: 0.0033324798828143734
+batch validation MSE: 0.07099426161400228 and MAE: 0.10659590752812119
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7253625436191478
 Epoch: 2
-training loss: 0.00022690231399991195 and training accuracy: 0.975668647845468
-validation loss (MSE): 0.002396805478100232 and validation accuracy: 0.9174664107485605
-batch validation loss (MSE): 0.08108108108108109 and batch validation accuracy: 0.954954954954955
-Highest batch validation accuracy achieved, saving weights
-ResNet152_Validation Accuracy: 0.954954954954955
-ResNet152_Validation Precision: 0.9446589446589447
-ResNet152_Validation Recall: 0.954954954954955
-ResNet152_Validation F-Score: 0.9493243243243243
-ResNet152_Validation R^2: 0.7733794589689786
+training loss: 0.00020745373104899623
+validation MSE: 0.002384320673507202 and MAE: 0.0033726067837944284
+batch validation MSE: 0.0841678516205332 and MAE: 0.1270291982638138
 Epoch: 3
-training loss: 0.00016884558161590552 and training accuracy: 0.9827265973254086
-validation loss (MSE): 0.0022971798686378577 and validation accuracy: 0.9174664107485605
-batch validation loss (MSE): 0.05855855855855856 and batch validation accuracy: 0.954954954954955
+training loss: 0.00015805692173676513
+validation MSE: 0.002453538349083034 and MAE: 0.0031488920874137207
+batch validation MSE: 0.0794109801365128 and MAE: 0.10850053355685091
 Epoch: 4
-training loss: 0.00011098173254383672 and training accuracy: 0.9897845468053492
-validation loss (MSE): 0.002107986548949916 and validation accuracy: 0.9264235444657709
-batch validation loss (MSE): 0.04954954954954955 and batch validation accuracy: 0.963963963963964
-Highest batch validation accuracy achieved, saving weights
-ResNet152_Validation Accuracy: 0.963963963963964
-ResNet152_Validation Precision: 0.9581724581724582
-ResNet152_Validation Recall: 0.963963963963964
-ResNet152_Validation F-Score: 0.9602784602784603
-ResNet152_Validation R^2: 0.8615096693699313
+training loss: 0.00017038732900235713
+validation MSE: 0.0019481490544953108 and MAE: 0.0029484890666900405
+batch validation MSE: 0.057275338304578725 and MAE: 0.09579712892085449
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7784334578761232
+Epoch: 5
+training loss: 0.0001007546092197857
+validation MSE: 0.0025692954361542374 and MAE: 0.0033436416906093523
+batch validation MSE: 0.09994291196166843 and MAE: 0.11480120291329317
+Epoch: 6
+training loss: 7.097015026556982e-05
+validation MSE: 0.0020220140389070273 and MAE: 0.0028608884320429867
+batch validation MSE: 0.060731989554130984 and MAE: 0.09327521957121454
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7650615849056803
+Epoch: 7
+training loss: 4.89002284171032e-05
+validation MSE: 0.0022359711902672024 and MAE: 0.0030347957879418874
+batch validation MSE: 0.06569877795494403 and MAE: 0.10122756769058404
+Epoch: 8
+training loss: 5.097368204834156e-05
+validation MSE: 0.0024754238837783617 and MAE: 0.0031211049592586152
+batch validation MSE: 0.07479512133907584 and MAE: 0.10232117472149364
+Epoch: 9
+training loss: 4.680552947830529e-05
+validation MSE: 0.0018704974651790026 and MAE: 0.0025470189067570074
+batch validation MSE: 0.0478446331827005 and MAE: 0.08176109073515814
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8149156278453071
 
 Training and Validating Vision Transformer Large 16
 Epoch: 0
-training loss: 0.0017599040647743084 and training accuracy: 0.9099182763744428
-validation loss (MSE): 0.0033639552035213014 and validation accuracy: 0.872680742162508
-batch validation loss (MSE): 0.1036036036036036 and batch validation accuracy: 0.9459459459459459
-Highest batch validation accuracy achieved, saving weights
-ViTL16_Validation Accuracy: 0.9459459459459459
-ViTL16_Validation Precision: 0.9293270543270543
-ViTL16_Validation Recall: 0.9459459459459459
-ViTL16_Validation F-Score: 0.9375426512831094
-ViTL16_Validation R^2: 0.7104293086825837
+training loss: 0.001996871329949488
+validation MSE: 0.004173990123716937 and MAE: 0.004031018877300914
+batch validation MSE: 0.09999610757931021 and MAE: 0.12772328354552523
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.613170485654408
 Epoch: 1
-training loss: 0.0004681559947003122 and training accuracy: 0.9522659732540861
-validation loss (MSE): 0.0029983084462954545 and validation accuracy: 0.8873960332693538
-batch validation loss (MSE): 0.0990990990990991 and batch validation accuracy: 0.9414414414414415
+training loss: 0.0006421411451899674
+validation MSE: 0.003102619298092596 and MAE: 0.005265137789478223
+batch validation MSE: 0.09186371117788325 and MAE: 0.21679278536959812
 Epoch: 2
-training loss: 0.00028448676888348 and training accuracy: 0.9708395245170877
-validation loss (MSE): 0.002348909030298411 and validation accuracy: 0.8957133717210493
-batch validation loss (MSE): 0.07207207207207207 and batch validation accuracy: 0.954954954954955
-Highest batch validation accuracy achieved, saving weights
-ViTL16_Validation Accuracy: 0.954954954954955
-ViTL16_Validation Precision: 0.9468468468468468
-ViTL16_Validation Recall: 0.954954954954955
-ViTL16_Validation F-Score: 0.9504042504042505
-ViTL16_Validation R^2: 0.7985595190835365
+training loss: 0.0003757993345480885
+validation MSE: 0.002915138229379835 and MAE: 0.0031799946656458403
+batch validation MSE: 0.077407638988007 and MAE: 0.09644117182003217
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.700552742510661
 Epoch: 3
-training loss: 0.00021622400776860907 and training accuracy: 0.9790118870728083
-validation loss (MSE): 0.002302293744527658 and validation accuracy: 0.9027511196417146
-batch validation loss (MSE): 0.06306306306306306 and batch validation accuracy: 0.9504504504504504
+training loss: 0.00024085593072825664
+validation MSE: 0.00247395533078411 and MAE: 0.003528769447964322
+batch validation MSE: 0.07152603207526038 and MAE: 0.08288420941512864
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7233054224557478
 Epoch: 4
-training loss: 0.00020803990986729753 and training accuracy: 0.9793833580980683
-validation loss (MSE): 0.002650593779274256 and validation accuracy: 0.8995521433141395
-batch validation loss (MSE): 0.06306306306306306 and batch validation accuracy: 0.963963963963964
-Highest batch validation accuracy achieved, saving weights
-ViTL16_Validation Accuracy: 0.963963963963964
-ViTL16_Validation Precision: 0.9556306306306307
-ViTL16_Validation Recall: 0.963963963963964
-ViTL16_Validation F-Score: 0.9592977592977594
-ViTL16_Validation R^2: 0.8237395791980945
+training loss: 0.0002269257147355367
+validation MSE: 0.002783309887982822 and MAE: 0.0032105235193800362
+batch validation MSE: 0.08668111489357404 and MAE: 0.10729215092755653
+Epoch: 5
+training loss: 0.00012923757703335817
+validation MSE: 0.0022955807942705376 and MAE: 0.0033949226508841893
+batch validation MSE: 0.07851640986349971 and MAE: 0.13178966717945562
+Epoch: 6
+training loss: 0.00015601775686341623
+validation MSE: 0.002584616705959518 and MAE: 0.003247041522068009
+batch validation MSE: 0.0715351701086924 and MAE: 0.10881737819327428
+Epoch: 7
+training loss: 0.00014546455807541714
+validation MSE: 0.0030847440392131266 and MAE: 0.003939812274983927
+batch validation MSE: 0.08333593576219403 and MAE: 0.09045913880103612
+Epoch: 8
+training loss: 0.00015676914499302555
+validation MSE: 0.0023275667362351307 and MAE: 0.002639545422430786
+batch validation MSE: 0.06991599988769677 and MAE: 0.0773175551077804
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7295337428312065
+Epoch: 9
+training loss: 0.00011617086193134038
+validation MSE: 0.0032801728552176264 and MAE: 0.0035206125388556626
+batch validation MSE: 0.0841217962763105 and MAE: 0.11883892971384633
 
 Training and Validating Faster R-CNN
 Epoch: 0
-training loss: 0.007355808603083048 and training accuracy: 0.8541976225854383
-validation loss (MSE): 0.06397952672310998 and validation accuracy: 0.8522072936660269
-batch validation loss (MSE): 0.24774774774774774 and batch validation accuracy: 0.8918918918918919
-Highest batch validation accuracy achieved, saving weights
-FasterR-CNN_Validation Accuracy: 0.8918918918918919
-FasterR-CNN_Validation Precision: 0.9146874146874147
-FasterR-CNN_Validation Recall: 0.8918918918918919
-FasterR-CNN_Validation F-Score: 0.8919778557183138
-FasterR-CNN_Validation R^2: 0.3075483468496567
+training loss: 0.00724500738762268
+validation MSE: 0.18859527184419406 and MAE: 0.07649513264607653
+batch validation MSE: 1.5135135135135136 and MAE: 0.43243243243243246
+Lowest batch validation MAE achieved, saving weights
+R^2:  -4.854945054945054
 Epoch: 1
-training loss: 0.006137993230581533 and training accuracy: 0.8777860326894502
-validation loss (MSE): 0.06525911726367374 and validation accuracy: 0.8528470889315419
-batch validation loss (MSE): 0.481981981981982 and batch validation accuracy: 0.8423423423423423
+training loss: 0.006121980722918732
+validation MSE: 0.043810848949764634 and MAE: 0.03129346354738893
+batch validation MSE: 0.13963963963963963 and MAE: 0.0945945945945946
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.45981161695447426
 Epoch: 2
-training loss: 0.005364535956994284 and training accuracy: 0.8961738484398217
-validation loss (MSE): 0.04785668615416236 and validation accuracy: 0.8682021753039028
-batch validation loss (MSE): 0.2747747747747748 and batch validation accuracy: 0.8918918918918919
+training loss: 0.005325202178979219
+validation MSE: 0.06453407520586327 and MAE: 0.041168289790150185
+batch validation MSE: 0.5405405405405406 and MAE: 0.25225225225225223
 Epoch: 3
-training loss: 0.004886623634376214 and training accuracy: 0.9082466567607727
-validation loss (MSE): 0.050799744209645274 and validation accuracy: 0.8675623800383877
-batch validation loss (MSE): 0.22972972972972974 and batch validation accuracy: 0.9009009009009009
-Highest batch validation accuracy achieved, saving weights
-FasterR-CNN_Validation Accuracy: 0.9009009009009009
-FasterR-CNN_Validation Precision: 0.9262320356070356
-FasterR-CNN_Validation Recall: 0.9009009009009009
-FasterR-CNN_Validation F-Score: 0.9103966614094147
-FasterR-CNN_Validation R^2: 0.35790846707877266
+training loss: 0.0049119358795918396
+validation MSE: 0.07496522961803537 and MAE: 0.045201669979493375
+batch validation MSE: 0.4954954954954955 and MAE: 0.24324324324324326
 Epoch: 4
-training loss: 0.004411165994754697 and training accuracy: 0.9156760772659732
-validation loss (MSE): 0.06052463278126732 and validation accuracy: 0.8669225847728727
-batch validation loss (MSE): 0.5540540540540541 and batch validation accuracy: 0.8873873873873874
+training loss: 0.004646771152187781
+validation MSE: 0.05952712144282995 and MAE: 0.03671766399964172
+batch validation MSE: 0.0990990990990991 and MAE: 0.08108108108108109
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.6166405023547881
+Epoch: 5
+training loss: 0.004262042935370171
+validation MSE: 0.051738525879399665 and MAE: 0.033936022696640956
+batch validation MSE: 0.23873873873873874 and MAE: 0.13963963963963963
+Epoch: 6
+training loss: 0.00388329658764955
+validation MSE: 0.050625869623477336 and MAE: 0.03310153027154474
+batch validation MSE: 0.18018018018018017 and MAE: 0.12612612612612611
+Epoch: 7
+training loss: 0.0034893222880713714
+validation MSE: 0.04200278189401136 and MAE: 0.029485396906132492
+batch validation MSE: 0.1891891891891892 and MAE: 0.12612612612612611
+Epoch: 8
+training loss: 0.003435544571577796
+validation MSE: 0.058553546843260154 and MAE: 0.037134910025666254
+batch validation MSE: 0.4864864864864865 and MAE: 0.23423423423423423
+Epoch: 9
+training loss: 0.003048721458660161
+validation MSE: 0.08595271234469222 and MAE: 0.04534075147004718
+batch validation MSE: 0.7072072072072072 and MAE: 0.2927927927927928
 
 Training and Validating SSD
 Epoch: 0
-training loss: 0.5586229602613917 and training accuracy: 0.8348811292719168
-validation loss (MSE): 0.11055662209836627 and validation accuracy: 0.7907869481765835
-batch validation loss (MSE): 0.3918918918918919 and batch validation accuracy: 0.8783783783783784
-Highest batch validation accuracy achieved, saving weights
-SSD_Validation Accuracy: 0.8783783783783784
-SSD_Validation Precision: 0.7715485756026296
-SSD_Validation Recall: 0.8783783783783784
-SSD_Validation F-Score: 0.8215049581956057
-SSD_Validation R^2: -0.09533261498327028
+training loss: 0.5981494971424379
+validation MSE: 0.11585535507996324 and MAE: 0.05799721845623847
+batch validation MSE: 0.27927927927927926 and MAE: 0.14414414414414414
+Lowest batch validation MAE achieved, saving weights
+R^2:  -0.08037676609105149
 Epoch: 1
-training loss: 0.5174215555545303 and training accuracy: 0.8168647845468053
-validation loss (MSE): 0.11055662209836627 and validation accuracy: 0.7907869481765835
-batch validation loss (MSE): 0.3918918918918919 and batch validation accuracy: 0.8783783783783784
+training loss: 0.5289732059607555
+validation MSE: 0.11599443715081262 and MAE: 0.058136300527087834
+batch validation MSE: 0.2702702702702703 and MAE: 0.14414414414414414
 Epoch: 2
-training loss: 0.5019562209874702 and training accuracy: 0.8322808320950966
-validation loss (MSE): 0.11055662209836627 and validation accuracy: 0.7907869481765835
-batch validation loss (MSE): 0.3918918918918919 and batch validation accuracy: 0.8783783783783784
+training loss: 0.48243279884679063
+validation MSE: 0.11571627302983871 and MAE: 0.05785813640611394
+batch validation MSE: 0.2747747747747748 and MAE: 0.13963963963963963
+Lowest batch validation MAE achieved, saving weights
+R^2:  -0.06295133437990552
 Epoch: 3
-training loss: 0.453194648913076 and training accuracy: 0.8521545319465081
-validation loss (MSE): 0.10684580950308364 and validation accuracy: 0.7959053103007038
-batch validation loss (MSE): 0.31981981981981983 and batch validation accuracy: 0.8918918918918919
-Highest batch validation accuracy achieved, saving weights
-SSD_Validation Accuracy: 0.8918918918918919
-SSD_Validation Precision: 0.8357732732732732
-SSD_Validation Recall: 0.8918918918918919
-SSD_Validation F-Score: 0.8540382718484909
-SSD_Validation R^2: 0.10610786593319321
+training loss: 0.4440143031549445
+validation MSE: 0.11237830358851436 and MAE: 0.05479833123083738
+batch validation MSE: 0.21171171171171171 and MAE: 0.11261261261261261
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.18100470957613835
 Epoch: 4
-training loss: 0.42663840577559875 and training accuracy: 0.8597696879643388
-validation loss (MSE): 0.10108765222785264 and validation accuracy: 0.8163787587971849
-batch validation loss (MSE): 0.24774774774774774 and batch validation accuracy: 0.9144144144144144
-Highest batch validation accuracy achieved, saving weights
-SSD_Validation Accuracy: 0.9144144144144144
-SSD_Validation Precision: 0.8763639415813329
-SSD_Validation Recall: 0.9144144144144144
-SSD_Validation F-Score: 0.8936541697735728
-SSD_Validation R^2: 0.3075483468496567
+training loss: 0.42814534280451183
+validation MSE: 0.10917941611441519 and MAE: 0.05438108498720201
+batch validation MSE: 0.20270270270270271 and MAE: 0.11261261261261261
+Epoch: 5
+training loss: 0.37582829464237105
+validation MSE: 0.1027816415599888 and MAE: 0.05187760814713503
+batch validation MSE: 0.13963963963963963 and MAE: 0.1036036036036036
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.45981161695447426
+Epoch: 6
+training loss: 0.3585233492954259
+validation MSE: 0.10347705210075922 and MAE: 0.052851182394382516
+batch validation MSE: 0.15315315315315314 and MAE: 0.11711711711711711
+Epoch: 7
+training loss: 0.3425037900469744
+validation MSE: 0.10709318473043959 and MAE: 0.056189151960055916
+batch validation MSE: 0.27927927927927926 and MAE: 0.21621621621621623
+Epoch: 8
+training loss: 0.31796161530995504
+validation MSE: 0.08581362981789632 and MAE: 0.04492350509170034
+batch validation MSE: 0.14414414414414414 and MAE: 0.11711711711711711
+Epoch: 9
+training loss: 0.28142717410873686
+validation MSE: 0.06954102961136668 and MAE: 0.04089012566917629
+batch validation MSE: 0.18018018018018017 and MAE: 0.16216216216216217
 
 Training and Validating RetinaNet
 Epoch: 0
-training loss: 0.03204724040620089 and training accuracy: 0.8686849925705795
-validation loss (MSE): 0.05566218870996437 and validation accuracy: 0.8758797184900832
-batch validation loss (MSE): 0.12612612612612611 and batch validation accuracy: 0.9504504504504504
-Highest batch validation accuracy achieved, saving weights
-RetinaNet_Validation Accuracy: 0.9504504504504504
-RetinaNet_Validation Precision: 0.9474376974376975
-RetinaNet_Validation Recall: 0.9504504504504504
-RetinaNet_Validation F-Score: 0.945929274173549
-RetinaNet_Validation R^2: 0.647479158396189
+training loss: 0.03162025010414663
+validation MSE: 0.1112656471149812 and MAE: 0.05507649534144886
+batch validation MSE: 0.17567567567567569 and MAE: 0.1036036036036036
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.3204081632653063
 Epoch: 1
-training loss: 0.01983696132023759 and training accuracy: 0.9067607726597325
-validation loss (MSE): 0.09571337163143255 and validation accuracy: 0.8304542546385156
-batch validation loss (MSE): 0.22072072072072071 and batch validation accuracy: 0.9144144144144144
+training loss: 0.01919614171246252
+validation MSE: 0.09666203055660316 and MAE: 0.04770514615636542
+batch validation MSE: 0.15765765765765766 and MAE: 0.08558558558558559
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.3901098901098903
 Epoch: 2
-training loss: 0.016608110445485956 and training accuracy: 0.9266344725111442
-validation loss (MSE): 0.0656429944096356 and validation accuracy: 0.8835572616762636
-batch validation loss (MSE): 0.0990990990990991 and batch validation accuracy: 0.963963963963964
-Highest batch validation accuracy achieved, saving weights
-RetinaNet_Validation Accuracy: 0.963963963963964
-RetinaNet_Validation Precision: 0.9468828855474819
-RetinaNet_Validation Recall: 0.963963963963964
-RetinaNet_Validation F-Score: 0.9546389648691439
-RetinaNet_Validation R^2: 0.7230193387398627
+training loss: 0.018251684967817615
+validation MSE: 0.08942976347345637 and MAE: 0.046036161699944976
+batch validation MSE: 0.11711711711711711 and MAE: 0.06306306306306306
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.5469387755102042
 Epoch: 3
-training loss: 0.015699605979733675 and training accuracy: 0.9322065378900446
-validation loss (MSE): 0.04939219501448684 and validation accuracy: 0.9129878438899552
-batch validation loss (MSE): 0.04504504504504504 and batch validation accuracy: 0.9684684684684685
-Highest batch validation accuracy achieved, saving weights
-RetinaNet_Validation Accuracy: 0.9684684684684685
-RetinaNet_Validation Precision: 0.9724430312665606
-RetinaNet_Validation Recall: 0.9684684684684685
-RetinaNet_Validation F-Score: 0.9688688688688688
-RetinaNet_Validation R^2: 0.8740996994272103
+training loss: 0.013940620253237517
+validation MSE: 0.06759388090962329 and MAE: 0.0358831713258474
+batch validation MSE: 0.08108108108108109 and MAE: 0.06306306306306306
 Epoch: 4
-training loss: 0.012457993792761489 and training accuracy: 0.9522659732540861
-validation loss (MSE): 0.050927703464862556 and validation accuracy: 0.8682021753039028
-batch validation loss (MSE): 0.06756756756756757 and batch validation accuracy: 0.9459459459459459
+training loss: 0.011429194782866959
+validation MSE: 0.05326842895925294 and MAE: 0.029346314824920703
+batch validation MSE: 0.05855855855855856 and MAE: 0.04954954954954955
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7734693877551021
+Epoch: 5
+training loss: 0.011781869322109948
+validation MSE: 0.0680111273190574 and MAE: 0.039638386917545336
+batch validation MSE: 0.1036036036036036 and MAE: 0.06756756756756757
+Epoch: 6
+training loss: 0.011639705864295111
+validation MSE: 0.05243393626473378 and MAE: 0.029624478759371024
+batch validation MSE: 0.11711711711711711 and MAE: 0.06306306306306306
+Epoch: 7
+training loss: 0.009716925436726772
+validation MSE: 0.04394993080300316 and MAE: 0.0269819198588171
+batch validation MSE: 0.08558558558558559 and MAE: 0.06756756756756757
+Epoch: 8
+training loss: 0.007971184058533821
+validation MSE: 0.04019471525275492 and MAE: 0.02461752456111603
+batch validation MSE: 0.04954954954954955 and MAE: 0.04054054054054054
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.808320251177394
+Epoch: 9
+training loss: 0.00771821027300607
+validation MSE: 0.030319888927094297 and MAE: 0.021418637242453156
+batch validation MSE: 0.12162162162162163 and MAE: 0.08558558558558559

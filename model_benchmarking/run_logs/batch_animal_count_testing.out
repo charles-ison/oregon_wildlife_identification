@@ -4,7 +4,7 @@ torch.cuda.is_available(): True
 
 Getting Cottonwood Eastface data
 loading annotations into memory...
-Done (t=0.01s)
+Done (t=0.00s)
 creating index...
 index created!
 Number of batches for verification:  6
@@ -39,321 +39,177 @@ Number of individual images for verification:  122
 Multiple GPUs available, using: 2
 
 Testing ResNet34 on Cottonwood Eastface
-individual testing loss (MSE): 0.03573786728084087 and individual testing accuracy: 0.68
-ResNet34_Cottonwood_EF_Testing Accuracy: 0.5
-ResNet34_Cottonwood_EF_Testing Precision: 0.5
-ResNet34_Cottonwood_EF_Testing Recall: 0.5
-ResNet34_Cottonwood_EF_Testing F-Score: 0.48571428571428577
-ResNet34_Cottonwood_EF_Testing R^2: -1.0
-batch testing loss (MSE): 0.5 and batch testing accuracy: 0.5
+individual testing MSE: 0.033084230963140726 and MAE: 0.05356291890144348
+batch testing MSE: 0.18510856044789156 and MAE: 0.3514970376466711
+R^2:  0.25956576466847625
 
 Testing ResNet34 on Cottonwood Westface
-individual testing loss (MSE): 0.011476183794438839 and individual testing accuracy: 1.0
-ResNet34_Cottonwood_WF_Testing Accuracy: 1.0
-ResNet34_Cottonwood_WF_Testing Precision: 1.0
-ResNet34_Cottonwood_WF_Testing Recall: 1.0
-ResNet34_Cottonwood_WF_Testing F-Score: 1.0
-ResNet34_Cottonwood_WF_Testing R^2: 1.0
-batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+individual testing MSE: 0.0009321922878734768 and MAE: 0.011958030499517918
+batch testing MSE: 0.011680251627694815 and MAE: 0.09748244844377041
+R^2:  0.0
 
 Testing ResNet34 on NGilchrist Eastface
-individual testing loss (MSE): 0.02597619958146654 and individual testing accuracy: 0.9090909090909091
-ResNet34_NGilchrist_EF_Testing Accuracy: 0.8787878787878788
-ResNet34_NGilchrist_EF_Testing Precision: 0.9090909090909091
-ResNet34_NGilchrist_EF_Testing Recall: 0.8787878787878788
-ResNet34_NGilchrist_EF_Testing F-Score: 0.8812654850390701
-ResNet34_NGilchrist_EF_Testing R^2: 0.42105263157894735
-batch testing loss (MSE): 0.12121212121212122 and batch testing accuracy: 0.8787878787878788
+individual testing MSE: 0.021098035585248108 and MAE: 0.057416374334181196
+batch testing MSE: 0.11315328482482018 and MAE: 0.29548739912835037
+R^2:  0.45954418113169815
 
 Testing ResNet34 on Idaho
-individual testing loss (MSE): 0.17102220678915742 and individual testing accuracy: 0.5655737704918032
-ResNet34_Idaho_Testing Accuracy: 0.6097560975609756
-ResNet34_Idaho_Testing Precision: 0.5299429164504411
-ResNet34_Idaho_Testing Recall: 0.6097560975609756
-ResNet34_Idaho_Testing F-Score: 0.5437681521501515
-ResNet34_Idaho_Testing R^2: -0.2824116047144152
-batch testing loss (MSE): 0.8414634146341463 and batch testing accuracy: 0.6097560975609756
+individual testing MSE: 0.12271215026190535 and MAE: 0.10786237634840559
+batch testing MSE: 0.5598474391636711 and MAE: 0.4893102874615934
+R^2:  0.14677830061398833
 
 Testing ResNet50 on Cottonwood Eastface
-individual testing loss (MSE): 0.02730465412605554 and individual testing accuracy: 0.76
-ResNet50_Cottonwood_EF_Testing Accuracy: 0.8333333333333334
-ResNet50_Cottonwood_EF_Testing Precision: 0.875
-ResNet50_Cottonwood_EF_Testing Recall: 0.8333333333333334
-ResNet50_Cottonwood_EF_Testing F-Score: 0.8285714285714286
-ResNet50_Cottonwood_EF_Testing R^2: 0.33333333333333337
-batch testing loss (MSE): 0.16666666666666666 and batch testing accuracy: 0.8333333333333334
+individual testing MSE: 0.035749400057829915 and MAE: 0.05643315538764
+batch testing MSE: 0.24962856957184462 and MAE: 0.4087559174125393
+R^2:  0.0014857060015410761
 
 Testing ResNet50 on Cottonwood Westface
-individual testing loss (MSE): 0.0014505547992303036 and individual testing accuracy: 1.0
-ResNet50_Cottonwood_WF_Testing Accuracy: 1.0
-ResNet50_Cottonwood_WF_Testing Precision: 1.0
-ResNet50_Cottonwood_WF_Testing Recall: 1.0
-ResNet50_Cottonwood_WF_Testing F-Score: 1.0
-ResNet50_Cottonwood_WF_Testing R^2: 1.0
-batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+individual testing MSE: 0.0018749371054582297 and MAE: 0.015781221836805345
+batch testing MSE: 0.0350852581577783 and MAE: 0.15169409709051251
+R^2:  0.0
 
 Testing ResNet50 on NGilchrist Eastface
-individual testing loss (MSE): 0.012564513832330704 and individual testing accuracy: 0.9292929292929293
-ResNet50_NGilchrist_EF_Testing Accuracy: 0.9696969696969697
-ResNet50_NGilchrist_EF_Testing Precision: 0.9454545454545454
-ResNet50_NGilchrist_EF_Testing Recall: 0.9696969696969697
-ResNet50_NGilchrist_EF_Testing F-Score: 0.9562289562289563
-ResNet50_NGilchrist_EF_Testing R^2: 0.8552631578947368
-batch testing loss (MSE): 0.030303030303030304 and batch testing accuracy: 0.9696969696969697
+individual testing MSE: 0.015599934955720197 and MAE: 0.04042628027423464
+batch testing MSE: 0.08133585228270848 and MAE: 0.21496933721231692
+R^2:  0.6115142880708024
 
 Testing ResNet50 on Idaho
-individual testing loss (MSE): 0.12666533288133683 and individual testing accuracy: 0.6229508196721312
-ResNet50_Idaho_Testing Accuracy: 0.6341463414634146
-ResNet50_Idaho_Testing Precision: 0.5355294467578822
-ResNet50_Idaho_Testing Recall: 0.6341463414634146
-ResNet50_Idaho_Testing F-Score: 0.5694138104608064
-ResNet50_Idaho_Testing R^2: -0.0036264732547597323
-batch testing loss (MSE): 0.6585365853658537 and batch testing accuracy: 0.6341463414634146
+individual testing MSE: 0.10520308886150845 and MAE: 0.09979169485998936
+batch testing MSE: 0.531106520832265 and MAE: 0.46885609245154913
+R^2:  0.19058016830847735
 
 Testing ResNet152 on Cottonwood Eastface
-individual testing loss (MSE): 0.021446222942322492 and individual testing accuracy: 0.81
-ResNet152_Cottonwood_EF_Testing Accuracy: 0.5
-ResNet152_Cottonwood_EF_Testing Precision: 0.5833333333333334
-ResNet152_Cottonwood_EF_Testing Recall: 0.5
-ResNet152_Cottonwood_EF_Testing F-Score: 0.5333333333333333
-ResNet152_Cottonwood_EF_Testing R^2: -1.0
-batch testing loss (MSE): 0.5 and batch testing accuracy: 0.5
+individual testing MSE: 0.023720782566815615 and MAE: 0.04998445518314838
+batch testing MSE: 0.11019473934235673 and MAE: 0.30947435771425563
+R^2:  0.5592210386927519
 
 Testing ResNet152 on Cottonwood Westface
-individual testing loss (MSE): 0.0035242586955428123 and individual testing accuracy: 1.0
-ResNet152_Cottonwood_WF_Testing Accuracy: 1.0
-ResNet152_Cottonwood_WF_Testing Precision: 1.0
-ResNet152_Cottonwood_WF_Testing Recall: 1.0
-ResNet152_Cottonwood_WF_Testing F-Score: 1.0
-ResNet152_Cottonwood_WF_Testing R^2: 1.0
-batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+individual testing MSE: 0.0017143845598911866 and MAE: 0.010577761754393577
+batch testing MSE: 0.0732739592785947 and MAE: 0.1850778441876173
+R^2:  0.0
 
 Testing ResNet152 on NGilchrist Eastface
-individual testing loss (MSE): 0.03528388393948777 and individual testing accuracy: 0.8181818181818182
-ResNet152_NGilchrist_EF_Testing Accuracy: 0.696969696969697
-ResNet152_NGilchrist_EF_Testing Precision: 0.8831168831168831
-ResNet152_NGilchrist_EF_Testing Recall: 0.696969696969697
-ResNet152_NGilchrist_EF_Testing F-Score: 0.7398810803066123
-ResNet152_NGilchrist_EF_Testing R^2: -0.44736842105263164
-batch testing loss (MSE): 0.30303030303030304 and batch testing accuracy: 0.696969696969697
+individual testing MSE: 0.019638299603353847 and MAE: 0.05786619463352242
+batch testing MSE: 0.104732831911833 and MAE: 0.294143665469054
+R^2:  0.4997629200467345
 
 Testing ResNet152 on Idaho
-individual testing loss (MSE): 0.1309305801987648 and individual testing accuracy: 0.6475409836065574
-ResNet152_Idaho_Testing Accuracy: 0.6707317073170732
-ResNet152_Idaho_Testing Precision: 0.5536585365853658
-ResNet152_Idaho_Testing Recall: 0.6707317073170732
-ResNet152_Idaho_Testing F-Score: 0.5975609756097561
-ResNet152_Idaho_Testing R^2: -0.04079782411604693
-batch testing loss (MSE): 0.6829268292682927 and batch testing accuracy: 0.6707317073170732
+individual testing MSE: 0.09172714857926562 and MAE: 0.09024881260072598
+batch testing MSE: 0.45811220494539245 and MAE: 0.4552940038464418
+R^2:  0.30182536131116633
 
 Testing CNNWrapper on Cottonwood Eastface
-individual testing loss (MSE): 0.26959748327732086 and individual testing accuracy: 0.51
-CNNWrapper_Cottonwood_EF_Testing Accuracy: 0.3333333333333333
-CNNWrapper_Cottonwood_EF_Testing Precision: 0.3333333333333333
-CNNWrapper_Cottonwood_EF_Testing Recall: 0.3333333333333333
-CNNWrapper_Cottonwood_EF_Testing F-Score: 0.3333333333333333
-CNNWrapper_Cottonwood_EF_Testing R^2: -5.666666666666667
-batch testing loss (MSE): 1.6666666666666667 and batch testing accuracy: 0.3333333333333333
+individual testing MSE: 0.07817310765385628 and MAE: 0.11653844147920608
+batch testing MSE: 0.34316899937887985 and MAE: 0.5318417325615883
+R^2:  -0.3726759463391405
 
 Testing CNNWrapper on Cottonwood Westface
-individual testing loss (MSE): 0.9402721881866455 and individual testing accuracy: 0.0
-CNNWrapper_Cottonwood_WF_Testing Accuracy: 0.0
-CNNWrapper_Cottonwood_WF_Testing Precision: 0.0
-CNNWrapper_Cottonwood_WF_Testing Recall: 0.0
-CNNWrapper_Cottonwood_WF_Testing F-Score: 0.0
-CNNWrapper_Cottonwood_WF_Testing R^2: 0.0
-batch testing loss (MSE): 4.0 and batch testing accuracy: 0.0
+individual testing MSE: 0.03451968267560005 and MAE: 0.08291169971227647
+batch testing MSE: 0.1818152293562889 and MAE: 0.42468784004449844
+R^2:  0.0
 
 Testing CNNWrapper on NGilchrist Eastface
-individual testing loss (MSE): 0.6720719265215325 and individual testing accuracy: 0.04040404040404041
-CNNWrapper_NGilchrist_EF_Testing Accuracy: 0.06060606060606061
-CNNWrapper_NGilchrist_EF_Testing Precision: 0.06060606060606061
-CNNWrapper_NGilchrist_EF_Testing Recall: 0.06060606060606061
-CNNWrapper_NGilchrist_EF_Testing F-Score: 0.06060606060606061
-CNNWrapper_NGilchrist_EF_Testing R^2: -15.210526315789476
-batch testing loss (MSE): 3.393939393939394 and batch testing accuracy: 0.06060606060606061
+individual testing MSE: 0.046223361383784904 and MAE: 0.08582765887481998
+batch testing MSE: 0.28993050505717594 and MAE: 0.4711487880258849
+R^2:  -0.3847996752847185
 
 Testing CNNWrapper on Idaho
-individual testing loss (MSE): 0.2620982999195818 and individual testing accuracy: 0.22950819672131148
-CNNWrapper_Idaho_Testing Accuracy: 0.23170731707317074
-CNNWrapper_Idaho_Testing Precision: 0.26729308276689323
-CNNWrapper_Idaho_Testing Recall: 0.23170731707317074
-CNNWrapper_Idaho_Testing F-Score: 0.20116457921335973
-CNNWrapper_Idaho_Testing R^2: -1.3975521305530374
-batch testing loss (MSE): 1.5731707317073171 and batch testing accuracy: 0.23170731707317074
+individual testing MSE: 0.24166228231347975 and MAE: 0.17755567441221143
+batch testing MSE: 1.0957748410632697 and MAE: 0.8403859643674478
+R^2:  -0.6699886502019805
 
 Testing Aggregating CNN on Cottonwood Eastface
-AggregatingCNN_Cottonwood_EF_Testing Accuracy: 0.3333333333333333
-AggregatingCNN_Cottonwood_EF_Testing Precision: 0.20000000000000004
-AggregatingCNN_Cottonwood_EF_Testing Recall: 0.3333333333333333
-AggregatingCNN_Cottonwood_EF_Testing F-Score: 0.25
-AggregatingCNN_Cottonwood_EF_Testing R^2: -1.6666666666666665
-batch testing loss (MSE): 0.6666666666666666 and batch testing accuracy: 0.3333333333333333
+batch testing MSE: 0.5104092583157467 and MAE: 0.5066543739909927
+R^2:  -1.0416370863166837
 
 Testing Aggregating CNN on Cottonwood Westface
-AggregatingCNN_Cottonwood_WF_Testing Accuracy: 1.0
-AggregatingCNN_Cottonwood_WF_Testing Precision: 1.0
-AggregatingCNN_Cottonwood_WF_Testing Recall: 1.0
-AggregatingCNN_Cottonwood_WF_Testing F-Score: 1.0
-AggregatingCNN_Cottonwood_WF_Testing R^2: 1.0
-batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+batch testing MSE: 7.503052262336496e-05 and MAE: 0.006700693629682064
+R^2:  0.0
 
 Testing Aggregating CNN on NGilchrist Eastface
-AggregatingCNN_NGilchrist_EF_Testing Accuracy: 0.8484848484848485
-AggregatingCNN_NGilchrist_EF_Testing Precision: 0.7199265381083563
-AggregatingCNN_NGilchrist_EF_Testing Recall: 0.8484848484848485
-AggregatingCNN_NGilchrist_EF_Testing F-Score: 0.778936910084451
-AggregatingCNN_NGilchrist_EF_Testing R^2: -0.1578947368421053
-batch testing loss (MSE): 0.24242424242424243 and batch testing accuracy: 0.8484848484848485
+batch testing MSE: 0.24236388603302808 and MAE: 0.1825975686537497
+R^2:  -0.1576064856941457
 
 Testing Aggregating CNN on Idaho
-AggregatingCNN_Idaho_Testing Accuracy: 0.2926829268292683
-AggregatingCNN_Idaho_Testing Precision: 0.0856632956573468
-AggregatingCNN_Idaho_Testing Recall: 0.2926829268292683
-AggregatingCNN_Idaho_Testing F-Score: 0.13253566497929128
-AggregatingCNN_Idaho_Testing R^2: -1.3789664551223937
-batch testing loss (MSE): 1.5609756097560976 and batch testing accuracy: 0.2926829268292683
+batch testing MSE: 1.5660853391951486 and MAE: 0.9538006034747857
+R^2:  -1.386753843397138
 
 Testing Vision Transformer Large 16 on Cottonwood Eastface
-individual testing loss (MSE): 0.038836428395006804 and individual testing accuracy: 0.73
-ViTL16_Cottonwood_EF_Testing Accuracy: 1.0
-ViTL16_Cottonwood_EF_Testing Precision: 1.0
-ViTL16_Cottonwood_EF_Testing Recall: 1.0
-ViTL16_Cottonwood_EF_Testing F-Score: 1.0
-ViTL16_Cottonwood_EF_Testing R^2: 1.0
-batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+individual testing MSE: 0.04148372764699161 and MAE: 0.060811836048960684
+batch testing MSE: 0.5783025500968506 and MAE: 0.5524482273807129
+R^2:  -1.3132102107616195
 
 Testing Vision Transformer Large 16 on Cottonwood Westface
-individual testing loss (MSE): 2.7138467885379214e-05 and individual testing accuracy: 1.0
-ViTL16_Cottonwood_WF_Testing Accuracy: 1.0
-ViTL16_Cottonwood_WF_Testing Precision: 1.0
-ViTL16_Cottonwood_WF_Testing Recall: 1.0
-ViTL16_Cottonwood_WF_Testing F-Score: 1.0
-ViTL16_Cottonwood_WF_Testing R^2: 1.0
-batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+individual testing MSE: 0.03597345782443881 and MAE: 0.05803755272179842
+batch testing MSE: 0.517485961318016 and MAE: 0.7003298401832581
+R^2:  0.0
 
 Testing Vision Transformer Large 16 on NGilchrist Eastface
-individual testing loss (MSE): 0.007733531262445724 and individual testing accuracy: 0.9595959595959596
-ViTL16_NGilchrist_EF_Testing Accuracy: 0.9696969696969697
-ViTL16_NGilchrist_EF_Testing Precision: 0.9454545454545454
-ViTL16_NGilchrist_EF_Testing Recall: 0.9696969696969697
-ViTL16_NGilchrist_EF_Testing F-Score: 0.9562289562289563
-ViTL16_NGilchrist_EF_Testing R^2: 0.8552631578947368
-batch testing loss (MSE): 0.030303030303030304 and batch testing accuracy: 0.9696969696969697
+individual testing MSE: 0.018111424299540244 and MAE: 0.026801133961087527
+batch testing MSE: 0.07740638238013878 and MAE: 0.14445733820850198
+R^2:  0.6302826698694066
 
 Testing Vision Transformer Large 16 on Idaho
-individual testing loss (MSE): 0.15903362563093665 and individual testing accuracy: 0.5737704918032787
-ViTL16_Idaho_Testing Accuracy: 0.6219512195121951
-ViTL16_Idaho_Testing Precision: 0.5235733457813047
-ViTL16_Idaho_Testing Recall: 0.6219512195121951
-ViTL16_Idaho_Testing F-Score: 0.5523314203730272
-ViTL16_Idaho_Testing R^2: -0.115140525838622
-batch testing loss (MSE): 0.7317073170731707 and batch testing accuracy: 0.6219512195121951
+individual testing MSE: 0.1353914270732842 and MAE: 0.10977935107027897
+batch testing MSE: 0.5960836446660789 and MAE: 0.491417741198547
+R^2:  0.09155339861122891
 
 Testing Faster R-CNN on Cottonwood Eastface
-individual testing loss (MSE): 0.09600000113248824 and individual testing accuracy: 0.6
-FasterR-CNN_Cottonwood_EF_Testing Accuracy: 0.5
-FasterR-CNN_Cottonwood_EF_Testing Precision: 0.8333333333333334
-FasterR-CNN_Cottonwood_EF_Testing Recall: 0.5
-FasterR-CNN_Cottonwood_EF_Testing F-Score: 0.5833333333333334
-FasterR-CNN_Cottonwood_EF_Testing R^2: -6.333333333333333
-batch testing loss (MSE): 1.8333333333333333 and batch testing accuracy: 0.5
+individual testing MSE: 0.07200000047683716 and MAE: 0.06800000071525573
+batch testing MSE: 1.1666666666666667 and MAE: 0.8333333333333334
+R^2:  -3.666666666666667
 
 Testing Faster R-CNN on Cottonwood Westface
-individual testing loss (MSE): 0.0 and individual testing accuracy: 1.0
-FasterR-CNN_Cottonwood_WF_Testing Accuracy: 1.0
-FasterR-CNN_Cottonwood_WF_Testing Precision: 1.0
-FasterR-CNN_Cottonwood_WF_Testing Recall: 1.0
-FasterR-CNN_Cottonwood_WF_Testing F-Score: 1.0
-FasterR-CNN_Cottonwood_WF_Testing R^2: 1.0
-batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+individual testing MSE: 0.0020000000298023225 and MAE: 0.0020000000298023225
+batch testing MSE: 0.25 and MAE: 0.25
+R^2:  0.0
 
 Testing Faster R-CNN on NGilchrist Eastface
-individual testing loss (MSE): 0.03232323280488602 and individual testing accuracy: 0.898989898989899
-FasterR-CNN_NGilchrist_EF_Testing Accuracy: 0.8484848484848485
-FasterR-CNN_NGilchrist_EF_Testing Precision: 0.8213166144200628
-FasterR-CNN_NGilchrist_EF_Testing Recall: 0.8484848484848485
-FasterR-CNN_NGilchrist_EF_Testing F-Score: 0.8346624136097821
-FasterR-CNN_NGilchrist_EF_Testing R^2: -0.1578947368421053
-batch testing loss (MSE): 0.24242424242424243 and batch testing accuracy: 0.8484848484848485
+individual testing MSE: 0.03232323265436924 and MAE: 0.03232323265436924
+batch testing MSE: 0.18181818181818182 and MAE: 0.18181818181818182
+R^2:  0.1315789473684209
 
 Testing Faster R-CNN on Idaho
-individual testing loss (MSE): 0.1499999998534312 and individual testing accuracy: 0.5737704918032787
-FasterR-CNN_Idaho_Testing Accuracy: 0.524390243902439
-FasterR-CNN_Idaho_Testing Precision: 0.6221395994447748
-FasterR-CNN_Idaho_Testing Recall: 0.524390243902439
-FasterR-CNN_Idaho_Testing F-Score: 0.5153089632633299
-FasterR-CNN_Idaho_Testing R^2: -0.3195829555757026
-batch testing loss (MSE): 0.8658536585365854 and batch testing accuracy: 0.524390243902439
+individual testing MSE: 0.19180328008092817 and MAE: 0.11147541088647529
+batch testing MSE: 0.8902439024390244 and MAE: 0.524390243902439
+R^2:  -0.35675430643699
 
 Testing SSD on Cottonwood Eastface
-individual testing loss (MSE): 0.0920000010728836 and individual testing accuracy: 0.54
-SSD_Cottonwood_EF_Testing Accuracy: 0.8333333333333334
-SSD_Cottonwood_EF_Testing Precision: 0.875
-SSD_Cottonwood_EF_Testing Recall: 0.8333333333333334
-SSD_Cottonwood_EF_Testing F-Score: 0.8285714285714286
-SSD_Cottonwood_EF_Testing R^2: 0.33333333333333337
-batch testing loss (MSE): 0.16666666666666666 and batch testing accuracy: 0.8333333333333334
+individual testing MSE: 0.06800000071525573 and MAE: 0.06800000071525573
+batch testing MSE: 0.16666666666666666 and MAE: 0.16666666666666666
+R^2:  0.33333333333333337
 
 Testing SSD on Cottonwood Westface
-individual testing loss (MSE): 0.0 and individual testing accuracy: 1.0
-SSD_Cottonwood_WF_Testing Accuracy: 1.0
-SSD_Cottonwood_WF_Testing Precision: 1.0
-SSD_Cottonwood_WF_Testing Recall: 1.0
-SSD_Cottonwood_WF_Testing F-Score: 1.0
-SSD_Cottonwood_WF_Testing R^2: 1.0
-batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+individual testing MSE: 0.018000000417232515 and MAE: 0.018000000417232515
+batch testing MSE: 0.25 and MAE: 0.25
+R^2:  0.0
 
 Testing SSD on NGilchrist Eastface
-individual testing loss (MSE): 0.028282828854792046 and individual testing accuracy: 0.9191919191919192
-SSD_NGilchrist_EF_Testing Accuracy: 0.8484848484848485
-SSD_NGilchrist_EF_Testing Precision: 0.7199265381083563
-SSD_NGilchrist_EF_Testing Recall: 0.8484848484848485
-SSD_NGilchrist_EF_Testing F-Score: 0.778936910084451
-SSD_NGilchrist_EF_Testing R^2: -0.1578947368421053
-batch testing loss (MSE): 0.24242424242424243 and batch testing accuracy: 0.8484848484848485
+individual testing MSE: 0.029292929654169565 and MAE: 0.021212121452948058
+batch testing MSE: 0.21212121212121213 and MAE: 0.15151515151515152
+R^2:  -0.013157894736842257
 
 Testing SSD on Idaho
-individual testing loss (MSE): 0.3508196703967501 and individual testing accuracy: 0.2786885245901639
-SSD_Idaho_Testing Accuracy: 0.2926829268292683
-SSD_Idaho_Testing Precision: 0.0856632956573468
-SSD_Idaho_Testing Recall: 0.2926829268292683
-SSD_Idaho_Testing F-Score: 0.13253566497929128
-SSD_Idaho_Testing R^2: -1.3789664551223937
-batch testing loss (MSE): 1.5609756097560976 and batch testing accuracy: 0.2926829268292683
+individual testing MSE: 0.32459016144275665 and MAE: 0.18852459138534108
+batch testing MSE: 1.4390243902439024 and MAE: 0.8536585365853658
+R^2:  -1.1931097008159566
 
 Testing RetinaNet on Cottonwood Eastface
-individual testing loss (MSE): 0.07000000104308128 and individual testing accuracy: 0.68
-RetinaNet_Cottonwood_EF_Testing Accuracy: 0.6666666666666666
-RetinaNet_Cottonwood_EF_Testing Precision: 1.0
-RetinaNet_Cottonwood_EF_Testing Recall: 0.6666666666666666
-RetinaNet_Cottonwood_EF_Testing F-Score: 0.8000000000000002
-RetinaNet_Cottonwood_EF_Testing R^2: -2.3333333333333335
-batch testing loss (MSE): 0.8333333333333334 and batch testing accuracy: 0.6666666666666666
+individual testing MSE: 0.0380000002682209 and MAE: 0.0380000002682209
+batch testing MSE: 0.3333333333333333 and MAE: 0.3333333333333333
+R^2:  -0.33333333333333326
 
 Testing RetinaNet on Cottonwood Westface
-individual testing loss (MSE): 0.0 and individual testing accuracy: 1.0
-RetinaNet_Cottonwood_WF_Testing Accuracy: 1.0
-RetinaNet_Cottonwood_WF_Testing Precision: 1.0
-RetinaNet_Cottonwood_WF_Testing Recall: 1.0
-RetinaNet_Cottonwood_WF_Testing F-Score: 1.0
-RetinaNet_Cottonwood_WF_Testing R^2: 1.0
-batch testing loss (MSE): 0.0 and batch testing accuracy: 1.0
+individual testing MSE: 0.0 and MAE: 0.0
+batch testing MSE: 0.0 and MAE: 0.0
+R^2:  1.0
 
 Testing RetinaNet on NGilchrist Eastface
-individual testing loss (MSE): 0.01616161625192623 and individual testing accuracy: 0.9494949494949495
-RetinaNet_NGilchrist_EF_Testing Accuracy: 0.9393939393939394
-RetinaNet_NGilchrist_EF_Testing Precision: 0.910135841170324
-RetinaNet_NGilchrist_EF_Testing Recall: 0.9393939393939394
-RetinaNet_NGilchrist_EF_Testing F-Score: 0.924508240297714
-RetinaNet_NGilchrist_EF_Testing R^2: 0.7105263157894737
-batch testing loss (MSE): 0.06060606060606061 and batch testing accuracy: 0.9393939393939394
+individual testing MSE: 0.010101010251526881 and MAE: 0.010101010251526881
+batch testing MSE: 0.06060606060606061 and MAE: 0.06060606060606061
+R^2:  0.7105263157894737
 
 Testing RetinaNet on Idaho
-individual testing loss (MSE): 0.12131147672895526 and individual testing accuracy: 0.680327868852459
-RetinaNet_Idaho_Testing Accuracy: 0.6951219512195121
-RetinaNet_Idaho_Testing Precision: 0.7526132404181185
-RetinaNet_Idaho_Testing Recall: 0.6951219512195121
-RetinaNet_Idaho_Testing F-Score: 0.6663077775882653
-RetinaNet_Idaho_Testing R^2: 0.0521305530371714
-batch testing loss (MSE): 0.6219512195121951 and batch testing accuracy: 0.6951219512195121
+individual testing MSE: 0.06311475534419544 and MAE: 0.05655737819730258
+batch testing MSE: 0.3048780487804878 and MAE: 0.25609756097560976
+R^2:  0.5353581142339074
