@@ -121,12 +121,17 @@ def rescale_bounding_box(bounding_box, old_image_width, old_image_height, new_im
         
         
 def get_object_detection_label(annotation_list, image, new_image_height_and_width):
-    bounding_boxes = torch.zeros(len(annotation_list), 4)
-    labels = torch.zeros(len(annotation_list)).long()
+    annotation_list_len = 0
+    for annotation in annotation_list:
+        if annotation["category_id"] == 1:
+            annotation_list_len += 1
+            
+    bounding_boxes = torch.zeros(annotation_list_len, 4)
+    labels = torch.zeros(annotation_list_len).long()
     old_image_width = image["width"]
     old_image_height = image["height"]
     for index, annotation in enumerate(annotation_list):
-        if "bbox" in annotation:
+        if "bbox" in annotation and annotation["category_id"] == 1:
             bounding_box = rescale_bounding_box(annotation["bbox"], old_image_width, old_image_height, new_image_height_and_width)
             bounding_box[1] = bounding_box[1] - bounding_box[3]
             bounding_box[2] = bounding_box[0] + bounding_box[2]
