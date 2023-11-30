@@ -39,6 +39,13 @@ def get_predictions(bounding_boxes):
     return predictions
     
 
+def is_directory_supplemental(directory):
+    if directory.name == "caltech":
+        return True
+    else:
+        return False
+    
+
 def fetch_training_data(data_dir):
     json_file_name = "animal_count_key.json"
     training_data, training_labels, validation_data, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels = [], [], [], [], [], [], [], []
@@ -47,7 +54,8 @@ def fetch_training_data(data_dir):
         if directory.is_dir():
             directory_path = directory.path + "/"
             print("\nFeting data from directory: ", directory_path)
-            temp_train_data, temp_train_lab, temp_val_data, temp_valid_lab, temp_batch_train_data, temp_batch_train_lab, temp_batch_val_data, temp_batch_val_lab = utilities.fetch_data(directory_path, json_file_name, False, True, True)
+            is_supplmental = is_directory_supplemental(directory)
+            temp_train_data, temp_train_lab, temp_val_data, temp_valid_lab, temp_batch_train_data, temp_batch_train_lab, temp_batch_val_data, temp_batch_val_lab = utilities.fetch_data(directory_path, json_file_name, False, True, True, is_supplmental)
             print("Number of images found: ", len(temp_train_data) + len(temp_val_data))
             print("Number of batches found: ", len(temp_batch_train_data) + len(temp_batch_val_data))
             training_data.extend(temp_train_data)
@@ -365,13 +373,13 @@ resnet152 = models.resnet152(weights = models.ResNet152_Weights.DEFAULT)
 in_features = resnet152.fc.in_features
 resnet152.fc = nn.Linear(in_features, 1)
 
-vit_l_16 = models.vit_l_16(weights = models.ViT_L_16_Weights.DEFAULT)
-in_features = vit_l_16.heads[0].in_features
-vit_l_16.heads[0] = nn.Linear(in_features, 1)
+#vit_l_16 = models.vit_l_16(weights = models.ViT_L_16_Weights.DEFAULT)
+#in_features = vit_l_16.heads[0].in_features
+#vit_l_16.heads[0] = nn.Linear(in_features, 1)
 
-faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2(weights=models.detection.FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT)
+#faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2(weights=models.detection.FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT)
 
-ssd = models.detection.ssd300_vgg16(weights=models.detection.SSD300_VGG16_Weights.DEFAULT)
+#ssd = models.detection.ssd300_vgg16(weights=models.detection.SSD300_VGG16_Weights.DEFAULT)
 
 retina_net = models.detection.retinanet_resnet50_fpn_v2(weights=models.detection.RetinaNet_ResNet50_FPN_V2_Weights.DEFAULT)
 
@@ -380,7 +388,7 @@ if torch.cuda.device_count() > 1:
     resnet34 = nn.DataParallel(resnet34)
     resnet50 = nn.DataParallel(resnet50)
     resnet152 = nn.DataParallel(resnet152)
-    vit_l_16 = nn.DataParallel(vit_l_16)
+    #vit_l_16 = nn.DataParallel(vit_l_16)
     #cnn_wrapper = nn.DataParallel(cnn_wrapper)
 
 # Training
@@ -403,14 +411,14 @@ train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validati
 print("\nTraining and Validating ResNet152")
 train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, False)
 
-print("\nTraining and Validating Vision Transformer Large 16")
-train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, False)
+#print("\nTraining and Validating Vision Transformer Large 16")
+#train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, False)
 
-print("\nTraining and Validating Faster R-CNN")
-train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, object_detection_batch_size, True, False)
+#print("\nTraining and Validating Faster R-CNN")
+#train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, object_detection_batch_size, True, False)
 
-print("\nTraining and Validating SSD")
-train_and_validate(num_epochs, ssd, "SSD", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, object_detection_batch_size, True, False)
+#print("\nTraining and Validating SSD")
+#train_and_validate(num_epochs, ssd, "SSD", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, object_detection_batch_size, True, False)
 
 print("\nTraining and Validating RetinaNet")
 train_and_validate(num_epochs, retina_net, "RetinaNet", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, object_detection_batch_size, True, False)

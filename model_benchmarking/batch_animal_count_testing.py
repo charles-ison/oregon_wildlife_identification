@@ -174,7 +174,7 @@ def test_object_detection(model, model_name, batch_data_set, individual_data_set
 
     
 def get_data(batch_size, data_dir, json_file_name):
-    batch_testing_data, batch_testing_labels, individual_data, individual_labels = utilities.fetch_data(data_dir, json_file_name, False, False, False)
+    batch_testing_data, batch_testing_labels, individual_data, individual_labels = utilities.fetch_data(data_dir, json_file_name, False, False, False, False)
     batch_data_set = ImageDataSet(batch_testing_data, batch_testing_labels)
     individual_data_set = ImageDataSet(individual_data, individual_labels)
     batch_data_loader = DataLoader(dataset = batch_data_set, batch_size = 1, shuffle = True)
@@ -247,21 +247,21 @@ resnet152 = models.resnet152()
 in_features = resnet152.fc.in_features
 resnet152.fc = nn.Linear(in_features, 1)
 
-vit_l_16 = models.vit_l_16()
-in_features = vit_l_16.heads[0].in_features
-vit_l_16.heads[0] = nn.Linear(in_features, 1)
+#vit_l_16 = models.vit_l_16()
+#in_features = vit_l_16.heads[0].in_features
+#vit_l_16.heads[0] = nn.Linear(in_features, 1)
 
-faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2()
-ssd = models.detection.ssd300_vgg16()
+#faster_rcnn = models.detection.fasterrcnn_resnet50_fpn_v2()
+#ssd = models.detection.ssd300_vgg16()
 retina_net = models.detection.retinanet_resnet50_fpn_v2()
 
-max_batch_size = 100
-embedding_size = 512
-cnn = nn.DataParallel(models.resnet34())
-aggregating_cnn = AggregatingCNN(max_batch_size, embedding_size, cnn)
+#max_batch_size = 100
+#embedding_size = 512
+#cnn = nn.DataParallel(models.resnet34())
+#aggregating_cnn = AggregatingCNN(max_batch_size, embedding_size, cnn)
 
-cnn = models.resnet34()
-cnn_wrapper = CNNWrapper(cnn)
+#cnn = models.resnet34()
+#cnn_wrapper = CNNWrapper(cnn)
 
 #Layer 4 is just recommended by GradCam documentation for ResNet
 resnet34_cam = FullGrad(model=resnet34, target_layers=[], use_cuda=torch.cuda.is_available())
@@ -272,11 +272,11 @@ resnet152_cam = FullGrad(model=resnet152, target_layers=[], use_cuda=torch.cuda.
 resnet34.load_state_dict(torch.load(resnet34_weights_path))
 resnet50.load_state_dict(torch.load(resnet50_weights_path))
 resnet152.load_state_dict(torch.load(resnet152_weights_path))
-faster_rcnn.load_state_dict(torch.load(faster_rcnn_weights_path))
-ssd.load_state_dict(torch.load(ssd_weights_path))
+#faster_rcnn.load_state_dict(torch.load(faster_rcnn_weights_path))
+#ssd.load_state_dict(torch.load(ssd_weights_path))
 retina_net.load_state_dict(torch.load(retina_net_weights_path))
-aggregating_cnn.load_state_dict(torch.load(aggregating_cnn_weights_path))
-vit_l_16.load_state_dict(torch.load(vit_l_16_weights_path))
+#aggregating_cnn.load_state_dict(torch.load(aggregating_cnn_weights_path))
+#vit_l_16.load_state_dict(torch.load(vit_l_16_weights_path))
 
 # Object Detection models cannot be used with data parallel
 if torch.cuda.device_count() > 1:
@@ -284,7 +284,7 @@ if torch.cuda.device_count() > 1:
     resnet34 = nn.DataParallel(resnet34)
     resnet50 = nn.DataParallel(resnet50)
     resnet152 = nn.DataParallel(resnet152)
-    cnn_wrapper = nn.DataParallel(cnn_wrapper)
+    #cnn_wrapper = nn.DataParallel(cnn_wrapper)
 
 # Testing
 model_name = "ResNet34"
@@ -326,65 +326,65 @@ test(resnet152, model_name + "_Idaho", resnet152_cam, idaho_batch_loader, idaho_
 del resnet152
 del resnet152_cam
 
-model_name = "CNNWrapper"
-print("\nTesting CNNWrapper on Cottonwood Eastface")
-test(cnn_wrapper, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, mse, mae, cnn_wrapper_saving_dir)
-print("\nTesting CNNWrapper on Cottonwood Westface")
-test(cnn_wrapper, model_name + "_Cottonwood_WF", None, cottonwood_wf_batch_loader, cottonwood_wf_individual_loader, device, mse, mae, cnn_wrapper_saving_dir)
-print("\nTesting CNNWrapper on NGilchrist Eastface")
-test(cnn_wrapper, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, mse, mae, cnn_wrapper_saving_dir)
-print("\nTesting CNNWrapper on Idaho")
-test(cnn_wrapper, model_name + "_Idaho", None, idaho_batch_loader, idaho_individual_loader, device, mse, mae, cnn_wrapper_saving_dir)
+#model_name = "CNNWrapper"
+#print("\nTesting CNNWrapper on Cottonwood Eastface")
+#test(cnn_wrapper, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, mse, mae, cnn_wrapper_saving_dir)
+#print("\nTesting CNNWrapper on Cottonwood Westface")
+#test(cnn_wrapper, model_name + "_Cottonwood_WF", None, cottonwood_wf_batch_loader, cottonwood_wf_individual_loader, device, mse, mae, cnn_wrapper_saving_dir)
+#print("\nTesting CNNWrapper on NGilchrist Eastface")
+#test(cnn_wrapper, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, mse, mae, cnn_wrapper_saving_dir)
+#print("\nTesting CNNWrapper on Idaho")
+#test(cnn_wrapper, model_name + "_Idaho", None, idaho_batch_loader, idaho_individual_loader, device, mse, mae, cnn_wrapper_saving_dir)
 
-del cnn_wrapper
+#del cnn_wrapper
 
-model_name = "AggregatingCNN"
-print("\nTesting Aggregating CNN on Cottonwood Eastface")
-test_aggregating_cnn(aggregating_cnn, model_name + "_Cottonwood_EF", cottonwood_ef_batch_loader, device, mse, mae, aggregating_cnn_saving_dir)
-print("\nTesting Aggregating CNN on Cottonwood Westface")
-test_aggregating_cnn(aggregating_cnn, model_name + "_Cottonwood_WF", cottonwood_wf_batch_loader, device, mse, mae, aggregating_cnn_saving_dir)
-print("\nTesting Aggregating CNN on NGilchrist Eastface")
-test_aggregating_cnn(aggregating_cnn, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_loader, device, mse, mae, aggregating_cnn_saving_dir)
-print("\nTesting Aggregating CNN on Idaho")
-test_aggregating_cnn(aggregating_cnn, model_name + "_Idaho", idaho_batch_loader, device, mse, mae, aggregating_cnn_saving_dir)
+#model_name = "AggregatingCNN"
+#print("\nTesting Aggregating CNN on Cottonwood Eastface")
+#test_aggregating_cnn(aggregating_cnn, model_name + "_Cottonwood_EF", cottonwood_ef_batch_loader, device, mse, mae, aggregating_cnn_saving_dir)
+#print("\nTesting Aggregating CNN on Cottonwood Westface")
+#test_aggregating_cnn(aggregating_cnn, model_name + "_Cottonwood_WF", cottonwood_wf_batch_loader, device, mse, mae, aggregating_cnn_saving_dir)
+#print("\nTesting Aggregating CNN on NGilchrist Eastface")
+#test_aggregating_cnn(aggregating_cnn, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_loader, device, mse, mae, aggregating_cnn_saving_dir)
+#print("\nTesting Aggregating CNN on Idaho")
+#test_aggregating_cnn(aggregating_cnn, model_name + "_Idaho", idaho_batch_loader, device, mse, mae, aggregating_cnn_saving_dir)
 
-del aggregating_cnn
+#del aggregating_cnn
 
-model_name = "ViTL16"
-print("\nTesting Vision Transformer Large 16 on Cottonwood Eastface")
-test(vit_l_16, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, mse, mae, vit_l_16_saving_dir)
-print("\nTesting Vision Transformer Large 16 on Cottonwood Westface")
-test(vit_l_16, model_name + "_Cottonwood_WF", None, cottonwood_wf_batch_loader, cottonwood_wf_individual_loader, device, mse, mae, vit_l_16_saving_dir)
-print("\nTesting Vision Transformer Large 16 on NGilchrist Eastface")
-test(vit_l_16, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, mse, mae, vit_l_16_saving_dir)
-print("\nTesting Vision Transformer Large 16 on Idaho")
-test(vit_l_16, model_name + "_Idaho", None, idaho_batch_loader, idaho_individual_loader, device, mse, mae, vit_l_16_saving_dir)
+#model_name = "ViTL16"
+#print("\nTesting Vision Transformer Large 16 on Cottonwood Eastface")
+#test(vit_l_16, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, mse, mae, vit_l_16_saving_dir)
+#print("\nTesting Vision Transformer Large 16 on Cottonwood Westface")
+#test(vit_l_16, model_name + "_Cottonwood_WF", None, cottonwood_wf_batch_loader, cottonwood_wf_individual_loader, device, mse, mae, vit_l_16_saving_dir)
+#print("\nTesting Vision Transformer Large 16 on NGilchrist Eastface")
+#test(vit_l_16, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, mse, mae, vit_l_16_saving_dir)
+#print("\nTesting Vision Transformer Large 16 on Idaho")
+#test(vit_l_16, model_name + "_Idaho", None, idaho_batch_loader, idaho_individual_loader, device, mse, mae, vit_l_16_saving_dir)
 
-del vit_l_16
+#del vit_l_16
 
-model_name = "FasterR-CNN"
-print("\nTesting Faster R-CNN on Cottonwood Eastface")
-test_object_detection(faster_rcnn, model_name + "_Cottonwood_EF", cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, faster_rcnn_saving_dir)
-print("\nTesting Faster R-CNN on Cottonwood Westface")
-test_object_detection(faster_rcnn,  model_name + "_Cottonwood_WF", cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, mse, mae, faster_rcnn_saving_dir)
-print("\nTesting Faster R-CNN on NGilchrist Eastface")
-test_object_detection(faster_rcnn, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, faster_rcnn_saving_dir)
-print("\nTesting Faster R-CNN on Idaho")
-test_object_detection(faster_rcnn,  model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, faster_rcnn_saving_dir)
+#model_name = "FasterR-CNN"
+#print("\nTesting Faster R-CNN on Cottonwood Eastface")
+#test_object_detection(faster_rcnn, model_name + "_Cottonwood_EF", cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, faster_rcnn_saving_dir)
+#print("\nTesting Faster R-CNN on Cottonwood Westface")
+#test_object_detection(faster_rcnn,  model_name + "_Cottonwood_WF", cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, mse, mae, faster_rcnn_saving_dir)
+#print("\nTesting Faster R-CNN on NGilchrist Eastface")
+#test_object_detection(faster_rcnn, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, faster_rcnn_saving_dir)
+#print("\nTesting Faster R-CNN on Idaho")
+#test_object_detection(faster_rcnn,  model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, faster_rcnn_saving_dir)
 
-del faster_rcnn
+#del faster_rcnn
 
-model_name = "SSD"
-print("\nTesting SSD on Cottonwood Eastface")
-test_object_detection(ssd, model_name + "_Cottonwood_EF", cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, ssd_saving_dir)
-print("\nTesting SSD on Cottonwood Westface")
-test_object_detection(ssd, model_name + "_Cottonwood_WF", cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, mse, mae, ssd_saving_dir)
-print("\nTesting SSD on NGilchrist Eastface")
-test_object_detection(ssd, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, ssd_saving_dir)
-print("\nTesting SSD on Idaho")
-test_object_detection(ssd, model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, ssd_saving_dir)
+#model_name = "SSD"
+#print("\nTesting SSD on Cottonwood Eastface")
+#test_object_detection(ssd, model_name + "_Cottonwood_EF", cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, ssd_saving_dir)
+#print("\nTesting SSD on Cottonwood Westface")
+#test_object_detection(ssd, model_name + "_Cottonwood_WF", cottonwood_wf_batch_data_set, cottonwood_wf_individual_data_set, batch_size, device, mse, mae, ssd_saving_dir)
+#print("\nTesting SSD on NGilchrist Eastface")
+#test_object_detection(ssd, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, ssd_saving_dir)
+#print("\nTesting SSD on Idaho")
+#test_object_detection(ssd, model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, ssd_saving_dir)
 
-del ssd
+#del ssd
 
 model_name = "RetinaNet"
 print("\nTesting RetinaNet on Cottonwood Eastface")

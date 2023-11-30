@@ -191,7 +191,7 @@ def plot_histogram(training_labels, data_dir):
     
 
 #TODO: Code smell here passing around these flags, should probably be refactored into separate classes
-def fetch_data(data_dir, json_file_name, is_classification, is_object_detection, is_training):
+def fetch_data(data_dir, json_file_name, is_classification, is_object_detection, is_training, is_supplemental):
     coco = COCO(data_dir + json_file_name)
     images = coco.loadImgs(coco.getImgIds())
     sorted_images = get_sorted_images(images)
@@ -212,10 +212,12 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
             label = None
             try:
                 new_image_height_and_width = 224
-                image_tensor = get_image_tensor(file_path, new_image_height_and_width)
                 label = get_label(annotation_list, image, is_classification, is_object_detection, new_image_height_and_width)
+                if is_training and label["labels"].size(dim=0) == 0 and is_supplemental:
+                    continue
+                image_tensor = get_image_tensor(file_path, new_image_height_and_width)
             except:
-                print("Problematic image or label encountered, leaving out of training and validation")
+                print("Problematic image or label encountered, leaving out.")
                 continue
 
             if previous_time_stamp == None or (time_stamp - previous_time_stamp).total_seconds() < 60:
@@ -230,7 +232,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
                 batch_labels.append(label)
 
             previous_time_stamp = time_stamp
-            
+        
     data.append(torch.stack(batch_data))
     append_batch_labels(labels, batch_labels, is_classification, is_object_detection)
     
