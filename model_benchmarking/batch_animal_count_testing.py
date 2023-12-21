@@ -153,32 +153,6 @@ def test_batch_object_detection(model, model_name, batch_data_set, mse_criterion
     acc = num_correct/len(batch_data_set)
     print("batch testing MSE: " + str(mse) + ", MAE: " + str(mae) + " and ACC: " + str(acc))
     utilities.print_regression_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
-    
-    
-def test_aggregating_cnn(model, model_name, batch_loader, device, mse_criterion, mae_criterion, saving_dir):
-    model.to(device)
-    model.eval()
-    running_mse = 0.0
-    running_mae = 0.0
-    all_labels, all_predictions = [], []
-    
-    for batch in batch_loader:
-        data, labels = batch['data'].to(device), batch['label'].to(device)
-        label = torch.max(labels)
-        label = torch.unsqueeze(label, dim=0)
-        
-        output = model(data)
-
-        running_mse += mse_criterion(output, label).item()
-        running_mae += mae_criterion(output, label).item()
-        
-        all_labels.append(label.item())
-        all_predictions.append(output.item())
-
-    mse = running_mse/len(batch_loader.dataset)
-    mae = running_mae/len(batch_loader.dataset)
-    print("batch testing MSE: " + str(mse) + " and MAE: " + str(mae))
-    utilities.print_regression_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
 
     
 def test_object_detection(model, model_name, batch_data_set, individual_data_set, batch_size, device, mse_criterion, mae_criterion, saving_dir):
