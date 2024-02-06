@@ -120,7 +120,7 @@ def rescale_bounding_box(bounding_box, old_image_width, old_image_height, new_im
     return bounding_box
         
         
-def get_object_detection_label(annotation_list, image, new_image_height_and_width):
+def get_label(annotation_list, image, new_image_height_and_width):
     annotation_list_len = 0
     for annotation in annotation_list:
         if annotation["category_id"] == 1:
@@ -143,26 +143,8 @@ def get_object_detection_label(annotation_list, image, new_image_height_and_widt
     return {"boxes":  bounding_boxes, "labels": labels}
     
     
-def get_label(annotation_list, image, is_classification, is_object_detection, new_image_height_and_width):
-    if is_object_detection:
-        return get_object_detection_label(annotation_list, image, new_image_height_and_width)
-    elif image["id"] == annotation_list[0]["image_id"]:
-        label = annotation_list[0]["category_id"]
-        if is_classification and label > 1:
-            return 1
-        else:
-            return label
-    raise Exception("No label found for image.")
-    
-    
-def append_batch_labels(labels, batch_labels, is_classification, is_object_detection):
-    if is_classification:
-        labels.append(torch.LongTensor(batch_labels))
-    elif is_object_detection:
-        labels.append(batch_labels)
-    else:
-        labels.append(torch.FloatTensor(batch_labels))
-        
+def append_batch_labels(labels, batch_labels):
+    labels.append(batch_labels)
         
 def get_labels_from_targets(targets):
     labels = []
@@ -191,7 +173,7 @@ def plot_histogram(training_labels, data_dir):
     
 
 #TODO: Code smell here passing around these flags, should probably be refactored into separate classes
-def fetch_data(data_dir, json_file_name, is_classification, is_object_detection, is_training, is_supplemental):
+def fetch_data(data_dir, json_file_name, is_training, is_supplemental):
     coco = COCO(data_dir + json_file_name)
     images = coco.loadImgs(coco.getImgIds())
     sorted_images = get_sorted_images(images)
@@ -212,7 +194,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
             label = None
             try:
                 new_image_height_and_width = 224
-                label = get_label(annotation_list, image, is_classification, is_object_detection, new_image_height_and_width)
+                label = get_label(annotation_list, image, new_image_height_and_width)
                 if is_training and label["labels"].size(dim=0) == 0 and is_supplemental:
                     continue
                 image_tensor = get_image_tensor(file_path, new_image_height_and_width)
@@ -225,7 +207,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
                 batch_labels.append(label)
             else:
                 data.append(torch.stack(batch_data))
-                append_batch_labels(labels, batch_labels, is_classification, is_object_detection)
+                append_batch_labels(labels, batch_labels)
 
                 batch_data, batch_labels = [], []
                 batch_data.append(image_tensor)
@@ -234,7 +216,7 @@ def fetch_data(data_dir, json_file_name, is_classification, is_object_detection,
             previous_time_stamp = time_stamp
         
     data.append(torch.stack(batch_data))
-    append_batch_labels(labels, batch_labels, is_classification, is_object_detection)
+    append_batch_labels(labels, batch_labels)
     
     if is_training:
         batch_training_data, batch_validation_data, batch_training_labels, batch_validation_labels = train_test_split(data, labels, test_size = 0.20)
@@ -294,3 +276,16 @@ def create_heat_map(grad_cam, image, prediction, label, saving_dir, identifier):
     
     plt.imshow(normalized_image_with_heat_map)
     plt.imsave(image_file_name, normalized_image_with_heat_map)
+    
+    
+def set_device_for_list_of_dicts(some_list, device):
+    for some_dict in some_list:
+        some_dict["boxes"] = some_dict["boxes"].to(device)
+        some_dict["labels"] = some_dict["labels"].to(device)
+        
+
+def get_info_from_batch(batch, device):
+    data, targets = batch['data'], batch['label']
+    set_device_for_list_of_tensors(data, device)
+    set_device_for_list_of_dicts(targets, device)
+    return data, targets

@@ -12,19 +12,6 @@ import utilities
 from PIL import Image
 from custom_data_sets.image_data_set import ImageDataSet
     
-
-def set_device_for_list_of_dicts(some_list, device):
-    for some_dict in some_list:
-        some_dict["boxes"] = some_dict["boxes"].to(device)
-        some_dict["labels"] = some_dict["labels"].to(device)
-        
-
-def get_info_from_batch(batch):
-    data, targets = batch['data'], batch['label']
-    utilities.set_device_for_list_of_tensors(data, device)
-    set_device_for_list_of_dicts(targets, device)
-    return data, targets
-    
     
 def get_predictions(bounding_boxes):
     predictions = []
@@ -57,7 +44,7 @@ def fetch_training_data(data_dir):
             directory_path = directory.path + "/"
             print("\nFeting data from directory: ", directory_path)
             is_supplmental = is_directory_supplemental(directory)
-            temp_train_data, temp_train_lab, temp_val_data, temp_valid_lab, temp_batch_train_data, temp_batch_train_lab, temp_batch_val_data, temp_batch_val_lab = utilities.fetch_data(directory_path, json_file_name, False, True, True, is_supplmental)
+            temp_train_data, temp_train_lab, temp_val_data, temp_valid_lab, temp_batch_train_data, temp_batch_train_lab, temp_batch_val_data, temp_batch_val_lab = utilities.fetch_data(directory_path, json_file_name, True, is_supplmental)
             print("Number of images found: ", len(temp_train_data) + len(temp_val_data))
             print("Number of batches found: ", len(temp_batch_train_data) + len(temp_batch_val_data))
             training_data.extend(temp_train_data)
@@ -85,7 +72,7 @@ def train(model, training_data_set, criterion, optimizer, device, batch_size):
     
     for index in range(0, len(training_data_set), batch_size):
         batch = training_data_set[index:index + batch_size]
-        data, targets = get_info_from_batch(batch)
+        data, targets = utilities.get_info_from_batch(batch, device)
         data = torch.stack(data)
         labels = utilities.get_labels_from_targets(targets)
         labels = torch.FloatTensor(labels).to(device)
@@ -107,7 +94,7 @@ def train_object_detection(model, training_data_set, optimizer, device, batch_si
     running_loss = 0.0
     for index in range(0, len(training_data_set), batch_size):
         batch = training_data_set[index:index + batch_size]
-        data, targets = get_info_from_batch(batch)
+        data, targets = utilities.get_info_from_batch(batch, device)
         
         optimizer.zero_grad()
         losses_dict = model(data, targets)
@@ -128,7 +115,7 @@ def validation_object_detection(model, validation_data_set, mse_criterion, mae_c
 
     for index in range(0, len(validation_data_set), batch_size):
         batch = validation_data_set[index:index + batch_size]
-        data, targets = get_info_from_batch(batch)
+        data, targets = utilities.get_info_from_batch(batch, device)
         
         model.eval()
         bounding_boxes = model(data)
@@ -154,7 +141,7 @@ def validation(model, validation_data_set, mse_criterion, mae_criterion, device,
 
     for index in range(0, len(validation_data_set), batch_size):
         batch = validation_data_set[index:index + batch_size]
-        data, targets = get_info_from_batch(batch)
+        data, targets = utilities.get_info_from_batch(batch, device)
         data = torch.stack(data)
         labels = utilities.get_labels_from_targets(targets)
         labels = torch.FloatTensor(labels).to(device)

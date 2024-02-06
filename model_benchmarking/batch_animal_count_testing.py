@@ -12,20 +12,22 @@ from custom_data_sets.image_data_set import ImageDataSet
 from custom_models.cnn_wrapper import CNNWrapper
 
 
-def test_batch(model, model_name, batch_testing_loader, mse_criterion, mae_criterion, print_incorrect_images, saving_dir, device):
+def test_batch(model, model_name, data_set, mse_criterion, mae_criterion, print_incorrect_images, saving_dir, device):
     model.eval()
     running_mse = 0.0
     running_mae = 0.0
     num_correct = 0
     all_labels, all_predictions = [], []
 
-    for batch in batch_testing_loader:
-        data, labels = torch.squeeze(batch['data'], dim=0).to(device), batch['label'].to(device)
+    for batch in data_set:
+        data, targets = batch['data'], batch['label']
+        labels = utilities.get_labels_from_targets(targets)
+        labels = torch.FloatTensor(labels).to(device)
 
         # This is to prevent cuda memory issues for large batches
         max_prediction = 0
         for image in data:
-            image = torch.unsqueeze(image, dim=0)
+            image = torch.unsqueeze(image, dim=0).to(device)
             output = model(image).flatten()
             max_prediction = max(max_prediction, output.item())
 
@@ -40,22 +42,27 @@ def test_batch(model, model_name, batch_testing_loader, mse_criterion, mae_crite
         all_labels.append(max_label.item())
         all_predictions.append(max_prediction.item())
 
-    mse = running_mse/len(batch_testing_loader.dataset)
-    mae = running_mae/len(batch_testing_loader.dataset)
-    acc = num_correct/len(batch_testing_loader.dataset)
+    mse = running_mse/len(data_set)
+    mae = running_mae/len(data_set)
+    acc = num_correct/len(data_set)
     print("batch testing MSE: " + str(mse) + ", MAE: " + str(mae) + " and ACC: " + str(acc))
     utilities.print_regression_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
     
     
-def test_individual(model, grad_cam, testing_loader, mse_criterion, mae_criterion, print_incorrect_images, print_heat_map, saving_dir, device):
+def test_individual(model, grad_cam, data_set, mse_criterion, mae_criterion, print_incorrect_images, print_heat_map, saving_dir, batch_size, device):
     model.eval()
     running_mse = 0.0
     running_mae = 0.0
     num_correct = 0
     grad_cam_identifier = 0
 
-    for i, batch in enumerate(testing_loader):
-        data, labels = batch['data'].to(device), batch['label'].to(device)
+    for index in range(0, len(data_set), batch_size):
+        batch = data_set[index:index + batch_size]
+        data, targets = utilities.get_info_from_batch(batch, device)
+        data = torch.stack(data)
+        labels = utilities.get_labels_from_targets(targets)
+        labels = torch.FloatTensor(labels).to(device)
+        
         output = model(data).flatten()
 
         running_mse += mse_criterion(output, labels).item()
@@ -69,16 +76,16 @@ def test_individual(model, grad_cam, testing_loader, mse_criterion, mae_criterio
                 utilities.create_heat_map(grad_cam, data[index], prediction, labels[index], saving_dir, grad_cam_identifier)
             grad_cam_identifier += 1
 
-    mse = running_mse/len(testing_loader.dataset)
-    mae = running_mae/len(testing_loader.dataset)
-    acc = num_correct/len(testing_loader.dataset)
+    mse = running_mse/len(data_set)
+    mae = running_mae/len(data_set)
+    acc = num_correct/len(data_set)
     print("individual testing MSE: " + str(mse) + ", MAE: " + str(mae) + " and ACC: " + str(acc))
 
 
-def test(model, model_name, grad_cam, batch_loader, individual_loader, device, mse_criterion, mae_criterion, saving_dir):
+def test(model, model_name, grad_cam, batch_data_set, individual_data_set, batch_size, device, mse_criterion, mae_criterion, saving_dir):
     model.to(device)
-    test_individual(model, grad_cam, individual_loader, mse_criterion, mae_criterion, False, False, saving_dir, device)
-    test_batch(model, model_name, batch_loader, mse_criterion, mae_criterion, False, saving_dir, device)
+    test_individual(model, grad_cam, individual_data_set, mse_criterion, mae_criterion, False, False, saving_dir, batch_size, device)
+    test_batch(model, model_name, batch_data_set, mse_criterion, mae_criterion, False, saving_dir, device)
     
     
 def get_predictions(bounding_boxes):
@@ -100,8 +107,8 @@ def test_individual_object_detection(model, individual_data_set, batch_size, mse
 
     for index in range(0, len(individual_data_set), batch_size):
         batch = individual_data_set[index:index + batch_size]
-        data, labels = batch['data'], batch['label']
-        utilities.set_device_for_list_of_tensors(data, device)
+        data, targets = utilities.get_info_from_batch(batch, device)
+        labels = utilities.get_labels_from_targets(targets)
         
         bounding_boxes = model(data)
         predictions = get_predictions(bounding_boxes)
@@ -126,7 +133,8 @@ def test_batch_object_detection(model, model_name, batch_data_set, mse_criterion
     all_labels, all_predictions = [], []
 
     for batch in batch_data_set:
-        data, labels = batch['data'], batch['label']
+        data, targets = utilities.get_info_from_batch(batch, device)
+        labels = utilities.get_labels_from_targets(targets)
 
         # This is to prevent cuda memory issues for large batches
         max_prediction = 0
@@ -162,12 +170,10 @@ def test_object_detection(model, model_name, batch_data_set, individual_data_set
 
     
 def get_data(batch_size, data_dir, json_file_name):
-    batch_testing_data, batch_testing_labels, individual_data, individual_labels = utilities.fetch_data(data_dir, json_file_name, False, False, False, False)
+    batch_testing_data, batch_testing_labels, individual_data, individual_labels = utilities.fetch_data(data_dir, json_file_name, False, False)
     batch_data_set = ImageDataSet(batch_testing_data, batch_testing_labels)
     individual_data_set = ImageDataSet(individual_data, individual_labels)
-    batch_data_loader = DataLoader(dataset = batch_data_set, batch_size = 1, shuffle = True)
-    individual_data_loader = DataLoader(dataset = individual_data_set, batch_size = batch_size, shuffle = True)
-    return batch_data_loader, individual_data_loader, batch_data_set, individual_data_set
+    return batch_data_set, individual_data_set
 
 
 # Declaring Constants
@@ -210,13 +216,13 @@ mse = nn.MSELoss()
 mae = nn.L1Loss()
 
 print("\nGetting Cottonwood Eastface data")
-cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set = get_data(batch_size, data_dir, cottonwood_eastface_json_file_name)
+cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set = get_data(batch_size, data_dir, cottonwood_eastface_json_file_name)
 
 print("\nGetting NGilchrist Eastface data")
-ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set = get_data(batch_size, data_dir, ngilchrist_eastface_json_file_name)
+ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set = get_data(batch_size, data_dir, ngilchrist_eastface_json_file_name)
 
 print("\nGetting Idaho data")
-idaho_batch_loader, idaho_individual_loader, idaho_batch_data_set, idaho_individual_data_set = get_data(batch_size, data_dir, idaho_json_file_name)
+idaho_batch_data_set, idaho_individual_data_set = get_data(batch_size, data_dir, idaho_json_file_name)
 
 # Declaring Models
 # Have to follow same steps used to create model during training
@@ -264,33 +270,33 @@ if torch.cuda.device_count() > 1:
 # Testing
 model_name = "ResNet34"
 print("\nTesting ResNet34 on Cottonwood Eastface")
-test(resnet34, model_name + "_Cottonwood_EF", resnet34_cam, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, mse, mae, resnet_34_saving_dir)
+test(resnet34, model_name + "_Cottonwood_EF", resnet34_cam, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
 print("\nTesting ResNet34 on NGilchrist Eastface")
-test(resnet34, model_name + "_NGilchrist_EF", resnet34_cam, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, mse, mae, resnet_34_saving_dir)
+test(resnet34, model_name + "_NGilchrist_EF", resnet34_cam, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
 print("\nTesting ResNet34 on Idaho")
-test(resnet34, model_name + "_Idaho", resnet34_cam, idaho_batch_loader, idaho_individual_loader, device, mse, mae, resnet_34_saving_dir)
+test(resnet34, model_name + "_Idaho", resnet34_cam, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
 
 del resnet34
 del resnet34_cam
 
 model_name = "ResNet50"
 print("\nTesting ResNet50 on Cottonwood Eastface")
-test(resnet50, model_name + "_Cottonwood_EF", resnet50_cam, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, mse, mae, resnet_50_saving_dir)
+test(resnet50, model_name + "_Cottonwood_EF", resnet50_cam, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 print("\nTesting ResNet50 on NGilchrist Eastface")
-test(resnet50, model_name + "_NGilchrist_EF", resnet50_cam, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, mse, mae, resnet_50_saving_dir)
+test(resnet50, model_name + "_NGilchrist_EF", resnet50_cam, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 print("\nTesting ResNet50 on Idaho")
-test(resnet50, model_name + "_Idaho", resnet50_cam, idaho_batch_loader, idaho_individual_loader, device, mse, mae, resnet_50_saving_dir)
+test(resnet50, model_name + "_Idaho", resnet50_cam, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 
 del resnet50
 del resnet50_cam
 
 model_name = "ResNet152"
 print("\nTesting ResNet152 on Cottonwood Eastface")
-test(resnet152, model_name + "_Cottonwood_EF", resnet152_cam, cottonwood_ef_batch_loader, cottonwood_ef_individual_loader, device, mse, mae, resnet_152_saving_dir)
+test(resnet152, model_name + "_Cottonwood_EF", resnet152_cam, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 print("\nTesting ResNet152 on NGilchrist Eastface")
-test(resnet152, model_name + "_NGilchrist_EF", resnet152_cam, ngilchrist_ef_batch_loader, ngilchrist_ef_individual_loader, device, mse, mae, resnet_152_saving_dir)
+test(resnet152, model_name + "_NGilchrist_EF", resnet152_cam, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 print("\nTesting ResNet152 on Idaho")
-test(resnet152, model_name + "_Idaho", resnet152_cam, idaho_batch_loader, idaho_individual_loader, device, mse, mae, resnet_152_saving_dir)
+test(resnet152, model_name + "_Idaho", resnet152_cam, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 
 del resnet152
 del resnet152_cam
