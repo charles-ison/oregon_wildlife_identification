@@ -32,10 +32,14 @@ How to start virtual environment and load required modules:
 
 ```module load python/3.10 cuda/11.7```
 
-Model weights and confusion matrices will be saved here: 
+Please store data to be used for training/testing in a local directory:
 
-```/nfs/stak/users/isonc/hpc-share/saved_models/```
+```saved_data/```
 
-and run logs will be saved here when using sbatch:
+Model weights and confusion matrices will be saved in: 
+
+```saved_models/```
+
+and when using sbatch run logs will be recorded in:
 
  ```model_benchmarking/run_logs```
