@@ -6,8 +6,8 @@
 #SBATCH --gres=gpu:2   
 #SBATCH --mem=120G  
 
-#SBATCH -o model_benchmarking/run_logs/logs.out
-#SBATCH -e model_benchmarking/run_logs/logs.err
+#SBATCH -o run_logs/logs.out
+#SBATCH -e run_logs/logs.err
 
 # load env
 source env/bin/activate
