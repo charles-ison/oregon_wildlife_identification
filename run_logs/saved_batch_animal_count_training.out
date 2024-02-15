@@ -1,0 +1,261 @@
+2.0.1+cu117
+0.15.2+cu117
+torch.cuda.is_available(): True
+
+Feting data from directory:  /nfs/stak/users/isonc/hpc-share/saved_data/training_animal_count/cottonwood_eastface_2022/
+loading annotations into memory...
+Done (t=0.02s)
+creating index...
+index created!
+Problematic image or label encountered, leaving out.
+Problematic image or label encountered, leaving out.
+Number of images found:  3479
+Number of batches found:  596
+
+Feting data from directory:  /nfs/stak/users/isonc/hpc-share/saved_data/training_animal_count/ngilchrist_eastface_2022_MP180_13_ODOT05/
+loading annotations into memory...
+Done (t=0.01s)
+creating index...
+index created!
+Number of images found:  190
+Number of batches found:  46
+
+Feting data from directory:  /nfs/stak/users/isonc/hpc-share/saved_data/training_animal_count/crawford_westface_2022_MP150_ODOT006/
+loading annotations into memory...
+Done (t=0.02s)
+creating index...
+index created!
+Number of images found:  3468
+Number of batches found:  508
+
+Feting data from directory:  /nfs/stak/users/isonc/hpc-share/saved_data/training_animal_count/caltech/
+loading annotations into memory...
+Done (t=0.66s)
+creating index...
+index created!
+Number of images found:  6055
+Number of batches found:  762
+
+Feting data from directory:  /nfs/stak/users/isonc/hpc-share/saved_data/training_animal_count/vandevert_westface_2023_MP154_ODOT065/
+loading annotations into memory...
+Done (t=0.01s)
+creating index...
+index created!
+Number of images found:  956
+Number of batches found:  273
+
+Number of training images:  11119
+Number of validation images:  3029
+Number of batches for training:  1745
+Number of batches for validation:  440
+Multiple GPUs available, using: 2
+
+Training and Validating ResNet34
+Epoch: 0
+training loss: 0.0006002649576596266
+validation MSE: 0.00048272978955957906, MAE: 0.0010000109505283435 and ACC: 0.9465170023109938
+batch validation MSE: 0.11846653829178319, MAE: 0.1813328375002708 and ACC: 0.9204545454545454
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7103566141626656
+Epoch: 1
+training loss: 0.0001637100273320621
+validation MSE: 0.00040789097104776254, MAE: 0.00089752124594792 and ACC: 0.9544404093760317
+batch validation MSE: 0.09014784687363696, MAE: 0.15299039242408155 and ACC: 0.9295454545454546
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7795940668548632
+Epoch: 2
+training loss: 0.00010475387777662425
+validation MSE: 0.0003769886124966443, MAE: 0.0009550465908566887 and ACC: 0.953449983492902
+batch validation MSE: 0.07537128294351099, MAE: 0.15704225136644462 and ACC: 0.9340909090909091
+Epoch: 3
+training loss: 8.337353960507818e-05
+validation MSE: 0.0003729850606000947, MAE: 0.0009426724137390907 and ACC: 0.9527896995708155
+batch validation MSE: 0.08456930149326011, MAE: 0.16220784178638661 and ACC: 0.9227272727272727
+Epoch: 4
+training loss: 6.214728657156564e-05
+validation MSE: 0.00034223431238603893, MAE: 0.000906754704484376 and ACC: 0.9527896995708155
+batch validation MSE: 0.07400014838884514, MAE: 0.1506855588236993 and ACC: 0.9295454545454546
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8190741989507069
+Epoch: 5
+training loss: 4.885374343173304e-05
+validation MSE: 0.00035480173601691736, MAE: 0.0008157372164742 and ACC: 0.9451964344668208
+batch validation MSE: 0.07959240569645497, MAE: 0.16087433863854544 and ACC: 0.9068181818181819
+Epoch: 6
+training loss: 4.9118565663337514e-05
+validation MSE: 0.0003613181985341586, MAE: 0.0009038395030973138 and ACC: 0.9557609772202047
+batch validation MSE: 0.08754208946132241, MAE: 0.1552894461857663 and ACC: 0.9318181818181818
+Epoch: 7
+training loss: 3.585078609590171e-05
+validation MSE: 0.00032080271483923823, MAE: 0.0007787048054158629 and ACC: 0.9570815450643777
+batch validation MSE: 0.07186262559079844, MAE: 0.1378199837551537 and ACC: 0.9295454545454546
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8243003087289865
+Epoch: 8
+training loss: 3.124879419457525e-05
+validation MSE: 0.0003260338212218604, MAE: 0.0007350181231564836 and ACC: 0.9574116870254209
+batch validation MSE: 0.07605983199934614, MAE: 0.1269827942977744 and ACC: 0.9340909090909091
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8140383975865991
+Epoch: 9
+training loss: 2.3263996239252034e-05
+validation MSE: 0.00033574508052330355, MAE: 0.0008661743584305747 and ACC: 0.9551006932981182
+batch validation MSE: 0.0699572667353388, MAE: 0.14417216733352028 and ACC: 0.9340909090909091
+
+Training and Validating ResNet50
+Epoch: 0
+training loss: 0.0004084731863175207
+validation MSE: 0.0004944560348928546, MAE: 0.0009884096659933943 and ACC: 0.949488279960383
+batch validation MSE: 0.11640304412473412, MAE: 0.18587562917012043 and ACC: 0.9204545454545454
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7154017274173392
+Epoch: 1
+training loss: 0.00015630243758694688
+validation MSE: 0.0003862431603085684, MAE: 0.0008963740065807004 and ACC: 0.9501485638824695
+batch validation MSE: 0.09791951080211214, MAE: 0.18518492856316945 and ACC: 0.9113636363636364
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.760592831172002
+Epoch: 2
+training loss: 8.485405357010621e-05
+validation MSE: 0.00044677829687825207, MAE: 0.0009445561487787271 and ACC: 0.9389237372069991
+batch validation MSE: 0.12629360142622142, MAE: 0.19655760164499622 and ACC: 0.8886363636363637
+Epoch: 3
+training loss: 6.926823373488953e-05
+validation MSE: 0.00035284534859240116, MAE: 0.0008075248269249245 and ACC: 0.9584021129085507
+batch validation MSE: 0.07138456986714861, MAE: 0.14765881131487815 and ACC: 0.9363636363636364
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8254691248969684
+Epoch: 4
+training loss: 4.980443272485355e-05
+validation MSE: 0.00033491488439133947, MAE: 0.0008569836159002745 and ACC: 0.9600528227137669
+batch validation MSE: 0.07701886351221858, MAE: 0.14693103380374273 and ACC: 0.9431818181818182
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8116936246837101
+Epoch: 5
+training loss: 3.910306580223988e-05
+validation MSE: 0.00034433753946387126, MAE: 0.000783916175385126 and ACC: 0.9593925387916804
+batch validation MSE: 0.07884014963301104, MAE: 0.15200253399935634 and ACC: 0.95
+Epoch: 6
+training loss: 3.609772366116867e-05
+validation MSE: 0.0003208238004250824, MAE: 0.0007635998884298967 and ACC: 0.9607131066358534
+batch validation MSE: 0.07533724410387181, MAE: 0.12160548939454284 and ACC: 0.9431818181818182
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8158050814615136
+Epoch: 7
+training loss: 3.063464931561057e-05
+validation MSE: 0.000330773464777006, MAE: 0.0007569019689777182 and ACC: 0.9603829646748102
+batch validation MSE: 0.0681471933741553, MAE: 0.13130195756146515 and ACC: 0.9363636363636364
+Epoch: 8
+training loss: 2.97622315955663e-05
+validation MSE: 0.0003165476738708017, MAE: 0.0007499585099722459 and ACC: 0.9610432485968967
+batch validation MSE: 0.07026694282635534, MAE: 0.13401220224755392 and ACC: 0.9431818181818182
+Epoch: 9
+training loss: 2.4333073632703354e-05
+validation MSE: 0.0003432881274005689, MAE: 0.0007461975311713472 and ACC: 0.9603829646748102
+batch validation MSE: 0.06501009271084542, MAE: 0.11969652285757051 and ACC: 0.9454545454545454
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8410543317216247
+
+Training and Validating ResNet152
+Epoch: 0
+training loss: 0.0003465728614653858
+validation MSE: 0.000421755154825902, MAE: 0.0009508327057984214 and ACC: 0.9593925387916804
+batch validation MSE: 0.0930036153505483, MAE: 0.16504063017412343 and ACC: 0.9409090909090909
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7726118904192935
+Epoch: 1
+training loss: 0.00012822979790630052
+validation MSE: 0.0003700670495644069, MAE: 0.0008850075001959047 and ACC: 0.9590623968306372
+batch validation MSE: 0.0811047236507727, MAE: 0.1382050875807181 and ACC: 0.9295454545454546
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8017039496185083
+Epoch: 2
+training loss: 7.596105298278507e-05
+validation MSE: 0.0003237660510601404, MAE: 0.0007918645133079574 and ACC: 0.9613733905579399
+batch validation MSE: 0.065663638825986, MAE: 0.13979800815948032 and ACC: 0.9477272727272728
+Epoch: 3
+training loss: 5.472643094507361e-05
+validation MSE: 0.00029853785938754575, MAE: 0.0007496018143485741 and ACC: 0.9587322548695939
+batch validation MSE: 0.06017043381397697, MAE: 0.12977750650818715 and ACC: 0.9431818181818182
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8528869979759773
+Epoch: 4
+training loss: 4.415860867736038e-05
+validation MSE: 0.0003093424969260234, MAE: 0.0007581067074443217 and ACC: 0.9610432485968967
+batch validation MSE: 0.06029680668924216, MAE: 0.1256184709787538 and ACC: 0.9431818181818182
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8525780229085677
+Epoch: 5
+training loss: 3.285773688513018e-05
+validation MSE: 0.0002756027563835733, MAE: 0.0006795410803537945 and ACC: 0.9620336744800264
+batch validation MSE: 0.06040540664022138, MAE: 0.12639177796452053 and ACC: 0.95
+Epoch: 6
+training loss: 2.9980637963094994e-05
+validation MSE: 0.0002795179058130758, MAE: 0.000685449781867292 and ACC: 0.9626939584021129
+batch validation MSE: 0.059828365142885656, MAE: 0.1221063332727433 and ACC: 0.9522727272727273
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8537233350250748
+Epoch: 7
+training loss: 2.4661156896671643e-05
+validation MSE: 0.00025901723236150575, MAE: 0.0006654694376309817 and ACC: 0.9623638164410696
+batch validation MSE: 0.05951413960662128, MAE: 0.12561698876088484 and ACC: 0.9409090909090909
+Epoch: 8
+training loss: 2.1457398947797718e-05
+validation MSE: 0.0002664589372605882, MAE: 0.0006649935880621182 and ACC: 0.9620336744800264
+batch validation MSE: 0.062285646030216794, MAE: 0.12443462266078727 and ACC: 0.9409090909090909
+Epoch: 9
+training loss: 2.0322567418606973e-05
+validation MSE: 0.00025563882974389364, MAE: 0.0006295280286918658 and ACC: 0.9636843842852426
+batch validation MSE: 0.054354602045412044, MAE: 0.11060303671137345 and ACC: 0.9409090909090909
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.8671063486198203
+
+Training and Validating RetinaNet
+Epoch: 0
+training loss: 0.06938052426256348
+validation MSE: 0.05883129841819302, MAE: 0.051138990800661706 and ACC: 0.7619676460878178
+batch validation MSE: 0.23636363636363636, MAE: 0.17272727272727273 and ACC: 0.8545454545454545
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.42210547585370783
+Epoch: 1
+training loss: 0.04475997600765094
+validation MSE: 0.07368768653723225, MAE: 0.05440739632518664 and ACC: 0.7698910531528558
+batch validation MSE: 0.37727272727272726, MAE: 0.22727272727272727 and ACC: 0.8318181818181818
+Epoch: 2
+training loss: 0.03706871787485922
+validation MSE: 0.11828986672175996, MAE: 0.10693298339765038 and ACC: 0.49059095411026743
+batch validation MSE: 0.575, MAE: 0.42954545454545456 and ACC: 0.625
+Epoch: 3
+training loss: 0.033376512672789266
+validation MSE: 0.07428194181031227, MAE: 0.04985143708667176 and ACC: 0.7989435457246616
+batch validation MSE: 0.4409090909090909, MAE: 0.21363636363636362 and ACC: 0.865909090909091
+Epoch: 4
+training loss: 0.03026017937215017
+validation MSE: 0.07066688742445577, MAE: 0.04861340466880609 and ACC: 0.7966325519973588
+batch validation MSE: 0.4954545454545455, MAE: 0.21363636363636362 and ACC: 0.8681818181818182
+Epoch: 5
+training loss: 0.026029065049366754
+validation MSE: 0.0689501491424155, MAE: 0.04544404180540272 and ACC: 0.8114889402443051
+batch validation MSE: 0.4659090909090909, MAE: 0.18863636363636363 and ACC: 0.8818181818181818
+Epoch: 6
+training loss: 0.024015978672571516
+validation MSE: 0.06221525297282198, MAE: 0.0373885777817972 and ACC: 0.8527566853747112
+batch validation MSE: 0.35909090909090907, MAE: 0.17272727272727273 and ACC: 0.8886363636363637
+Epoch: 7
+training loss: 0.02133455615908633
+validation MSE: 0.030108947251527057, MAE: 0.026411357340973256 and ACC: 0.876526906569825
+batch validation MSE: 0.1590909090909091, MAE: 0.11818181818181818 and ACC: 0.9
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.611032531824611
+Epoch: 8
+training loss: 0.021100969670596
+validation MSE: 0.02647738567513182, MAE: 0.023572136394337643 and ACC: 0.8894024430505117
+batch validation MSE: 0.11818181818181818, MAE: 0.10454545454545454 and ACC: 0.9022727272727272
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.7110527379268539
+Epoch: 9
+training loss: 0.01822540183681678
+validation MSE: 0.027467811577939562, MAE: 0.02429844877357017 and ACC: 0.8861010234400792
+batch validation MSE: 0.10909090909090909, MAE: 0.09090909090909091 and ACC: 0.9159090909090909
+Lowest batch validation MAE achieved, saving weights
+R^2:  0.733279450394019
