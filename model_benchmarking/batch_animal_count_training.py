@@ -285,8 +285,8 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
 num_epochs = 10
 batch_size = 100
 object_detection_batch_size = 10
-data_dir = "/nfs/stak/users/isonc/hpc-share/saved_data/training_animal_count/"
-saving_dir = "/nfs/stak/users/isonc/hpc-share/saved_models/oregon_wildlife_identification/"
+data_dir = "../saved_data/training_animal_count/"
+saving_dir = "../saved_models/"
 
 print(torch.__version__)
 print(torchvision.__version__)

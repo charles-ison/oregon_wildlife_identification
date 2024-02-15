@@ -101,12 +101,12 @@ def analyze(directory, model, device):
     print("predicted_total_num_animals:", predicted_total_num_animals)
 
 # Declaring Constants
-cottonwood_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/Cottonwood_Eastface_6.06_6.13/"
-ngilchrist_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/NGilchrist_Eastface_6.06_6.13/"
-sgilchrist_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/SGilchrist_Eastface_6.06_6.13/"
-MP152_ODOT003_eastface_directory = "/nfs/stak/users/isonc/hpc-share/saved_data/MP152_ODOT003_EASTFACE/"
+cottonwood_directory = "../saved_data/Cottonwood_Eastface_6.06_6.13/"
+ngilchrist_directory = "../saved_data/NGilchrist_Eastface_6.06_6.13/"
+sgilchrist_directory = "../saved_data/SGilchrist_Eastface_6.06_6.13/"
+MP152_ODOT003_eastface_directory = "../saved_data/MP152_ODOT003_EASTFACE/"
 
-model_weights_path = "/nfs/stak/users/isonc/hpc-share/saved_models/batch_count_ResNet50/ResNet50.pt"
+model_weights_path = "saved_models/batch_count_ResNet50/ResNet50.pt"
 
 print(torch.__version__)
 print(torchvision.__version__)
