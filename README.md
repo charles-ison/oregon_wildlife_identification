@@ -42,4 +42,4 @@ Model weights and confusion matrices will be saved in:
 
 and when using sbatch run logs will be recorded in:
 
- ```model_benchmarking/run_logs```
+ ```run_logs/```
