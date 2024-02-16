@@ -71,7 +71,7 @@ def test_individual(model, grad_cam, data_set, mse_criterion, mae_criterion, pri
         for index, prediction in enumerate(output):
             prediction = prediction.cpu().item()
             
-            # Just looking at every 5 samples
+            # Just looking at every 10 samples
             if print_heat_map and grad_cam_identifier % 10 == 0 and grad_cam != None:
                 utilities.create_heat_map(grad_cam, data[index], prediction, labels[index], saving_dir, grad_cam_identifier)
             grad_cam_identifier += 1
@@ -181,18 +181,19 @@ batch_size = 5
 cottonwood_eastface_json_file_name = "2023_Cottonwood_Eastface_5.30_7.10_key.json"
 cottonwood_westface_json_file_name = "2023_Cottonwood_Westface_5.30_7.10_102RECNX_key.json"
 ngilchrist_eastface_json_file_name = "2022_NGilchrist_Eastface_055_07.12_07.20_key.json"
+fence_ends_json_file_name = "2023_fence_ends_HERS0024_MP178_EAST_key.json"
 idaho_json_file_name = "Idaho_loc_0099_key.json"
-data_dir = "../saved_data/testing_animal_count/"
+data_dir = "saved_data/testing_animal_count/"
 
-resnet_34_saving_dir = "../saved_models/batch_count_ResNet34/"
-resnet_50_saving_dir = "../saved_models/batch_count_ResNet50/"
-resnet_152_saving_dir = "../saved_models/batch_count_ResNet152/"
-faster_rcnn_saving_dir = "../saved_models/batch_count_FasterR-CNN/"
-ssd_saving_dir = "../saved_models/batch_count_SSD/"
-retina_net_saving_dir = "../saved_models/batch_count_RetinaNet/"
-aggregating_cnn_saving_dir = "../saved_models/batch_count_AggregatingCNN/"
-vit_l_16_saving_dir = "../saved_models/batch_count_ViTL16/"
-cnn_wrapper_saving_dir = "../saved_models/batch_count_CNNWrapper/" 
+resnet_34_saving_dir = "saved_models/batch_count_ResNet34/"
+resnet_50_saving_dir = "saved_models/batch_count_ResNet50/"
+resnet_152_saving_dir = "saved_models/batch_count_ResNet152/"
+faster_rcnn_saving_dir = "saved_models/batch_count_FasterR-CNN/"
+ssd_saving_dir = "saved_models/batch_count_SSD/"
+retina_net_saving_dir = "saved_models/batch_count_RetinaNet/"
+aggregating_cnn_saving_dir = "saved_models/batch_count_AggregatingCNN/"
+vit_l_16_saving_dir = "saved_models/batch_count_ViTL16/"
+cnn_wrapper_saving_dir = "saved_models/batch_count_CNNWrapper/" 
 
 resnet34_weights_path = resnet_34_saving_dir + "ResNet34.pt"
 resnet50_weights_path = resnet_50_saving_dir + "ResNet50.pt"
@@ -221,6 +222,9 @@ cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set = get_data(batch
 print("\nGetting NGilchrist Eastface data")
 ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set = get_data(batch_size, data_dir, ngilchrist_eastface_json_file_name)
 
+print("\nGetting Fence Ends data")
+fence_ends_batch_data_set, fence_ends_individual_data_set = get_data(batch_size, data_dir, fence_ends_json_file_name)
+
 print("\nGetting Idaho data")
 idaho_batch_data_set, idaho_individual_data_set = get_data(batch_size, data_dir, idaho_json_file_name)
 
@@ -238,6 +242,9 @@ resnet152 = models.resnet152()
 in_features = resnet152.fc.in_features
 resnet152.fc = nn.Linear(in_features, 1)
 
+# Commenting out models that are not currently being tested to speed-up runtime. 
+# Also commenting out grad cam code because it uses too much memory and can cause HPC jobs to fail
+
 #vit_l_16 = models.vit_l_16()
 #in_features = vit_l_16.heads[0].in_features
 #vit_l_16.heads[0] = nn.Linear(in_features, 1)
@@ -247,9 +254,9 @@ resnet152.fc = nn.Linear(in_features, 1)
 retina_net = models.detection.retinanet_resnet50_fpn_v2()
 
 #Layer 4 is just recommended by GradCam documentation for ResNet
-resnet34_cam = FullGrad(model=resnet34, target_layers=[], use_cuda=torch.cuda.is_available())
-resnet50_cam = FullGrad(model=resnet50, target_layers=[], use_cuda=torch.cuda.is_available())
-resnet152_cam = FullGrad(model=resnet152, target_layers=[], use_cuda=torch.cuda.is_available())
+#resnet34_cam = FullGrad(model=resnet34, target_layers=[], use_cuda=torch.cuda.is_available())
+#resnet50_cam = FullGrad(model=resnet50, target_layers=[], use_cuda=torch.cuda.is_available())
+#resnet152_cam = FullGrad(model=resnet152, target_layers=[], use_cuda=torch.cuda.is_available())
 
 #Loading trained model weights
 resnet34.load_state_dict(torch.load(resnet34_weights_path))
@@ -270,37 +277,42 @@ if torch.cuda.device_count() > 1:
 # Testing
 model_name = "ResNet34"
 print("\nTesting ResNet34 on Cottonwood Eastface")
-test(resnet34, model_name + "_Cottonwood_EF", resnet34_cam, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
+test(resnet34, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
 print("\nTesting ResNet34 on NGilchrist Eastface")
-test(resnet34, model_name + "_NGilchrist_EF", resnet34_cam, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
+test(resnet34, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
+print("\nTesting ResNet34 on Fence Ends")
+test(resnet34, model_name + "_Fence_Ends", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
 print("\nTesting ResNet34 on Idaho")
-test(resnet34, model_name + "_Idaho", resnet34_cam, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
+test(resnet34, model_name + "_Idaho", None, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
 
 del resnet34
-del resnet34_cam
+#del resnet34_cam
 
 model_name = "ResNet50"
 print("\nTesting ResNet50 on Cottonwood Eastface")
-test(resnet50, model_name + "_Cottonwood_EF", resnet50_cam, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
+test(resnet50, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 print("\nTesting ResNet50 on NGilchrist Eastface")
-test(resnet50, model_name + "_NGilchrist_EF", resnet50_cam, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
+test(resnet50, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
+print("\nTesting ResNet50 on Fence Ends")
+test(resnet50, model_name + "_NGilchrist_EF", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 print("\nTesting ResNet50 on Idaho")
-test(resnet50, model_name + "_Idaho", resnet50_cam, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
+test(resnet50, model_name + "_Idaho", None, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 
 del resnet50
-del resnet50_cam
+#del resnet50_cam
 
 model_name = "ResNet152"
 print("\nTesting ResNet152 on Cottonwood Eastface")
-test(resnet152, model_name + "_Cottonwood_EF", resnet152_cam, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
+test(resnet152, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 print("\nTesting ResNet152 on NGilchrist Eastface")
-test(resnet152, model_name + "_NGilchrist_EF", resnet152_cam, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
+test(resnet152, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
+print("\nTesting ResNet152 on Fence Ends")
+test(resnet152, model_name + "_NGilchrist_EF", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 print("\nTesting ResNet152 on Idaho")
-test(resnet152, model_name + "_Idaho", resnet152_cam, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
+test(resnet152, model_name + "_Idaho", None, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 
 del resnet152
-del resnet152_cam
-
+#del resnet152_cam
 
 #model_name = "ViTL16"
 #print("\nTesting Vision Transformer Large 16 on Cottonwood Eastface")
@@ -337,6 +349,8 @@ print("\nTesting RetinaNet on Cottonwood Eastface")
 test_object_detection(retina_net, model_name + "_Cottonwood_EF", cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
 print("\nTesting RetinaNet on NGilchrist Eastface")
 test_object_detection(retina_net, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
+print("\nTesting RetinaNet on Fence Ends")
+test_object_detection(retina_net, model_name + "_NGilchrist_EF", fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
 print("\nTesting RetinaNet on Idaho")
 test_object_detection(retina_net, model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
 

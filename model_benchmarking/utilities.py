@@ -214,6 +214,9 @@ def fetch_data(data_dir, json_file_name, is_training, is_supplemental):
                 batch_labels.append(label)
 
             previous_time_stamp = time_stamp
+        else:
+            print("No file found for: ", file_path)
+            continue
         
     data.append(torch.stack(batch_data))
     append_batch_labels(labels, batch_labels)
