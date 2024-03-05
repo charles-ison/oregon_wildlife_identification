@@ -11,6 +11,7 @@ from custom_models.aggregating_cnn import AggregatingCNN
 from custom_data_sets.image_data_set import ImageDataSet
 from custom_models.cnn_wrapper import CNNWrapper
 
+# comment
 
 def test_batch(model, model_name, data_set, mse_criterion, mae_criterion, print_incorrect_images, saving_dir, device):
     model.eval()
