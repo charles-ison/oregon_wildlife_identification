@@ -6,12 +6,12 @@
 #SBATCH --gres=gpu:2   
 #SBATCH --mem=120G  
 
-#SBATCH -o run_logs/logs.out
-#SBATCH -e run_logs/logs.err
+#SBATCH -o ../run_logs/logs.out
+#SBATCH -e ../run_logs/logs.err
 
 # load env
-source env/bin/activate
+source ../env/bin/activate
 
 module load python/3.10 cuda/11.7
 
-python3 -u model_benchmarking/batch_animal_count_testing.py
+python3 -u batch_animal_count_training.py

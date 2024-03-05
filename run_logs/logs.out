@@ -2,116 +2,87 @@
 0.15.2+cu117
 torch.cuda.is_available(): True
 
-Getting Cottonwood Eastface data
+Feting data from directory:  ../saved_data/training_animal_count/cottonwood_eastface_2022/
 loading annotations into memory...
-Done (t=0.00s)
+Done (t=0.06s)
 creating index...
 index created!
-Number of batches for verification:  6
-Number of individual images for verification:  100
+Problematic image or label encountered, leaving out.
+Problematic image or label encountered, leaving out.
+Number of images found:  3479
+Number of batches found:  596
 
-Getting NGilchrist Eastface data
+Feting data from directory:  ../saved_data/training_animal_count/ngilchrist_eastface_2022_MP180_13_ODOT05/
 loading annotations into memory...
-Done (t=0.00s)
+Done (t=0.03s)
 creating index...
 index created!
-Number of batches for verification:  33
-Number of individual images for verification:  100
+Number of images found:  190
+Number of batches found:  46
 
-Getting Fence Ends data
+Feting data from directory:  ../saved_data/training_animal_count/crawford_westface_2022_MP150_ODOT006/
 loading annotations into memory...
-Done (t=0.01s)
+Done (t=0.23s)
 creating index...
 index created!
-No file found for:  saved_data/testing_animal_count/2023_fence_ends_HERS0024_MP178_EAST/9.02-10.05/09020002.JPG
-Number of batches for verification:  276
-Number of individual images for verification:  946
+Number of images found:  3468
+Number of batches found:  508
 
-Getting Idaho data
+Feting data from directory:  ../saved_data/training_animal_count/caltech/
 loading annotations into memory...
-Done (t=0.00s)
+Done (t=1.33s)
 creating index...
 index created!
-Number of batches for verification:  86
-Number of individual images for verification:  127
+Number of images found:  6055
+Number of batches found:  762
+
+Feting data from directory:  ../saved_data/training_animal_count/fence_ends_HERS0033_2023_MP178_WEST/
+loading annotations into memory...
+Done (t=0.03s)
+creating index...
+index created!
+Number of images found:  1151
+Number of batches found:  247
+
+Feting data from directory:  ../saved_data/training_animal_count/vandevert_westface_2023_MP154_ODOT065/
+loading annotations into memory...
+Done (t=0.04s)
+creating index...
+index created!
+Number of images found:  956
+Number of batches found:  273
+
+Feting data from directory:  ../saved_data/training_animal_count/jump_outs_ HERS0039_CENTURY_SE_2023/
+loading annotations into memory...
+Done (t=0.03s)
+creating index...
+index created!
+Number of images found:  2149
+Number of batches found:  705
+
+Feting data from directory:  ../saved_data/training_animal_count/ngilchrist_repelcam_2023_MP180_13_ODOT010/
+loading annotations into memory...
+Done (t=0.04s)
+creating index...
+index created!
+Number of images found:  1523
+Number of batches found:  413
+
+Feting data from directory:  ../saved_data/training_animal_count/jump_outs_HERS0040_VANDEVERT_NW_2023/
+loading annotations into memory...
+Done (t=0.05s)
+creating index...
+index created!
+Number of images found:  796
+Number of batches found:  229
+
+Number of training images:  15880
+Number of validation images:  3887
+Number of batches for training:  3019
+Number of batches for validation:  760
 Multiple GPUs available, using: 2
 
-Testing ResNet34 on Cottonwood Eastface
-individual testing MSE: 0.024062033239752055, MAE: 0.05015611208975315 and ACC: 0.85
-batch testing MSE: 0.07464449914793174, MAE: 0.25577973077694577 and ACC: 1.0
-R^2:  0.7014220005751146
-
-Testing ResNet34 on NGilchrist Eastface
-individual testing MSE: 0.007145212555187754, MAE: 0.021551948469132186 and ACC: 0.96
-batch testing MSE: 0.0489395911129398, MAE: 0.08502173150014697 and ACC: 0.9393939393939394
-R^2:  0.7662490562824713
-
-Testing ResNet34 on Fence Ends
-individual testing MSE: 1.110695047052006, MAE: 0.28673474595391724 and ACC: 0.2568710359408034
-batch testing MSE: 4.917388669551735, MAE: 1.228428336373274 and ACC: 0.3442028985507246
-R^2:  0.04084612574658697
-
-Testing ResNet34 on Idaho
-individual testing MSE: 0.08138245138097701, MAE: 0.09989513797084178 and ACC: 0.5196850393700787
-batch testing MSE: 0.3813198379390235, MAE: 0.46113193684885667 and ACC: 0.5465116279069767
-R^2:  0.4465774047993243
-
-Testing ResNet50 on Cottonwood Eastface
-individual testing MSE: 0.014845894295722245, MAE: 0.041162477731704714 and ACC: 0.89
-batch testing MSE: 0.11384573322720826, MAE: 0.31008386549850303 and ACC: 1.0
-R^2:  0.5446170616550827
-
-Testing ResNet50 on NGilchrist Eastface
-individual testing MSE: 0.005206009040703066, MAE: 0.017891909386962654 and ACC: 0.98
-batch testing MSE: 0.022287493454402955, MAE: 0.054408490686028294 and ACC: 0.9696969696969697
-R^2:  0.8935478888175785
-
-Testing ResNet50 on Fence Ends
-individual testing MSE: 1.118009072188219, MAE: 0.27894661186093633 and ACC: 0.38160676532769555
-batch testing MSE: 5.014198083827342, MAE: 1.162082115377205 and ACC: 0.5978260869565217
-R^2:  0.021963098623634547
-
-Testing ResNet50 on Idaho
-individual testing MSE: 0.06879304408455106, MAE: 0.08779964666432283 and ACC: 0.7480314960629921
-batch testing MSE: 0.3296168786452332, MAE: 0.42029039059267487 and ACC: 0.7674418604651163
-R^2:  0.5216157010366153
-
-Testing ResNet152 on Cottonwood Eastface
-individual testing MSE: 0.012701783517259172, MAE: 0.03463572200387716 and ACC: 0.91
-batch testing MSE: 0.09068834564338128, MAE: 0.25997279087702435 and ACC: 1.0
-R^2:  0.6372466228590241
-
-Testing ResNet152 on NGilchrist Eastface
-individual testing MSE: 0.0029101251200336267, MAE: 0.011205347795039415 and ACC: 0.98
-batch testing MSE: 0.007056393681937546, MAE: 0.045651464723050594 and ACC: 1.0
-R^2:  0.9662964352362857
-
-Testing ResNet152 on Fence Ends
-individual testing MSE: 1.1231640460359495, MAE: 0.2792239963976828 and ACC: 0.346723044397463
-batch testing MSE: 5.006332624105528, MAE: 1.1520863908302525 and ACC: 0.532608695652174
-R^2:  0.023497294623596177
-
-Testing ResNet152 on Idaho
-individual testing MSE: 0.08253046713300108, MAE: 0.09411504301499193 and ACC: 0.7244094488188977
-batch testing MSE: 0.4306687568882067, MAE: 0.4644853933606037 and ACC: 0.7441860465116279
-R^2:  0.374955610342635
-
-Testing RetinaNet on Cottonwood Eastface
-individual testing MSE: 0.028000000417232513, MAE: 0.028000000417232513 and ACC: 0.86
-batch testing MSE: 0.0, MAE: 0.0 and ACC: 1.0
-R^2:  1.0
-
-Testing RetinaNet on NGilchrist Eastface
-individual testing MSE: 0.004000000059604645, MAE: 0.004000000059604645 and ACC: 0.98
-batch testing MSE: 0.0, MAE: 0.0 and ACC: 1.0
-R^2:  1.0
-
-Testing RetinaNet on Fence Ends
-individual testing MSE: 1.2137420719320124, MAE: 0.2754756884204409 and ACC: 0.45665961945031713
-batch testing MSE: 5.170289855072464, MAE: 0.9456521739130435 and ACC: 0.7282608695652174
-R^2:  -0.008483147649786416
-
-Testing RetinaNet on Idaho
-individual testing MSE: 0.05039370153832624, MAE: 0.03464567004226324 and ACC: 0.8661417322834646
-batch testing MSE: 0.29069767441860467, MAE: 0.19767441860465115 and ACC: 0.8488372093023255
-R^2:  0.5781004709576139
+Training and Validating ResNet34
+Epoch: 0
+training loss: 0.0009707414948613728
+validation MSE: 0.0011514095234432349, MAE: 0.0020193455494980535 and ACC: 0.9096989966555183
