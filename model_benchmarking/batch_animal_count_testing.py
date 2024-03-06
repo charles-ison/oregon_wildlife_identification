@@ -294,7 +294,7 @@ test(resnet50, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_data_set
 print("\nTesting ResNet50 on NGilchrist Eastface")
 test(resnet50, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 print("\nTesting ResNet50 on Fence Ends")
-test(resnet50, model_name + "_NGilchrist_EF", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
+test(resnet50, model_name + "_Fence_Ends", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 print("\nTesting ResNet50 on Idaho")
 test(resnet50, model_name + "_Idaho", None, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 
@@ -307,7 +307,7 @@ test(resnet152, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_data_se
 print("\nTesting ResNet152 on NGilchrist Eastface")
 test(resnet152, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 print("\nTesting ResNet152 on Fence Ends")
-test(resnet152, model_name + "_NGilchrist_EF", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
+test(resnet152, model_name + "_Fence_Ends", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 print("\nTesting ResNet152 on Idaho")
 test(resnet152, model_name + "_Idaho", None, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 
@@ -350,7 +350,7 @@ test_object_detection(retina_net, model_name + "_Cottonwood_EF", cottonwood_ef_b
 print("\nTesting RetinaNet on NGilchrist Eastface")
 test_object_detection(retina_net, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
 print("\nTesting RetinaNet on Fence Ends")
-test_object_detection(retina_net, model_name + "_NGilchrist_EF", fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
+test_object_detection(retina_net, model_name + "_Fence_Ends", fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
 print("\nTesting RetinaNet on Idaho")
 test_object_detection(retina_net, model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
 
