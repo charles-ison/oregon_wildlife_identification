@@ -185,17 +185,17 @@ cottonwood_westface_json_file_name = "2023_Cottonwood_Westface_5.30_7.10_102RECN
 ngilchrist_eastface_json_file_name = "2022_NGilchrist_Eastface_055_07.12_07.20_key.json"
 fence_ends_json_file_name = "2023_fence_ends_HERS0024_MP178_EAST_key.json"
 idaho_json_file_name = "Idaho_loc_0099_key.json"
-data_dir = "saved_data/testing_animal_count/"
+data_dir = "../saved_data/testing_animal_count/"
 
-resnet_34_saving_dir = "saved_models/batch_count_ResNet34/"
-resnet_50_saving_dir = "saved_models/batch_count_ResNet50/"
-resnet_152_saving_dir = "saved_models/batch_count_ResNet152/"
-faster_rcnn_saving_dir = "saved_models/batch_count_FasterR-CNN/"
-ssd_saving_dir = "saved_models/batch_count_SSD/"
-retina_net_saving_dir = "saved_models/batch_count_RetinaNet/"
-aggregating_cnn_saving_dir = "saved_models/batch_count_AggregatingCNN/"
-vit_l_16_saving_dir = "saved_models/batch_count_ViTL16/"
-cnn_wrapper_saving_dir = "saved_models/batch_count_CNNWrapper/" 
+resnet_34_saving_dir = "../saved_models/batch_count_ResNet34/"
+resnet_50_saving_dir = "../saved_models/batch_count_ResNet50/"
+resnet_152_saving_dir = "../saved_models/batch_count_ResNet152/"
+faster_rcnn_saving_dir = "../saved_models/batch_count_FasterR-CNN/"
+ssd_saving_dir = "../saved_models/batch_count_SSD/"
+retina_net_saving_dir = "../saved_models/batch_count_RetinaNet/"
+aggregating_cnn_saving_dir = "../saved_models/batch_count_AggregatingCNN/"
+vit_l_16_saving_dir = "../saved_models/batch_count_ViTL16/"
+cnn_wrapper_saving_dir = "../saved_models/batch_count_CNNWrapper/" 
 
 resnet34_weights_path = resnet_34_saving_dir + "ResNet34.pt"
 resnet50_weights_path = resnet_50_saving_dir + "ResNet50.pt"
@@ -296,7 +296,7 @@ test(resnet50, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_data_set
 print("\nTesting ResNet50 on NGilchrist Eastface")
 test(resnet50, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 print("\nTesting ResNet50 on Fence Ends")
-test(resnet50, model_name + "_NGilchrist_EF", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
+test(resnet50, model_name + "_Fence_Ends", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 print("\nTesting ResNet50 on Idaho")
 test(resnet50, model_name + "_Idaho", None, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 
@@ -309,7 +309,7 @@ test(resnet152, model_name + "_Cottonwood_EF", None, cottonwood_ef_batch_data_se
 print("\nTesting ResNet152 on NGilchrist Eastface")
 test(resnet152, model_name + "_NGilchrist_EF", None, ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 print("\nTesting ResNet152 on Fence Ends")
-test(resnet152, model_name + "_NGilchrist_EF", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
+test(resnet152, model_name + "_Fence_Ends", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 print("\nTesting ResNet152 on Idaho")
 test(resnet152, model_name + "_Idaho", None, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 
@@ -352,7 +352,7 @@ test_object_detection(retina_net, model_name + "_Cottonwood_EF", cottonwood_ef_b
 print("\nTesting RetinaNet on NGilchrist Eastface")
 test_object_detection(retina_net, model_name + "_NGilchrist_EF", ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
 print("\nTesting RetinaNet on Fence Ends")
-test_object_detection(retina_net, model_name + "_NGilchrist_EF", fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
+test_object_detection(retina_net, model_name + "_Fence_Ends", fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
 print("\nTesting RetinaNet on Idaho")
 test_object_detection(retina_net, model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
 
