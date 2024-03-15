@@ -7,18 +7,18 @@ json_file = open(file_name)
 coco_key = json.load(json_file)
 images = coco_key["images"]
 annotations = coco_key["annotations"]
-new_starting_image_id = 3085
-new_starting_annotation_id = 912
+new_starting_image_id = 290
+new_starting_annotation_id = 60
+image_id_dict = {};
 
 for json_image in images:
-    new_id_string = new_starting_image_id
-    for json_annotation in annotations:
-        if json_annotation["image_id"] == json_image["id"]:
-            json_annotation["image_id"] = new_id_string
-    json_image["id"] = new_id_string
+    image_id_dict[json_image["id"]] = new_starting_image_id
+    json_image["id"] = new_starting_image_id
     new_starting_image_id += 1
 
 for json_annotation in annotations:
+    new_image_id = image_id_dict[json_annotation["image_id"]]
+    json_annotation["image_id"] = new_image_id
     json_annotation["id"] = new_starting_annotation_id
     new_starting_annotation_id += 1
 
