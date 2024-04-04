@@ -6,6 +6,7 @@ import torch.nn as nn
 import utilities
 from PIL import Image
 from torch.utils.data import DataLoader
+from torch.utils.data import ConcatDataset
 from pytorch_grad_cam import FullGrad
 from custom_models.aggregating_cnn import AggregatingCNN
 from custom_data_sets.image_data_set import ImageDataSet
@@ -177,7 +178,7 @@ def get_data(batch_size, data_dir, json_file_name):
 
 
 # Declaring Constants
-batch_size = 5
+batch_size = 2
 cottonwood_eastface_json_file_name = "2023_Cottonwood_Eastface_5.30_7.10_key.json"
 cottonwood_westface_json_file_name = "2023_Cottonwood_Westface_5.30_7.10_102RECNX_key.json"
 ngilchrist_eastface_json_file_name = "2022_NGilchrist_Eastface_055_07.12_07.20_key.json"
@@ -217,16 +218,32 @@ mse = nn.MSELoss()
 mae = nn.L1Loss()
 
 print("\nGetting Cottonwood Eastface data")
-cottonwood_ef_batch_data_set, cottonwood_ef_individual_data_set = get_data(batch_size, data_dir, cottonwood_eastface_json_file_name)
+cottonwood_ef_batch_testing_data, cottonwood_ef_batch_testing_labels, cottonwood_ef_individual_data, cottonwood_ef_individual_labels = utilities.fetch_data(data_dir, cottonwood_eastface_json_file_name, False, False)
+cottonwood_ef_batch_data_set = ImageDataSet(cottonwood_ef_batch_testing_data, cottonwood_ef_batch_testing_labels)
+cottonwood_ef_individual_data_set = ImageDataSet(cottonwood_ef_individual_data, cottonwood_ef_individual_labels)
 
 print("\nGetting NGilchrist Eastface data")
-ngilchrist_ef_batch_data_set, ngilchrist_ef_individual_data_set = get_data(batch_size, data_dir, ngilchrist_eastface_json_file_name)
+ngilchrist_ef_batch_testing_data, ngilchrist_ef_batch_testing_labels, ngilchrist_ef_individual_data, ngilchrist_ef_individual_labels = utilities.fetch_data(data_dir, ngilchrist_eastface_json_file_name, False, False)
+ngilchrist_ef_batch_data_set = ImageDataSet(ngilchrist_ef_batch_testing_data, ngilchrist_ef_batch_testing_labels)
+ngilchrist_ef_individual_data_set = ImageDataSet(ngilchrist_ef_individual_data, ngilchrist_ef_individual_labels)
 
 print("\nGetting Fence Ends data")
-fence_ends_batch_data_set, fence_ends_individual_data_set = get_data(batch_size, data_dir, fence_ends_json_file_name)
+fence_ends_batch_testing_data, fence_ends_batch_testing_labels, fence_ends_individual_data, fence_ends_individual_labels = utilities.fetch_data(data_dir, fence_ends_json_file_name, False, False)
+fence_ends_batch_data_set = ImageDataSet(fence_ends_batch_testing_data, fence_ends_batch_testing_labels)
+fence_ends_individual_data_set = ImageDataSet(fence_ends_individual_data, fence_ends_individual_labels)
 
 print("\nGetting Idaho data")
-idaho_batch_data_set, idaho_individual_data_set = get_data(batch_size, data_dir, idaho_json_file_name)
+idaho_batch_testing_data, idaho_batch_testing_labels, idaho_individual_data, idaho_individual_labels = utilities.fetch_data(data_dir, idaho_json_file_name, False, False)
+idaho_batch_data_set = ImageDataSet(idaho_batch_testing_data, idaho_batch_testing_labels)
+idaho_individual_data_set = ImageDataSet(idaho_individual_data, idaho_individual_labels)
+
+all_batch_data = cottonwood_ef_batch_testing_data + ngilchrist_ef_batch_testing_data + fence_ends_batch_testing_data + idaho_batch_testing_data
+all_batch_labels = cottonwood_ef_batch_testing_labels + ngilchrist_ef_batch_testing_labels + fence_ends_batch_testing_labels + idaho_batch_testing_labels
+all_batch_data_set = ImageDataSet(all_batch_data, all_batch_labels)
+
+all_individual_data = cottonwood_ef_individual_data + ngilchrist_ef_individual_data + fence_ends_individual_data + idaho_individual_data
+all_individual_labels = cottonwood_ef_individual_labels + ngilchrist_ef_individual_labels + fence_ends_individual_labels + idaho_individual_labels
+all_individual_data_set = ImageDataSet(all_individual_data, all_individual_labels)
 
 # Declaring Models
 # Have to follow same steps used to create model during training
@@ -284,6 +301,8 @@ print("\nTesting ResNet34 on Fence Ends")
 test(resnet34, model_name + "_Fence_Ends", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
 print("\nTesting ResNet34 on Idaho")
 test(resnet34, model_name + "_Idaho", None, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
+print("\nTesting ResNet34 on All Data")
+test(resnet34, model_name + "_All_Data", None, all_batch_data_set, all_individual_data_set, batch_size, device, mse, mae, resnet_34_saving_dir)
 
 del resnet34
 #del resnet34_cam
@@ -297,6 +316,8 @@ print("\nTesting ResNet50 on Fence Ends")
 test(resnet50, model_name + "_Fence_Ends", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 print("\nTesting ResNet50 on Idaho")
 test(resnet50, model_name + "_Idaho", None, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
+print("\nTesting ResNet50 on All Data")
+test(resnet50, model_name + "_All_Data", None, all_batch_data_set, all_individual_data_set, batch_size, device, mse, mae, resnet_50_saving_dir)
 
 del resnet50
 #del resnet50_cam
@@ -310,6 +331,8 @@ print("\nTesting ResNet152 on Fence Ends")
 test(resnet152, model_name + "_Fence_Ends", None, fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 print("\nTesting ResNet152 on Idaho")
 test(resnet152, model_name + "_Idaho", None, idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
+print("\nTesting ResNet152 on All Data")
+test(resnet152, model_name + "_All_Data", None, all_batch_data_set, all_individual_data_set, batch_size, device, mse, mae, resnet_152_saving_dir)
 
 del resnet152
 #del resnet152_cam
@@ -353,6 +376,8 @@ print("\nTesting RetinaNet on Fence Ends")
 test_object_detection(retina_net, model_name + "_Fence_Ends", fence_ends_batch_data_set, fence_ends_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
 print("\nTesting RetinaNet on Idaho")
 test_object_detection(retina_net, model_name + "_Idaho", idaho_batch_data_set, idaho_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
+print("\nTesting RetinaNet on All Data")
+test_object_detection(retina_net, model_name + "_All_Data", all_batch_data_set, all_individual_data_set, batch_size, device, mse, mae, retina_net_saving_dir)
 
 del retina_net
 

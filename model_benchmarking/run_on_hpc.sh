@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH -J run_on_HPC
 #SBATCH -A eecs 
-#SBATCH -p dgx2
-#SBATCH -t 7-00:00:00   
-#SBATCH --gres=gpu:2
-#SBATCH --mem=120G  
+#SBATCH -p eecs
+#SBATCH -t 2-00:00:00   
+#SBATCH --gres=gpu:4
+#SBATCH --mem=40G  
 
 #SBATCH -o ../run_logs/logs.out
 #SBATCH -e ../run_logs/logs.err
