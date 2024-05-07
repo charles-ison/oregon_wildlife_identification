@@ -301,17 +301,17 @@ batch_training_data_set = ImageDataSet(batch_validation_data, batch_validation_l
 batch_validation_data_set = ImageDataSet(batch_validation_data, batch_validation_labels)
 
 # Declaring Models
-resnet34 = models.resnet34(weights = models.ResNet34_Weights.DEFAULT)
-in_features = resnet34.fc.in_features
-resnet34.fc = nn.Linear(in_features, 1)
+# resnet34 = models.resnet34(weights = models.ResNet34_Weights.DEFAULT)
+# in_features = resnet34.fc.in_features
+# resnet34.fc = nn.Linear(in_features, 1)
 
-resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
-in_features = resnet50.fc.in_features
-resnet50.fc = nn.Linear(in_features, 1)
+# resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
+# in_features = resnet50.fc.in_features
+# resnet50.fc = nn.Linear(in_features, 1)
 
-resnet152 = models.resnet152(weights = models.ResNet152_Weights.DEFAULT)
-in_features = resnet152.fc.in_features
-resnet152.fc = nn.Linear(in_features, 1)
+# resnet152 = models.resnet152(weights = models.ResNet152_Weights.DEFAULT)
+# in_features = resnet152.fc.in_features
+# resnet152.fc = nn.Linear(in_features, 1)
 
 #vit_l_16 = models.vit_l_16(weights = models.ViT_L_16_Weights.DEFAULT)
 #in_features = vit_l_16.heads[0].in_features
@@ -325,30 +325,30 @@ retina_net = models.detection.retinanet_resnet50_fpn_v2(weights=models.detection
 
 if torch.cuda.device_count() > 1:
     print("Multiple GPUs available, using: " + str(torch.cuda.device_count()))
-    resnet34 = nn.DataParallel(resnet34)
-    resnet50 = nn.DataParallel(resnet50)
-    resnet152 = nn.DataParallel(resnet152)
+    #resnet34 = nn.DataParallel(resnet34)
+    #resnet50 = nn.DataParallel(resnet50)
+    #resnet152 = nn.DataParallel(resnet152)
     #vit_l_16 = nn.DataParallel(vit_l_16)
     #cnn_wrapper = nn.DataParallel(cnn_wrapper)
 
 # Training
-print("\nTraining and Validating ResNet34")
-train_and_validate(num_epochs, resnet34, "ResNet34", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False)
+#print("\nTraining and Validating ResNet34")
+#train_and_validate(num_epochs, resnet34, "ResNet34", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False)
 
-print("\nTraining and Validating ResNet50")
-train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False)
+#print("\nTraining and Validating ResNet50")
+#train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False)
 
-print("\nTraining and Validating ResNet152")
-train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False)
+#print("\nTraining and Validating ResNet152")
+#train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False)
 
 #print("\nTraining and Validating Vision Transformer Large 16")
 #train_and_validate(num_epochs, vit_l_16, "ViTL16", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False, False)
 
 #print("\nTraining and Validating Faster R-CNN")
-#train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, object_detection_batch_size, True, False)
+#train_and_validate(num_epochs, faster_rcnn, "FasterR-CNN", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, object_detection_batch_size, True)
 
 #print("\nTraining and Validating SSD")
-#train_and_validate(num_epochs, ssd, "SSD", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, object_detection_batch_size, True, False)
+#train_and_validate(num_epochs, ssd, "SSD", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, object_detection_batch_size, True)
 
 print("\nTraining and Validating RetinaNet")
 train_and_validate(num_epochs, retina_net, "RetinaNet", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, object_detection_batch_size, True)
