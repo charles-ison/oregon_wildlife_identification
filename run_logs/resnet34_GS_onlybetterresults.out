@@ -1,0 +1,134 @@
+2.0.1+cu117
+0.15.2+cu117
+torch.cuda.is_available(): True
+Load training datasets
+
+
+Feting data from directory:  ../saved_data/training_animal_count/cottonwood_eastface_2022/
+loading annotations into memory...
+Done (t=0.02s)
+creating index...
+index created!
+Problematic image or label encountered, leaving out.
+Problematic image or label encountered, leaving out.
+Number of images found:  3479
+Number of batches found:  596
+
+Feting data from directory:  ../saved_data/training_animal_count/ngilchrist_eastface_2022_MP180_13_ODOT05/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Number of images found:  190
+Number of batches found:  46
+
+Feting data from directory:  ../saved_data/training_animal_count/crawford_westface_2022_MP150_ODOT006/
+loading annotations into memory...
+Done (t=0.15s)
+creating index...
+index created!
+Number of images found:  3468
+Number of batches found:  508
+
+Feting data from directory:  ../saved_data/training_animal_count/caltech/
+loading annotations into memory...
+Done (t=0.66s)
+creating index...
+index created!
+Number of images found:  6055
+Number of batches found:  762
+
+Feting data from directory:  ../saved_data/training_animal_count/fence_ends_HERS0033_2023_MP178_WEST/
+loading annotations into memory...
+Done (t=0.01s)
+creating index...
+index created!
+Number of images found:  1151
+Number of batches found:  247
+
+Feting data from directory:  ../saved_data/training_animal_count/vandevert_westface_2023_MP154_ODOT065/
+loading annotations into memory...
+Done (t=0.01s)
+creating index...
+index created!
+Number of images found:  956
+Number of batches found:  273
+
+Feting data from directory:  ../saved_data/training_animal_count/jump_outs_ HERS0039_CENTURY_SE_2023/
+loading annotations into memory...
+Done (t=0.01s)
+creating index...
+index created!
+Number of images found:  2149
+Number of batches found:  705
+
+Feting data from directory:  ../saved_data/training_animal_count/ngilchrist_repelcam_2023_MP180_13_ODOT010/
+loading annotations into memory...
+Done (t=0.01s)
+creating index...
+index created!
+Number of images found:  1523
+Number of batches found:  413
+
+Feting data from directory:  ../saved_data/training_animal_count/jump_outs_HERS0040_VANDEVERT_NW_2023/
+loading annotations into memory...
+Done (t=0.01s)
+creating index...
+index created!
+Number of images found:  796
+Number of batches found:  229
+
+Number of training images:  15939
+Number of validation images:  3828
+Number of batches for training:  3019
+Number of batches for validation:  760
+Load testing datasets
+
+
+GettingCottonwood Eastfacedata
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Number of batches for verification:  6
+Number of individual images for verification:  100
+
+GettingNGilchrist Eastfacedata
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Number of batches for verification:  33
+Number of individual images for verification:  100
+
+GettingFence Endsdata
+loading annotations into memory...
+Done (t=0.01s)
+creating index...
+index created!
+Number of batches for verification:  276
+Number of individual images for verification:  946
+
+GettingIdahodata
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Number of batches for verification:  86
+Number of individual images for verification:  127
+training size,epoch number,optimizer,learning rate,batch size,training loss,validation MSE,validation MAE,validation ACC,batch validation MSE,batch validation MAE,batch validation ACC,r2,individual testing MSE,individual testing MAE,individual testing ACC,batch testing MSE,batching testing MAE,batching testing ACC
+
+Hyperparameter for ResNet34
+training size,epoch number,optimizer,learning rate,batch size,training loss,validation MSE,validation MAE,validation ACC,batch validation MSE,batch validation MAE,batch validation ACC,r2,individual testing MSE,individual testing MAE,individual testing ACC,batch testing MSE,batching testing MAE,batching testing ACC
+3187,1,<class 'torch.optim.adam.Adam'>,1e-06,16,0.013041657315298872,0.01595379127327707,0.022841558409241673,0.7505224660397074,0.3940078441550117,0.46966549641893884,0.6421052631578947,0.04442439559676381,0.18407853275759897,0.14138155600285773,0.4587588373919874,0.5826939659746131,0.5933051517516598,0.5286783042394015
+3187,5,<class 'torch.optim.adam.Adam'>,1e-06,16,0.0065808610036235116,0.011147288970022522,0.017189357503703644,0.8479623824451411,0.2345713725908212,0.2600180219809868,0.8473684210526315,0.43110095969914264,0.15325900963642938,0.11961609959742822,0.5671641791044776,0.4139147800978297,0.4443825249028325,0.6583541147132169
+3187,10,<class 'torch.optim.adam.Adam'>,1e-06,16,0.00506884363664891,0.01032852468128504,0.016447582794985927,0.8581504702194357,0.2176716902801146,0.25535580483632847,0.8486842105263158,0.4720872729731397,0.15048961314055936,0.11706267534305238,0.5765907305577376,0.38047459659347965,0.4133967154280763,0.6733167082294265
+3187,1,<class 'torch.optim.adam.Adam'>,1e-05,32,0.0084805898613828,0.005493205161366218,0.009020430124447512,0.8448275862068966,0.20081633634715806,0.2103998673736657,0.875,0.5129660656651217,0.24370685989861665,0.14397290802596596,0.5632364493322859,0.47705203456298034,0.39086650350500374,0.7331670822942643
+3187,1,<class 'torch.optim.adam.Adam'>,1e-05,80,0.0022797290531490003,0.0024637197540409266,0.004050630067894576,0.8239289446185998,0.20461144558855107,0.2128825234739404,0.8631578947368421,0.5037619000459318,0.17938723328250086,0.12464949855316088,0.584446190102121,0.4444596977495679,0.36953731554739194,0.7007481296758105
+3187,5,<class 'torch.optim.adam.Adam'>,1e-05,80,0.00035940776373063056,0.001675138298651766,0.0029236779605644747,0.8879310344827587,0.19078835735448055,0.2373034714157448,0.8539473684210527,0.5372866179466884,0.1503210886936117,0.11147217608502505,0.6284367635506677,0.37526418552463475,0.3608072393195253,0.7182044887780549
+3187,15,<class 'torch.optim.adam.Adam'>,0.0001,16,0.0004955700816986086,0.005128708641899238,0.008239064714019825,0.9336468129571578,0.10581894968744573,0.13386005351417943,0.9197368421052632,0.7433604231855908,0.09970656743883839,0.08600166280960952,0.7195600942655145,0.2168480832200671,0.2944670219039382,0.8229426433915212
+6375,10,<class 'torch.optim.adam.Adam'>,0.0001,16,0.0007965016251740356,0.004626051467807347,0.007686724101924099,0.9380877742946708,0.08477951659236642,0.10661274421329021,0.9407894736842105,0.7943867391229712,0.0837326099640139,0.07654111599952029,0.7250589159465829,0.2340157867849589,0.27032920826711876,0.8129675810473815
+6375,15,<class 'torch.optim.adam.Adam'>,0.0001,16,0.0005483361814152814,0.005258118718071347,0.008824828011737972,0.9305120167189133,0.07475106182607313,0.08701533028169682,0.9473684210526315,0.8187084539346944,0.10875479148088739,0.08552652539045953,0.6999214454045561,0.25929399791806484,0.23684923458575013,0.8354114713216958
+15939,10,<class 'torch.optim.adam.Adam'>,0.0001,16,0.0005761512285888924,0.003408571565815694,0.00744892817181355,0.946969696969697,0.05774039599673912,0.09491045838712077,0.9355263157894737,0.8599639198326071,0.08876673129561137,0.07453763134117646,0.7423409269442263,0.21752895515890097,0.23357265009695752,0.8428927680798005
+15939,15,<class 'torch.optim.adam.Adam'>,0.0001,16,0.0004568496208260536,0.0038888615924892256,0.006686818213742168,0.9501044932079414,0.05895261544396144,0.07377343684385874,0.95,0.8570239614740992,0.1075158446303223,0.08113767904282869,0.7062058130400628,0.22595619043179535,0.22085175360378778,0.8129675810473815
+67798.00 sec

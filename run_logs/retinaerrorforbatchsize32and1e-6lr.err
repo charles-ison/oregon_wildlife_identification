@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "/nfs/hpc/share/owid/oregon_wildlife_identification/model_benchmarking/batch_animal_count_training.py", line 732, in <module>
+    result = train_and_validate(training_data_size, num_epochs, retina_net, "RetinaNet", optim.Adam, optim_lr, training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, batch_testing_data_set, individual_testing_data_set, device, saving_dir, batch_size, True, best_result)
+  File "/nfs/hpc/share/owid/oregon_wildlife_identification/model_benchmarking/batch_animal_count_training.py", line 266, in train_and_validate
+    training_loss = train_object_detection(model, training_data_set, optimizer, device, batch_size)
+  File "/nfs/hpc/share/owid/oregon_wildlife_identification/model_benchmarking/batch_animal_count_training.py", line 109, in train_object_detection
+    losses_dict = model(data, targets)
+  File "/nfs/stak/users/xingru/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/nfs/stak/users/xingru/.local/lib/python3.10/site-packages/torchvision/models/detection/retinanet.py", line 645, in forward
+    losses = self.compute_loss(targets, head_outputs, anchors)
+  File "/nfs/stak/users/xingru/.local/lib/python3.10/site-packages/torchvision/models/detection/retinanet.py", line 503, in compute_loss
+    return self.head.compute_loss(targets, head_outputs, anchors, matched_idxs)
+  File "/nfs/stak/users/xingru/.local/lib/python3.10/site-packages/torchvision/models/detection/retinanet.py", line 78, in compute_loss
+    "classification": self.classification_head.compute_loss(targets, head_outputs, matched_idxs),
+  File "/nfs/stak/users/xingru/.local/lib/python3.10/site-packages/torchvision/models/detection/retinanet.py", line 181, in compute_loss
+    sigmoid_focal_loss(
+  File "/nfs/stak/users/xingru/.local/lib/python3.10/site-packages/torchvision/ops/focal_loss.py", line 44, in sigmoid_focal_loss
+    alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
+  File "/nfs/stak/users/xingru/.local/lib/python3.10/site-packages/torch/_tensor.py", line 40, in wrapped
+    return f(*args, **kwargs)
+  File "/nfs/stak/users/xingru/.local/lib/python3.10/site-packages/torch/_tensor.py", line 848, in __rsub__
+    return _C._VariableFunctions.rsub(self, other)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 42.00 MiB (GPU 0; 31.74 GiB total capacity; 31.00 GiB already allocated; 9.88 MiB free; 31.34 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

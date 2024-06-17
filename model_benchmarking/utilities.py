@@ -21,6 +21,10 @@ from operator import itemgetter
 from datetime import datetime
 from pycocotools.coco import COCO
 
+# new
+import random
+import shutil
+
 
 def print_classification_analysis(labels, predictions, title, saving_dir):
     subplot = plt.subplot()
@@ -76,7 +80,10 @@ def print_regression_analysis(labels, predictions, title, saving_dir):
     plt.savefig(plot_file_name)
     plt.show()
     plt.close()
-        
+    
+#new
+def regression_analysis(labels, predictions):
+    return r2_score(labels, predictions)
 
 def set_device_for_list_of_tensors(some_list, device):
     for index, tensor in enumerate(some_list):
@@ -235,7 +242,47 @@ def fetch_data(data_dir, json_file_name, is_training, is_supplemental):
         print("Number of batches for verification: ", len(data))
         print("Number of individual images for verification: ", len(individual_data))
         return data, labels, individual_data, individual_labels
+
+def sample_data(data_dir, json_file_name, target_dir):
+    # for labels' quality check
+    coco = COCO(data_dir + json_file_name)
+    images = coco.loadImgs(coco.getImgIds())
+    sorted_images = get_sorted_images(images)
     
+    data_paths, labels = [], []
+    
+    for image in sorted_images:
+        file_name = image["file_name"]
+        file_path = data_dir + file_name
+        
+        annotation_id_list = coco.getAnnIds(imgIds=[image["id"]])
+        annotation_list = coco.loadAnns(annotation_id_list)
+        
+        if os.path.isfile(file_path):
+            image = Image.open(file_path)
+            data_paths.append(file_path)
+            labels.append(annotation_list)
+        else:
+            print("No file found for: ", file_path)
+            continue
+    
+    sampled_indices = random.sample(range(0, len(data)), 80)
+    sampled_data_paths = [data_paths[i] for i in sampled_indices]
+    sampled_labels = [labels[i] for i in sampled_indices]
+    
+    os.makedirs(target_dir, directory_path)
+    target_folder = target_dir + directory_path
+    
+    # write sampled to the JSON file
+    file_path = os.path.join(target_folder, file_name)
+    
+    with open(file_path, 'w') as json_file:
+        json.dump(labels, json_file)
+        
+    # copy sampled images into the new folder
+    for image_path in sampled_data_paths:
+        shutil.copy(image_path, target_folder)
+        
 
 def print_image(image_tensor, prediction, saving_dir, index, bounding_boxes = None):
     fig, ax = plt.subplots()
