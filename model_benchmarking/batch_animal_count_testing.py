@@ -47,7 +47,7 @@ def test_batch(model, model_name, data_set, mse_criterion, mae_criterion, print_
     mae = running_mae/len(data_set)
     acc = num_correct/len(data_set)
     print("batch testing MSE: " + str(mse) + ", MAE: " + str(mae) + " and ACC: " + str(acc))
-    utilities.print_regression_analysis(all_labels, all_predictions, model_name + "_Testing", saving_dir)
+    utilities.print_regression_analysis(all_labels, all_predictions, model_name + "_Batch_Testing", saving_dir)
     
     
 def test_individual(model, grad_cam, data_set, mse_criterion, mae_criterion, print_incorrect_images, print_heat_map, saving_dir, batch_size, device):
@@ -55,6 +55,7 @@ def test_individual(model, grad_cam, data_set, mse_criterion, mae_criterion, pri
     running_mse = 0.0
     running_mae = 0.0
     num_correct = 0
+    all_labels, all_predictions = [], []
     grad_cam_identifier = 0
 
     for index in range(0, len(data_set), batch_size):
@@ -69,6 +70,7 @@ def test_individual(model, grad_cam, data_set, mse_criterion, mae_criterion, pri
         running_mse += mse_criterion(output, labels).item()
         running_mae += mae_criterion(output, labels).item()
         num_correct += (output.round() == labels).sum().item()
+        
         for index, prediction in enumerate(output):
             prediction = prediction.cpu().item()
             
@@ -76,11 +78,15 @@ def test_individual(model, grad_cam, data_set, mse_criterion, mae_criterion, pri
             if print_heat_map and grad_cam_identifier % 10 == 0 and grad_cam != None:
                 utilities.create_heat_map(grad_cam, data[index], prediction, labels[index], saving_dir, grad_cam_identifier)
             grad_cam_identifier += 1
+            
+            all_labels.append(labels[index].item())
+            all_predictions.append(prediction)
 
     mse = running_mse/len(data_set)
     mae = running_mae/len(data_set)
     acc = num_correct/len(data_set)
     print("individual testing MSE: " + str(mse) + ", MAE: " + str(mae) + " and ACC: " + str(acc))
+    utilities.print_regression_analysis(all_labels, all_predictions, model_name + "_Individual_Testing", saving_dir)
 
 
 def test(model, model_name, grad_cam, batch_data_set, individual_data_set, batch_size, device, mse_criterion, mae_criterion, saving_dir):
@@ -90,7 +96,7 @@ def test(model, model_name, grad_cam, batch_data_set, individual_data_set, batch
     
     
 def get_predictions(bounding_boxes):
-    labels, predictions = [], []
+    predictions = []
     for box_index, boxes in enumerate(bounding_boxes):
         num_animals = 0
         for score_index, score in enumerate(boxes["scores"]):
@@ -105,6 +111,7 @@ def test_individual_object_detection(model, individual_data_set, batch_size, mse
     running_mse = 0.0
     running_mae = 0.0
     num_correct = 0
+    all_labels, all_predictions = [], []
 
     for index in range(0, len(individual_data_set), batch_size):
         batch = individual_data_set[index:index + batch_size]
@@ -119,11 +126,15 @@ def test_individual_object_detection(model, individual_data_set, batch_size, mse
         running_mse += mse_criterion(labels_tensor, predictions_tensor).item()
         running_mae += mae_criterion(labels_tensor, predictions_tensor).item()
         num_correct += (labels_tensor == predictions_tensor).sum().item()
+        
+        all_labels.extend(labels)
+        all_predictions.extend(predictions)
 
     mse = running_mse/len(individual_data_set)
     mae = running_mae/len(individual_data_set)
     acc = num_correct/len(individual_data_set)
     print("individual testing MSE: " + str(mse) + ", MAE: " + str(mae) + " and ACC: " + str(acc))
+    utilities.print_regression_analysis(all_labels, all_predictions, model_name + "_Individual_Testing", saving_dir)
     
 
 def test_batch_object_detection(model, model_name, batch_data_set, mse_criterion, mae_criterion, saving_dir, device):
