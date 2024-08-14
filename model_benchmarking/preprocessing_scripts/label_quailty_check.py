@@ -233,10 +233,9 @@ def iou_for_bboxes(bboxA, bboxB):
     return iou
     
 # Method adapted from: https://gist.github.com/AruniRC/c629c2df0e68e23aff7dcaeef87c72d4 
-def iou_for_multilabels_on_one_image(bboxes_gt_ls, bboxes_pred_ls, iou_limit = 0.5):
+def iou_for_multilabels_on_one_image(bboxes_gt_ls, bboxes_pred_ls):
     n_gt = len(bboxes_gt_ls)
     n_pred = len(bboxes_pred_ls)
-    min_iou = 0.0
     
     iou_matrix = np.zeros((n_gt, n_pred))
     for i in range(n_gt):
