@@ -3,7 +3,7 @@ import torch
 import json
 import random
 import shutil
-import utilities
+import sys
 import numpy as np
 import pandas as pd
 import torch.nn as nn
@@ -13,6 +13,11 @@ from sklearn.metrics import multilabel_confusion_matrix
 from sklearn.metrics import cohen_kappa_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import matthews_corrcoef
+
+# Adding model_benchmarking/utilities.py to the system path
+parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+sys.path.append(parent_dir)
+import utilities
 
 def sample_data(data_dir, if_training, target_dir, json_file_name=None):
     if if_training:
@@ -410,9 +415,9 @@ def quality_check_for_all_samples(target_dir):
     
     return sum(img_lengths), avg_mae, avg_mse, avg_accuracy, avg_f1, avg_cohen, avg_icc, avg_iou
     
-target_dir = "../label_quality_check/"
-training_data_dir = "../saved_data/training_animal_count/"
-testing_data_dir = "../saved_data/testing_animal_count/"
+target_dir = "../../label_quality_check/"
+training_data_dir = "../../saved_data/training_animal_count/"
+testing_data_dir = "../../saved_data/testing_animal_count/"
 json_file_names = ["2022_NGilchrist_Eastface_055_07.12_07.20_key.json", "2023_Cottonwood_Eastface_5.30_7.10_key.json", "2023_fence_ends_HERS0024_MP178_EAST_key.json", "Idaho_loc_0099_key.json"]
 testing_folder_names = ["2022_NGilchrist_Eastface_055_07.12_07.20", "2023_Cottonwood_Eastface_5.30_7.10", "2023_fence_ends_HERS0024_MP178_EAST", "Idaho"]
 
