@@ -1,0 +1,200 @@
+
+Check labels from directory:  ../../label_quality_check/2023_Cottonwood_Eastface_5.30_7.10/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Total number of sampled images for quality check:  5
+Quality check results:
+MAE: 0.0     MSE: 0.0    Accuracy: 1.0     F1-score: 1.0
+Weighted Cohen's Kappa: 1.0
+Intraclass correlation coefficient:  1.0
+IoU: 0.8070930656572124
+
+Check labels from directory:  ../../label_quality_check/2022_NGilchrist_Eastface_055_07.12_07.20/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Total number of sampled images for quality check:  5
+Quality check results:
+MAE: 0.0     MSE: 0.0    Accuracy: 1.0     F1-score: 1.0
+Weighted Cohen's Kappa: 1.0
+Intraclass correlation coefficient:  1.0
+IoU: N/A
+
+Check labels from directory:  ../../label_quality_check/cottonwood_eastface_2022/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Total number of sampled images for quality check:  174
+Quality check results:
+MAE: 0.005747126415371895     MSE: 0.005747126415371895    Accuracy: 0.9942528735632183     F1-score: 0.9937285743093365
+Weighted Cohen's Kappa: 0.9872190392243279
+Intraclass correlation coefficient:  0.9935880805010936
+IoU: 0.758221267216529
+
+Check labels from directory:  ../../label_quality_check/crawford_westface_2022_MP150_ODOT006/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Total number of sampled images for quality check:  173
+Quality check results:
+MAE: 0.0     MSE: 0.0    Accuracy: 1.0     F1-score: 1.0
+Weighted Cohen's Kappa: 1.0
+Intraclass correlation coefficient:  1.0
+IoU: 0.8833807988634248
+
+Check labels from directory:  ../../label_quality_check/ngilchrist_eastface_2022_MP180_13_ODOT05/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Total number of sampled images for quality check:  9
+Quality check results:
+MAE: 0.0     MSE: 0.0    Accuracy: 1.0     F1-score: 1.0
+Weighted Cohen's Kappa: 1.0
+Intraclass correlation coefficient:  1.0
+IoU: 0.8409503211152167
+
+Check labels from directory:  ../../label_quality_check/jump_outs_HERS0039_CENTURY_SE_2023/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Total number of sampled images for quality check:  107
+Quality check results:
+MAE: 0.05607476457953453     MSE: 0.05607476457953453    Accuracy: 0.9439252336448598     F1-score: 0.9508678237650201
+Weighted Cohen's Kappa: 0.9238614800759013
+Intraclass correlation coefficient:  0.9725672877846795
+IoU: 0.8160430992528979
+
+Check labels from directory:  ../../label_quality_check/ngilchrist_repelcam_2023_MP180_13_ODOT010/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Total number of sampled images for quality check:  76
+Quality check results:
+MAE: 0.01315789483487606     MSE: 0.01315789483487606    Accuracy: 0.9868421052631579     F1-score: 0.9877352956860235
+Weighted Cohen's Kappa: 0.9291044776119403
+Intraclass correlation coefficient:  0.975704567541302
+IoU: 0.731213548474671
+
+Check labels from directory:  ../../label_quality_check/2023_fence_ends_HERS0024_MP178_EAST/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Total number of sampled images for quality check:  47
+Quality check results:
+MAE: 0.021276595070958138     MSE: 0.021276595070958138    Accuracy: 0.9787234042553191     F1-score: 0.9789015338941119
+Weighted Cohen's Kappa: 0.9811472121941436
+Intraclass correlation coefficient:  0.9920360110803329
+IoU: 0.8868556676055472
+
+Check labels from directory:  ../../label_quality_check/jump_outs_HERS0040_VANDEVERT_NW_2023/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Total number of sampled images for quality check:  39
+Quality check results:
+MAE: 0.1794871836900711     MSE: 0.1794871836900711    Accuracy: 0.8205128205128205     F1-score: 0.8472496164803857
+Weighted Cohen's Kappa: 0.8523526230394808
+Intraclass correlation coefficient:  0.9525508383874426
+IoU: 0.4828687525975403
+
+Check labels from directory:  ../../label_quality_check/vandevert_westface_2023_MP154_ODOT065/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Total number of sampled images for quality check:  47
+Quality check results:
+MAE: 0.0     MSE: 0.0    Accuracy: 1.0     F1-score: 1.0
+Weighted Cohen's Kappa: 1.0
+Intraclass correlation coefficient:  1.0
+IoU: 0.7656544831583956
+
+Check labels from directory:  ../../label_quality_check/fence_ends_HERS0033_2023_MP178_WEST/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Total number of sampled images for quality check:  57
+Quality check results:
+MAE: 0.0     MSE: 0.0    Accuracy: 1.0     F1-score: 1.0
+Weighted Cohen's Kappa: 1.0
+Intraclass correlation coefficient:  1.0
+IoU: 0.9306855308592461
+
+Check labels from directory:  ../../label_quality_check/Idaho/
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Total number of sampled images for quality check:  6
+Quality check results:
+MAE: 0.0     MSE: 0.0    Accuracy: 1.0     F1-score: 1.0
+Weighted Cohen's Kappa: 1.0
+Intraclass correlation coefficient:  1.0
+IoU: 0.9360619587490493
+
+ --------------------------------------------------------------------------------- 
+Total number of images sampled for the label quality check:   745
+Overall quality check results (weighted average) for all sampled training and testing data folders: 
+MAE: 0.021476509994608445     MSE: 0.021476509994608445    Accuracy: 0.978523489932886     F1-score: 0.9809001593027887
+Weighted Cohen's Kappa: 0.9699287285413777
+Intraclass correlation coefficient:  0.9890976485250681
+IoU: 0.8032615455002532
