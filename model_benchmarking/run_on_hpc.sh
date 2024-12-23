@@ -14,4 +14,4 @@ source ../env/bin/activate
 
 module load python/3.10 cuda/11.7
 
-python3 -u batch_animal_count_testing.py
+python3 -u batch_animal_count_training_time.py
