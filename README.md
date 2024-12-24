@@ -28,9 +28,9 @@ How to start virtual environment and load required modules:
 
 ```module load python/3.10 cuda/11.7```
 
-Example sbash command (parameters can be tuned in the run_on_hpc.sh file):
+Example sbatch command (parameters can be tuned in the run_on_hpc.sh file):
 
-```sbash run_on_hpc.sh```
+```sbatch run_on_hpc.sh```
 
 Example srun bash command (parameters can be tuned per job):
 
