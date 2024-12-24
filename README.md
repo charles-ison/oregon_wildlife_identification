@@ -22,15 +22,19 @@ How to check which partitions have available GPUs:
 
 ```nodestat <partition_name>```
 
-Example srun bash command (parameters can be tuned per job):
-
-```srun -p <partition_name> -A eecs --gres=gpu:2 --mem=100G --pty bash```
-
 How to start virtual environment and load required modules:
 
 ```source env/bin/activate ```
 
 ```module load python/3.10 cuda/11.7```
+
+Example sbash command (parameters can be tuned in the run_on_hpc.sh file):
+
+```sbash run_on_hpc.sh```
+
+Example srun bash command (parameters can be tuned per job):
+
+```srun -p <partition_name> -A eecs --gres=gpu:2 --mem=100G --pty bash```
 
 Please store data to be used for training/testing in a local directory:
 
