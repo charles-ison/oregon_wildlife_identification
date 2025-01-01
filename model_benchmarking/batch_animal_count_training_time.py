@@ -1,4 +1,5 @@
 import os
+import copy
 import time
 import torch
 import torchvision
@@ -10,8 +11,11 @@ import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 import utilities
+import torch.distributed as dist
+import torch.multiprocessing as mp
 from PIL import Image
 from custom_data_sets.image_data_set import ImageDataSet
+from torch.nn.parallel import DistributedDataParallel
     
     
 def get_predictions(bounding_boxes):
@@ -78,16 +82,16 @@ def fetch_training_data(data_dir):
     
     
 
-def train(model, training_data_set, criterion, optimizer, device, batch_size):
+def train(model, training_data_set, criterion, optimizer, rank, batch_size):
     model.train()
     running_loss = 0.0
     
     for index in range(0, len(training_data_set), batch_size):
         batch = training_data_set[index:index + batch_size]
-        data, targets = utilities.get_info_from_batch(batch, device)
+        data, targets = utilities.get_info_from_batch(batch, rank)
         data = torch.stack(data)
         labels = utilities.get_labels_from_targets(targets)
-        labels = torch.FloatTensor(labels).to(device)
+        labels = torch.FloatTensor(labels).to(rank)
         
         optimizer.zero_grad()
         output = model(data).flatten()
@@ -101,12 +105,12 @@ def train(model, training_data_set, criterion, optimizer, device, batch_size):
     return loss
     
 
-def train_object_detection(model, training_data_set, optimizer, device, batch_size):
+def train_object_detection(model, training_data_set, optimizer, rank, batch_size):
     model.train()
     running_loss = 0.0
     for index in range(0, len(training_data_set), batch_size):
         batch = training_data_set[index:index + batch_size]
-        data, targets = utilities.get_info_from_batch(batch, device)
+        data, targets = utilities.get_info_from_batch(batch, rank)
         
         optimizer.zero_grad()
         losses_dict = model(data, targets)
@@ -120,14 +124,14 @@ def train_object_detection(model, training_data_set, optimizer, device, batch_si
     return loss
     
     
-def validation_object_detection(model, validation_data_set, mse_criterion, mae_criterion, device, batch_size):
+def validation_object_detection(model, validation_data_set, mse_criterion, mae_criterion, rank, batch_size):
     running_mse = 0.0
     running_mae = 0.0
     num_correct = 0
 
     for index in range(0, len(validation_data_set), batch_size):
         batch = validation_data_set[index:index + batch_size]
-        data, targets = utilities.get_info_from_batch(batch, device)
+        data, targets = utilities.get_info_from_batch(batch, rank)
         
         model.eval()
         bounding_boxes = model(data)
@@ -145,7 +149,7 @@ def validation_object_detection(model, validation_data_set, mse_criterion, mae_c
     return mse, mae, accuracy
 
 
-def validation(model, validation_data_set, mse_criterion, mae_criterion, device, batch_size):
+def validation(model, validation_data_set, mse_criterion, mae_criterion, rank, batch_size):
     model.eval()
     running_mse = 0.0
     running_mae = 0.0
@@ -153,10 +157,10 @@ def validation(model, validation_data_set, mse_criterion, mae_criterion, device,
 
     for index in range(0, len(validation_data_set), batch_size):
         batch = validation_data_set[index:index + batch_size]
-        data, targets = utilities.get_info_from_batch(batch, device)
+        data, targets = utilities.get_info_from_batch(batch, rank)
         data = torch.stack(data)
         labels = utilities.get_labels_from_targets(targets)
-        labels = torch.FloatTensor(labels).to(device)
+        labels = torch.FloatTensor(labels).to(rank)
         
         output = model(data).flatten()
 
@@ -170,7 +174,7 @@ def validation(model, validation_data_set, mse_criterion, mae_criterion, device,
     return mse, mae, accuracy
 
 
-def batch_validation(model, batch_validation_data_set, mse_criterion, mae_criterion, device):
+def batch_validation(model, batch_validation_data_set, mse_criterion, mae_criterion, rank):
     model.eval()
     running_mse = 0.0
     running_mae = 0.0
@@ -180,16 +184,16 @@ def batch_validation(model, batch_validation_data_set, mse_criterion, mae_criter
     for batch in batch_validation_data_set:
         data, targets = batch['data'], batch['label']
         labels = utilities.get_labels_from_targets(targets)
-        labels = torch.FloatTensor(labels).to(device)
+        labels = torch.FloatTensor(labels).to(rank)
         
         # This is to prevent cuda memory issues for large batches
         max_prediction = 0
         for image in data:
-            image = torch.unsqueeze(image, dim=0).to(device)
+            image = torch.unsqueeze(image, dim=0).to(rank)
             output = model(image).flatten()
             max_prediction = max(max_prediction, output.item())
 
-        max_prediction = torch.tensor(max_prediction).to(device)
+        max_prediction = torch.tensor(max_prediction).to(rank)
         max_label = torch.max(labels)
         
         running_mse += mse_criterion(max_prediction, max_label).item()
@@ -206,7 +210,7 @@ def batch_validation(model, batch_validation_data_set, mse_criterion, mae_criter
     return mse, mae, accuracy, all_labels, all_predictions
     
     
-def batch_validation_object_detection(model, batch_validation_data_set, mse_criterion, mae_criterion, print_incorrect_images, saving_dir, device):
+def batch_validation_object_detection(model, batch_validation_data_set, mse_criterion, mae_criterion, print_incorrect_images, saving_dir, rank):
     model.eval()
     running_mse = 0.0
     running_mae = 0.0
@@ -222,7 +226,7 @@ def batch_validation_object_detection(model, batch_validation_data_set, mse_crit
         max_prediction = 0
         max_label = 0
         for index, image in enumerate(data):
-            image = torch.unsqueeze(image, dim=0).to(device)
+            image = torch.unsqueeze(image, dim=0).to(rank)
             bounding_boxes = model(image)
             prediction = get_predictions(bounding_boxes)[0]
             label = labels[index]
@@ -247,9 +251,12 @@ def batch_validation_object_detection(model, batch_validation_data_set, mse_crit
     accuracy = num_correct/len(batch_validation_data_set)
     return mse, mae, accuracy, all_labels, all_predictions
 
-def train_and_validate(num_epochs, model, model_name, training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, is_object_detection):
-    model.to(device)
-    
+def train_and_validate(rank, world_size, num_epochs, model, model_name, training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, saving_dir, batch_size, is_object_detection):
+   
+    dist.init_process_group(world_size=world_size, rank=rank)
+    torch.cuda.set_device(rank)
+    model = model.to(rank)
+    model = DistributedDataParallel(model, device_ids=[rank])
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
     mse = nn.MSELoss()
     mae = nn.L1Loss()
@@ -257,95 +264,93 @@ def train_and_validate(num_epochs, model, model_name, training_data_set, validat
     lowest_batch_val_mae = None
     saving_dir = saving_dir + "batch_count_" + model_name + "/"
     start_time = time.time()
-    print("Start time: ", start_time)
 
     for epoch in range(num_epochs):
-        print("Epoch: " + str(epoch))
-        epoch_time = time.time()
-        print("Epoch time: ", epoch_time)
         training_data_set.shuffle()
         validation_data_set.shuffle()
         batch_training_data_set.shuffle()
 
         #TODO: Use OOP here
         if is_object_detection:
-            training_loss = train_object_detection(model, training_data_set, optimizer, device, batch_size)
+            training_loss = train_object_detection(model, training_data_set, optimizer, rank, batch_size)
         else:
-            training_loss = train(model, training_data_set, huber_loss, optimizer, device, batch_size)
-        print("training loss: " + str(training_loss))
+           training_loss = train(model, training_data_set, huber_loss, optimizer, rank, batch_size)
+        #print("training loss: " + str(training_loss))
 
 
         if is_object_detection:
-            val_mse, val_mae, val_acc = validation_object_detection(model, validation_data_set, mse, mae, device, batch_size)
+            val_mse, val_mae, val_acc = validation_object_detection(model, validation_data_set, mse, mae, rank, batch_size)
         else:
-            val_mse, val_mae, val_acc = validation(model, validation_data_set, mse, mae, device, batch_size)
-        print("validation MSE: " + str(val_mse) + ", MAE: " + str(val_mae) + " and ACC: " + str(val_acc))
+            val_mse, val_mae, val_acc = validation(model, validation_data_set, mse, mae, rank, batch_size)
+        # print("validation MSE: " + str(val_mse) + ", MAE: " + str(val_mae) + " and ACC: " + str(val_acc))
         
         if is_object_detection:
-            batch_val_mse, batch_val_mae, batch_val_acc, batch_labels, batch_predictions = batch_validation_object_detection(model, batch_validation_data_set, mse, mae, False, saving_dir, device)
+            batch_val_mse, batch_val_mae, batch_val_acc, batch_labels, batch_predictions = batch_validation_object_detection(model, batch_validation_data_set, mse, mae, False, saving_dir, rank)
         else:
-            batch_val_mse, batch_val_mae, batch_val_acc, batch_labels, batch_predictions = batch_validation(model, batch_validation_data_set, mse, mae, device)
-        print("batch validation MSE: " + str(batch_val_mse) + ", MAE: " + str(batch_val_mae) + " and ACC: " + str(batch_val_acc))
+            batch_val_mse, batch_val_mae, batch_val_acc, batch_labels, batch_predictions = batch_validation(model, batch_validation_data_set, mse, mae, rank)
+        # print("batch validation MSE: " + str(batch_val_mse) + ", MAE: " + str(batch_val_mae) + " and ACC: " + str(batch_val_acc))
         
-    end_time = time.time()
-    print("End time: ", end_time)
+        print(time.time() - start_time)
+        
+    dist.destroy_process_group()
 
 
-# Declaring Constants
-num_epochs = 10
-batch_size = 100
-object_detection_batch_size = 10
-data_dir = "../saved_data/training_animal_count/"
-saving_dir = "../saved_models/"
+if __name__ == '__main__':
+    # Declaring Constants
+    num_epochs = 10
+    batch_size = 64
+    object_detection_batch_size = 10
+    data_dir = "../saved_data/training_animal_count/"
+    saving_dir = "../saved_models/"
 
-print(torch.__version__)
-print(torchvision.__version__)
-print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-torch.cuda.empty_cache()
+    print(torch.__version__)
+    print(torchvision.__version__)
+    print("torch.cuda.is_available(): " + str(torch.cuda.is_available()))
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    torch.cuda.empty_cache()
 
-training_data, training_labels, validation_data, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels = fetch_training_data(data_dir)
-training_data_set = ImageDataSet(training_data, training_labels)
-validation_data_set = ImageDataSet(validation_data, validation_labels)
-batch_training_data_set = ImageDataSet(batch_validation_data, batch_validation_labels)
-batch_validation_data_set = ImageDataSet(batch_validation_data, batch_validation_labels)
+    # Configuring these based on: https://pytorch.org/tutorials/intermediate/ddp_tutorial.html 
+    os.environ['MASTER_ADDR'] = 'localhost'
+    os.environ['MASTER_PORT'] = '12355'
 
-for i in range(4):
+    training_data, training_labels, validation_data, validation_labels, batch_training_data, batch_training_labels, batch_validation_data, batch_validation_labels = fetch_training_data(data_dir)
+    training_data_set = ImageDataSet(torch.stack(training_data, dim=0).clone(), training_labels)
+    validation_data_set = ImageDataSet(torch.stack(validation_data, dim=0).clone(), validation_labels)
+    batch_training_data_set = ImageDataSet(batch_validation_data, batch_validation_labels)
+    batch_validation_data_set = ImageDataSet(batch_validation_data, batch_validation_labels)
 
-    # Declaring Models
-    resnet34 = models.resnet34(weights = models.ResNet34_Weights.DEFAULT)
-    in_features = resnet34.fc.in_features
-    resnet34.fc = nn.Linear(in_features, 1)
+    for i in range(torch.cuda.device_count()):
 
-    resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
-    in_features = resnet50.fc.in_features
-    resnet50.fc = nn.Linear(in_features, 1)
+        # Declaring Models
+        resnet34 = models.resnet34(weights = models.ResNet34_Weights.DEFAULT)
+        in_features = resnet34.fc.in_features
+        resnet34.fc = nn.Linear(in_features, 1)
 
-    resnet152 = models.resnet152(weights = models.ResNet152_Weights.DEFAULT)
-    in_features = resnet152.fc.in_features
-    resnet152.fc = nn.Linear(in_features, 1)
+        resnet50 = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
+        in_features = resnet50.fc.in_features
+        resnet50.fc = nn.Linear(in_features, 1)
 
-    retina_net = models.detection.retinanet_resnet50_fpn_v2(weights=models.detection.RetinaNet_ResNet50_FPN_V2_Weights.DEFAULT)
+        resnet152 = models.resnet152(weights = models.ResNet152_Weights.DEFAULT)
+        in_features = resnet152.fc.in_features
+        resnet152.fc = nn.Linear(in_features, 1)
 
-    print("Using " + str(torch.cuda.device_count()) + " GPUs")
-    if torch.cuda.device_count() > 1:
-        resnet34 = nn.DataParallel(resnet34, device_ids=range(i+1))
-        resnet50 = nn.DataParallel(resnet50, device_ids=range(i+1))
-        resnet152 = nn.DataParallel(resnet152, device_ids=range(i+1))
-        vit_l_16 = nn.DataParallel(vit_l_16, device_ids=range(i+1))
+        retina_net = models.detection.retinanet_resnet50_fpn_v2(weights=models.detection.RetinaNet_ResNet50_FPN_V2_Weights.DEFAULT)
+    
+        world_size = i + 1
+        print("\nUsing " + str(world_size) + " GPUs")
 
-    # Training
-    print("\nTraining and Validating ResNet34")
-    train_and_validate(num_epochs, resnet34, "ResNet34", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False)
+        # Training
+        print("\nTraining and Validating ResNet34")
+        mp.spawn(train_and_validate, args=(world_size, num_epochs, resnet34, "ResNet34", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, saving_dir, batch_size, False), nprocs=world_size, join=True)
 
-    print("\nTraining and Validating ResNet50")
-    train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False)
+        #print("\nTraining and Validating ResNet50")
+        #train_and_validate(num_epochs, resnet50, "ResNet50", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False)
 
-    print("\nTraining and Validating ResNet152")
-    train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False)
+        #print("\nTraining and Validating ResNet152")
+        #train_and_validate(num_epochs, resnet152, "ResNet152", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, batch_size, False)
 
-    print("\nTraining and Validating RetinaNet")
-    train_and_validate(num_epochs, retina_net, "RetinaNet", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, device, saving_dir, object_detection_batch_size, True)
+        #print("\nTraining and Validating RetinaNet")
+        #mp.spawn(train_and_validate, args=(world_size, num_epochs, retina_net, "RetinaNet", training_data_set, validation_data_set, batch_training_data_set, batch_validation_data_set, saving_dir, object_detection_batch_size, True), nprocs=world_size, join=True)
 
 
 
