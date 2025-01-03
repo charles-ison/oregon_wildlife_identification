@@ -60,8 +60,6 @@ def fetch_training_data(data_dir):
             batch_training_labels.extend(temp_batch_train_lab)
             batch_validation_data.extend(temp_batch_val_data)
             batch_validation_labels.extend(temp_batch_val_lab)
-            
-        break
     
     training_data = training_data[0:int(len(training_data)/10)]
     training_labels = training_labels[0:int(len(training_labels)/10)]
@@ -206,18 +204,10 @@ def train_and_validate(rank, world_size, num_epochs, model, model_name, training
         training_data_set.shuffle()
         validation_data_set.shuffle()
 
-        #TODO: Use OOP here
         if is_object_detection:
             training_loss = train_object_detection(model, training_data_set, optimizer, rank, batch_size)
         else:
            training_loss = train(model, training_data_set, huber_loss, optimizer, rank, batch_size)
-        #print("training loss: " + str(training_loss))
-
-        if is_object_detection:
-            val_mse, val_mae, val_acc = validation_object_detection(model, validation_data_set, mse, mae, rank, batch_size)
-        else:
-            val_mse, val_mae, val_acc = validation(model, validation_data_set, mse, mae, rank, batch_size)
-        # print("validation MSE: " + str(val_mse) + ", MAE: " + str(val_mae) + " and ACC: " + str(val_acc))
         
         print(time.time() - start_time)
         

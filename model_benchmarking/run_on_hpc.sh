@@ -3,7 +3,7 @@
 #SBATCH -A eecs 
 #SBATCH -p dgx2
 #SBATCH -t 2-00:00:00   
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:4
 #SBATCH --mem=40G  
 
 #SBATCH -o ../run_logs/logs.out
