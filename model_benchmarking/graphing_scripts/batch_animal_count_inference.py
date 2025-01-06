@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def plot_run_times(data, title):
+def plot_run_times(data):
     fig, ax = plt.subplots()
     lineplot = sns.lineplot(data)
-    lineplot.set(xlabel = "Training Epochs", ylabel = "Seconds", title = title)
+    lineplot.set(xlabel = "Training Epochs", ylabel = "Seconds")
     plt.legend(title='Number of GPUs')
     plt.show()
 
@@ -33,7 +33,7 @@ resnet34 = {"1": [23.029344081878662, 25.597619771957397,
                   12.812959432601929, 13.869056940078735]
             }
 
-plot_run_times(resnet34, "ResNet-34")
+plot_run_times(resnet34)
 
 resnet50 = {"1": [5.477330684661865, 10.058862924575806,
                   14.669203281402588, 19.26672053337097,
@@ -60,7 +60,7 @@ resnet50 = {"1": [5.477330684661865, 10.058862924575806,
                   17.999821424484253, 19.643191814422607]
             }
 
-plot_run_times(resnet50, "ResNet-50")
+plot_run_times(resnet50)
 
 resnet152 = {"1": [11.38500189781189, 21.856398105621338,
                    32.329041481018066, 42.81573009490967,
@@ -87,7 +87,7 @@ resnet152 = {"1": [11.38500189781189, 21.856398105621338,
                   34.47911238670349, 38.11891293525696]
             }
 
-plot_run_times(resnet152, "ResNet-152")
+plot_run_times(resnet152)
 
 retina_net = {"1": [100.32027244567871, 199.53576683998108,
                     298.7652418613434, 397.98530316352844,
@@ -114,4 +114,4 @@ retina_net = {"1": [100.32027244567871, 199.53576683998108,
                   316.30705189704895, 351.38926815986633]
             }
 
-plot_run_times(retina_net, "RetineNet")
+plot_run_times(retina_net)
